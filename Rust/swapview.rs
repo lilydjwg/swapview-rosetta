@@ -7,6 +7,7 @@ extern crate regex;
 use std::io::{File,BufferedReader};
 use std::num::SignedInt; // abs method
 use std::io::fs;
+use std::cmp::max;
 
 fn filesize(size: int) -> String {
   let units = "KMGT";
@@ -30,7 +31,8 @@ fn filesize(size: int) -> String {
 fn get_comm_for(pid: uint) -> String {
   let cmdline_path = format!("/proc/{}/cmdline", pid);
   match File::open(&Path::new(&cmdline_path)).read_to_string() {
-    Ok(s) => s.replace("\0", " ").trim_right().into_string(),
+    // s may be empty for kernel threads
+    Ok(s) => s.slice_to(max(s.len(), 1)-1).replace("\0", " ").into_string(),
     Err(_) => String::new(),
   }
 }
