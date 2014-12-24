@@ -1,2 +1,5 @@
+CPPFLAGS=-O4
+CPPC=g++
+
 swapview: swapview.cpp
-	g++ --std=c++1y swapview.cpp -o swapview -O4
+	$(CPPC) --std=c++14 swapview.cpp -o swapview $(CPPFLAGS)

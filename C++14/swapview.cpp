@@ -2,105 +2,157 @@
 #include <string>
 #include <sstream>
 #include <fstream>
-#include <cmath>
 #include <iomanip>
 #include <tuple>
 #include <algorithm>
 #include <vector>
+
+#include <cstring>
+#include <cmath>
+#include <cctype>
+
+#include <sys/types.h>
+#include <dirent.h>
+#include <error.h>
+
 using namespace std;
+
+//#define TARGET "Size:"     // test with Size: when swap is empty
+#define TARGET "Swap:"  
+
+/////////////////////////////////////////////////////////////////////////////
+// Helpers for Python to C++14 Conversion
 
 template<typename... UArgs>
 class StrFormatHelper{
-	ostringstream sout;
-	template<typename T>
-	void format(T value){ sout<<value; }
+    ostringstream sout;
+    template<typename T>
+    void format(T value){ sout<<value; }
 
-	template<typename T, typename... TArgs>
-	void format(T value, TArgs... args){
-		sout<<value;
-		format(args...);
-	}
+    template<typename T, typename... TArgs>
+    void format(T value, TArgs... args){
+        sout<<value;
+        format(args...);
+    }
 
 public:
-	StrFormatHelper(UArgs... args){ format(args...); }
-
-	operator string (){ return sout.str(); }
+    StrFormatHelper(UArgs... args){ format(args...); }
+    operator string (){ return sout.str(); }
 };
 
 template<typename... UArgs>
 string strformat(UArgs... args){
-	return StrFormatHelper<UArgs...>(args...);
+    return StrFormatHelper<UArgs...>(args...);
 }
 
-
-string filesize(auto size){
-	char units [] = "KMGT";
-	auto left = fabs(size);
-	int unit = -1;
-	while( left > 1100 && unit < 3 ){
-		left /= 1024;
-		unit++;
-	}
-	if(unit == -1){
-		return strformat(static_cast<int>(size), 'B');
-	}else{
-		if(size<0){
-			left = -left;
-		}
-		return strformat(fixed, setprecision(1) , left , units[unit] , 'B');
-		
-	}
+string readline(string path){
+    ifstream fs(path);
+    string buf;
+    getline(fs, buf);
+    return buf;
 }
 
 vector<string> readlines(string path){
-	ifstream fcomm(path);
-	vector<string> result;
-	for(string buf; getline(fcomm, buf);){
-		result.push_back(string(buf));
-	}
-	return result;
-}
-// def getSwapFor(pid):
-//   try:
-//     comm = open('/proc/%s/cmdline' % pid).read().replace('\x00', ' ')
-//     s = 0
-//     for l in open('/proc/%s/smaps' % pid):
-//       if l.startswith('Size:'):
-//         s += int(re.search(r'\d+', l).group(0))
-//     return pid, s * 1024, comm[:-1]
-//   except (IOError, OSError):
-//     return pid, 0, ''
-
-tuple<int, double, string> getSwapFor(int pid){
-	try{
-		string comm = readlines(strformat("/proc/", pid, "/cmdline"))[0];
-		replace(comm.begin(), comm.end(), '\0' , ' ');
-		return make_tuple(pid, 0.0, comm);
-	}catch(...){
-		return make_tuple(pid, 0.0, ""s);
-	}
+    ifstream fs(path);
+    vector<string> result;
+    for(string buf; getline(fs, buf);){
+        result.push_back(buf);
+    }
+    return result;
 }
 
-// def getSwap():
-//   ret = []
-//   for pid in os.listdir('/proc'):
-//     if pid.isdigit():
-//       s = getSwapFor(pid)
-//       if s[1] > 0:
-//         ret.append(s)
-//   ret.sort(key=lambda x: x[1])
-//   return ret
+int str2i(string str){
+    int result;
+    istringstream ssin(str);
+    ssin>>result;
+    return result;
+}
+
+vector<string> lsdir(string path){
+    vector<string> ret;
+
+    DIR *dp;
+    struct dirent *dirp;
+    if((dp  = opendir(path.c_str())) == NULL) {
+        error(errno, errno, "opening %s \n", path.c_str());
+    }
+
+    while ((dirp = readdir(dp)) != NULL) {
+        ret.push_back(string(dirp->d_name));
+    }
+    closedir(dp);
+
+    return ret;
+}
+
+typedef tuple<int, double, string> swap_info;
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Converted C++14 code
+
+string filesize(auto size){
+    char units [] = "KMGT";
+    auto left = fabs(size);
+    int unit = -1;
+    while( left > 1100 && unit < 3 ){
+        left /= 1024;
+        unit++;
+    }
+    if(unit == -1){
+        return strformat(static_cast<int>(size), 'B');
+    }else{
+        if(size<0){
+            left = -left;
+        }
+        return strformat(fixed, setprecision(1), left, units[unit], 'B');
+    }
+}
+
+swap_info getSwapFor(int pid){
+    string comm = readline(strformat("/proc/", pid, "/cmdline"));
+    replace(comm.begin(), comm.end(), '\0' , ' ');
+    double s=0.0;
+    for(auto l: readlines(strformat("/proc/", pid, "/smaps"))){
+        if(l.substr(0, strlen(TARGET))==TARGET){
+            s+=str2i(l.substr(strlen(TARGET)));
+        }
+    }
+    return make_tuple(pid, s*1024.0, comm);
+}
+
+vector<swap_info> getSwap(){
+    vector<swap_info> ret;
+    for(string pid: lsdir("/proc")){
+        if(all_of(pid.begin(), pid.end(), 
+            static_cast<int (&)(int)>(isdigit)) // need cast because isdigit template in locale
+            ) { 
+            auto item=getSwapFor(str2i(pid));
+            if(get<1>(item) > 0){
+                ret.push_back(item);
+            }
+        }
+    }
+    sort(ret.begin(), ret.end(), 
+        [](auto i, auto j){return get<1>(i) < get<1>(j);});
+    return ret;
+}
 
 void format_print(auto pid, auto swap, auto command){
-	cout<<setw(5)<<pid<<" "<<setw(9)<<swap<<" "<<command<<endl;
+    cout<<setw(5)<<pid<<' '<<setw(9)<<swap<<' '<<command<<endl;
 }
 
-void format_print(tuple<int, double, string> swap){
-	format_print(get<0>(swap), get<1>(swap), get<2>(swap));
+void format_print(swap_info swap){
+    format_print(get<0>(swap), filesize(get<1>(swap)), get<2>(swap));
 }
 
 int main(int argc, char * argv[]){
-	format_print("PID", "SWAP", "COMMAND");
-	format_print(getSwapFor(1));
-	return 0;
+    format_print("PID", "SWAP", "COMMAND");
+    double t=0.0;
+    for(auto item: getSwap()){
+        format_print(item);
+        t+=get<1>(item);
+    }
+    cout<<"Total:"<<setw(9)<<filesize(t)<<endl;
+    return 0;
 }
