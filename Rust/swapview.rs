@@ -63,7 +63,11 @@ fn get_swap() -> Vec<(uint, int, String)> {
       Some(pid) => pid,
       None => continue,
     };
-    ret.push((pid, get_swap_for(pid), get_comm_for(pid)));
+    let swap = get_swap_for(pid);
+    if swap == 0 {
+      continue;
+    }
+    ret.push((pid, swap, get_comm_for(pid)));
   }
   ret
 }
