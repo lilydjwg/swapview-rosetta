@@ -32,7 +32,7 @@ fn get_comm_for(pid: uint) -> String {
   let cmdline_path = format!("/proc/{}/cmdline", pid);
   match File::open(&Path::new(&cmdline_path)).read_to_string() {
     // s may be empty for kernel threads
-    Ok(s) => s.slice_to(max(s.len(), 1)-1).replace("\0", " ").into_string(),
+    Ok(s) => s.slice_to(max(s.len(), 1)-1).replace("\0", " ").to_string(),
     Err(_) => String::new(),
   }
 }
@@ -50,26 +50,21 @@ fn get_swap_for(pid: uint) -> int {
     };
     if line.starts_with("Swap:") {
       let (start, stop) = number_re.find(line.as_slice()).unwrap();
-      s += from_str(line[start..stop]).unwrap();
+      s += line[start..stop].parse().unwrap();
     }
   }
   s * 1024
 }
 
 fn get_swap() -> Vec<(uint, int, String)> {
-  let mut ret = Vec::new();
-  for d in fs::readdir(&Path::new("/proc")).unwrap().iter() {
-    let pid: uint = match from_str(d.filename_str().unwrap()) {
-      Some(pid) => pid,
-      None => continue,
-    };
-    let swap = get_swap_for(pid);
-    if swap == 0 {
-      continue;
-    }
-    ret.push((pid, swap, get_comm_for(pid)));
-  }
-  ret
+  fs::readdir(&Path::new("/proc")).unwrap().iter().filter_map(
+    |d| d.filename_str().unwrap().parse().and_then(|pid|
+      match get_swap_for(pid) {
+       0 => None,
+       swap => Some((pid, swap, get_comm_for(pid))),
+      }
+    )
+  ).collect()
 }
 
 fn main() {
