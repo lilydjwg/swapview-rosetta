@@ -63,7 +63,7 @@ io.write(string.format("%5s %9s %s\n", "PID", "SWAP", "COMMAND"))
 local results = getSwap()
 local sum = 0
 for _, v in ipairs(results) do
-	print(string.format("%5s %9s %s\n", v[1], filesize(v[2]), v[3]))
+	io.write(string.format("%5s %9s %s\n", v[1], filesize(v[2]), v[3]))
 	sum = sum + v[2]
 end
 io.write(string.format("Total: %8s\n", filesize(sum)))
