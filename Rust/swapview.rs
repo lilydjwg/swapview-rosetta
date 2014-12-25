@@ -1,8 +1,4 @@
-#![feature(phase)]
 #![feature(slicing_syntax)]
-#[phase(plugin)]
-extern crate regex_macros;
-extern crate regex;
 
 use std::io::{File,BufferedReader};
 use std::num::SignedInt; // abs method
@@ -41,7 +37,6 @@ fn get_swap_for(pid: uint) -> int {
   let smaps_path = format!("/proc/{}/smaps", pid);
   let mut file = BufferedReader::new(File::open(&Path::new(smaps_path)));
   let mut s = 0;
-  let number_re = regex!(r"\d+");
 
   for l in file.lines() {
     let line = match l {
@@ -49,8 +44,7 @@ fn get_swap_for(pid: uint) -> int {
       Err(_) => return 0,
     };
     if line.starts_with("Swap:") {
-      let (start, stop) = number_re.find(line.as_slice()).unwrap();
-      s += line[start..stop].parse().unwrap();
+      s += line.split(' ').filter(|s| !s.is_empty()).nth(1).unwrap().parse().unwrap();
     }
   }
   s * 1024
