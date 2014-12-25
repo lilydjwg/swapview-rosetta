@@ -3,6 +3,14 @@
 require 'lfs'
 
 local format = string.format
+local nullstr
+
+-- http://www.freelists.org/post/luajit/BUG-stringgsub-is-not-8bit-pure,1
+if jit then
+  nullstr = '%z'
+else
+  nullstr = '\x00'
+end
 
 function filesize(size)
   local units = {'K', 'M', 'G', 'T'}
@@ -47,8 +55,7 @@ function getSwapFor(pid)
   local cmd = cmdfile:read('*a')
   cmdfile:close()
   if cmd then
-    -- FIXME: LuaJIT adds spaces to every letters...
-    cmd = cmd:sub(1, #cmd-1):gsub('\x00', ' ')
+    cmd = cmd:sub(1, #cmd-1):gsub(nullstr, ' ')
   end
 
   return size * 1024, cmd
