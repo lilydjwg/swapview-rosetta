@@ -44,16 +44,13 @@ formatResult (pid, size) = do
   return $ printf format pid size cmd
 
 getCommand :: Pid -> IO String
-getCommand pid = trChar '\0' ' ' <$> readFile ("/proc/" ++ pid ++ "/cmdline")
+getCommand pid = map transnul . dropLastNull <$> readFile ("/proc/" ++ pid ++ "/cmdline")
+  where dropLastNull "" = ""
+        dropLastNull s = init s
+        transnul ch = if ch == '\0' then ' ' else ch
 
 total :: [(Pid, Int)] -> Int
 total = sum . map snd
-
-trChar :: Char -> Char -> String -> String
-trChar from to = map (trCharSingle from to)
-
-trCharSingle :: Char -> Char -> Char -> Char
-trCharSingle from to ch = if from == ch then to else ch
 
 units = "KMGTP"
 
