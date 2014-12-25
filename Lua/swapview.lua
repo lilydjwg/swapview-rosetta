@@ -37,7 +37,7 @@ function getSwapFor(pid)
 		--cmd = cmdfile:read("*a")
 	end
 	cmdfile:close()
-	return size, cmd
+	return size * 1024, cmd
 end
 
 function getSwap()
