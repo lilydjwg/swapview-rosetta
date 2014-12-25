@@ -1,3 +1,4 @@
+#!/usr/bin/env lua
 require "lfs"
 function filesize(size)
 	--将数字转换为 xxKiB 的形式
@@ -32,8 +33,8 @@ function getSwapFor(pid)
 	local cmd = ""
 	local cmdfile = io.open(string.format("/proc/%s/cmdline", pid), "r")
 	if cmdfile then
-		--cmd = string.gsub(cmdfile:read("*a"), "\x00", " ")
-		cmd = cmdfile:read("*a")
+		cmd = string.gsub(cmdfile:read("*a"), "\x00", " ")
+		--cmd = cmdfile:read("*a")
 	end
 	cmdfile:close()
 	return size, cmd
@@ -58,11 +59,11 @@ function getSwap()
 	return ret
 end
 
-print("PID", "SWAP", "COMMAND")
+io.write(string.format("%5s %9s %s\n", "PID", "SWAP", "COMMAND"))
 local results = getSwap()
 local sum = 0
 for _, v in ipairs(results) do
-	print(v[1], filesize(v[2]), v[3])
+	print(string.format("%5s %9s %s\n", v[1], filesize(v[2]), v[3]))
 	sum = sum + v[2]
 end
-print("Total: ", filesize(sum))
+io.write(string.format("Total: %8s\n", filesize(sum)))
