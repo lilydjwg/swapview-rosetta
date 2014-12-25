@@ -1,5 +1,5 @@
 CC=ghc
-CFLAGS=-i$(HOME)/scripts/haskell/lib -O2
+CFLAGS=-O2
 
 .PHONY: all clean
 
