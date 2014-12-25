@@ -15,7 +15,7 @@ function filesize(size)
 		if size < 0 then
 			value = -value
 		end
-		return string.format("%f%siB", value, units[uint])
+		return string.format("%.1f%siB", value, units[uint])
 	end
 end
 
