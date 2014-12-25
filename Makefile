@@ -1,6 +1,6 @@
 .PHONY: all clean
 
-languages=Haskell OCaml Rust
+languages=Haskell OCaml Rust C++14
 
 all:
 	for d in $(languages); do $(MAKE) -C "$$d"; done
