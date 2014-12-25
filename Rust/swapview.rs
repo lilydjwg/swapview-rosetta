@@ -44,7 +44,7 @@ fn get_swap_for(pid: uint) -> int {
       Err(_) => return 0,
     };
     if line.starts_with("Swap:") {
-      s += line.split(' ').filter(|s| !s.is_empty()).nth(1).unwrap().parse().unwrap();
+      s += line.words().nth(1).unwrap().parse().unwrap();
     }
   }
   s * 1024
