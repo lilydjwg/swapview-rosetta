@@ -105,13 +105,15 @@ string filesize(auto size){
         if(size<0){
             left = -left;
         }
-        return strformat(fixed, setprecision(1), left, units[unit], 'B');
+        return strformat(fixed, setprecision(1), left, units[unit], "iB");
     }
 }
 
 swap_info getSwapFor(int pid){
     string comm = readline(strformat("/proc/", pid, "/cmdline"));
-    replace(comm.begin(), comm.end(), '\0' , ' ');
+    if(comm.length() > 0){
+      replace(comm.begin(), comm.end()-1, '\0' , ' ');
+    }
     double s=0.0;
     for(auto l: readlines(strformat("/proc/", pid, "/smaps"))){
         if(l.substr(0, strlen(TARGET))==TARGET){
