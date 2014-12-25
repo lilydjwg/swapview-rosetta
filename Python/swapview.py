@@ -28,7 +28,7 @@ def getSwapFor(pid):
     for l in open('/proc/%s/smaps' % pid):
       if l.startswith('Swap:'):
         s += int(re.search(r'\d+', l).group(0))
-    return pid, s * 1024, comm[:-1]
+    return pid, s * 1024, comm and comm[:-1]
   except (IOError, OSError):
     return pid, 0, ''
 
