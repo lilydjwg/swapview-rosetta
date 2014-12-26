@@ -9,10 +9,6 @@ import System.Directory (getDirectoryContents)
 import System.IO.Strict (readFile)
 import Text.Printf (printf)
 
-import Control.Function (mapSnd)
-import Math.Number (filesize)
-import Text.String (trChar)
-
 type Pid = String
 
 format = "%5s %9s %s"
@@ -48,7 +44,29 @@ formatResult (pid, size) = do
   return $ printf format pid size cmd
 
 getCommand :: Pid -> IO String
-getCommand pid = trChar '\0' ' ' <$> readFile ("/proc/" ++ pid ++ "/cmdline")
+getCommand pid = map transnul . dropLastNull <$> readFile ("/proc/" ++ pid ++ "/cmdline")
+  where dropLastNull "" = ""
+        dropLastNull s = init s
+        transnul ch = if ch == '\0' then ' ' else ch
 
 total :: [(Pid, Int)] -> Int
 total = sum . map snd
+
+units = "KMGTP"
+
+liftUnit :: Double -> [Char] -> [Char] -> (Double, [Char])
+liftUnit n u l =
+  if n > 1100 && (not.null) u
+     then liftUnit (n/1024) (tail u) (head u :l)
+     else (n, l)
+
+filesize :: (Integral a, Show a) => a -> String
+filesize n =
+  if not.null $ level
+     then printf "%.1f%ciB" m unit
+     else show n ++ "B"
+  where (m, level) = liftUnit (fromIntegral n) units []
+        unit = head level
+
+mapSnd :: (a -> b) -> (c, a) -> (c, b)
+mapSnd f (a, b) = (a, f b)

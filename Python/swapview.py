@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import os
-import re
 
 format = "%5s %9s %s"
 totalFmt = "Total: %8s"
@@ -27,8 +26,8 @@ def getSwapFor(pid):
     s = 0
     for l in open('/proc/%s/smaps' % pid):
       if l.startswith('Swap:'):
-        s += int(re.search(r'\d+', l).group(0))
-    return pid, s * 1024, comm[:-1]
+        s += int(l.split()[1])
+    return pid, s * 1024, comm and comm[:-1]
   except (IOError, OSError):
     return pid, 0, ''
 
@@ -43,8 +42,8 @@ def getSwap():
   return ret
 
 def main():
-  print(format % ('PID', 'SWAP', 'COMMAND'))
   results = getSwap()
+  print(format % ('PID', 'SWAP', 'COMMAND'))
   for pid, swap, comm in results:
     print(format % (pid, filesize(swap), comm))
   t = filesize(sum(x[1] for x in results))
