@@ -88,43 +88,41 @@ int comp(const void* a, const void* b){
 }
 
 swap_info ** getSwap(){
-	swap_info ** ret;
+	swap_info **ret;
 	int size=16;
 	if(!(ret=malloc(sizeof(swap_info*)*size))) die("malloc");
 	int length=0;
 
-    DIR *dp;
-    struct dirent *dirp;
-    if((dp  = opendir("/proc")) == NULL) die("opendir");
+	DIR *dp;
+	struct dirent *dirp;
+	if((dp = opendir("/proc")) == NULL) die("opendir");
 
-    while ((dirp = readdir(dp)) != NULL) {
-        int pid = atoi(dirp->d_name);
-        if(pid > 0){
-        	if(length==size){
-        		size<<=1;
-        		if(!(ret=realloc(ret, sizeof(swap_info*)*size))) die("realloc");
-        	}
-        	swap_info * swapfor = getSwapFor(pid);
-        	if(swapfor->size > 0){
-        		ret[length++]= swapfor;
-        	}else{
-        		// if(swapfor->comm){
-        		free(swapfor->comm);
-        		// }
-        		free(swapfor);
-        	}
-        }
-    }
-    closedir(dp);
+	while ((dirp = readdir(dp)) != NULL) {
+		int pid = atoi(dirp->d_name);
+		if(pid > 0){
+			if(length==size){
+				size<<=1;
+				if(!(ret=realloc(ret, sizeof(swap_info*)*size))) die("realloc");
+			}
+			swap_info * swapfor = getSwapFor(pid);
+			if(swapfor->size > 0){
+				ret[length++] = swapfor;
+			}else{
+				free(swapfor->comm);
+				free(swapfor);
+			}
+		}
+	}
+	closedir(dp);
 
 	qsort(ret, length, sizeof(swap_info*), comp);
 
-    if(length==size){
+	if(length==size){
 		size<<=1;
 		if(!(ret=realloc(ret, sizeof(swap_info*)*size))) die("realloc");
 	}
 	ret[length]=0;
-    return ret;
+	return ret;
 }
 
 int main(int argc, char * argv[]){
