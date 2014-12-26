@@ -12,10 +12,11 @@
 #define SFORMAT "%5s %9s %s\n"
 #define FORMAT "%5d %9s %s\n"
 #define BUFSIZE 32
-//#define TARGET "Size:" // For Test
-#define TARGET "Swap:"
+#define TARGET "Size:" // For Test
+//#define TARGET "Swap:"
+#define TARGETLEN 5
 
-#define die(msg) error(1, errno, "Error %d: %s\n",__LINE__ , msg)
+#define assure(exp) if(!(exp)) error(1, errno, "\"%s\" failed in %d", #exp, __LINE__)
 
 char* filesize(double size){
 	char units [] = "KMGT";
@@ -23,19 +24,19 @@ char* filesize(double size){
 	int unit = -1;
 
 	char *buf;
-	if(!(buf= malloc(BUFSIZE))) die("malloc");
+	assure(buf= malloc(BUFSIZE));
 
 	while( left > 1100 && unit < 3 ){
 		left /= 1024;
 		unit++;
 	}
 	if(unit == -1){
-		if(snprintf(buf, BUFSIZE, "%dB", (int)size) < 0) die("snprintf");
+		assure(snprintf(buf, BUFSIZE, "%dB", (int)size) > 0);
 	}else{
 		if(size<0){
 			left = -left;
 		}
-		if(snprintf(buf, BUFSIZE, "%.1f%ciB", left, units[unit]) < 0) die("snprintf");
+		assure(snprintf(buf, BUFSIZE, "%.1f%ciB", left, units[unit]) > 0);
 	}
 	return buf;
 }
@@ -44,9 +45,9 @@ typedef struct {int pid; double size; char *comm;} swap_info;
 
 swap_info * getSwapFor(int pid){
 	swap_info *ret ;
-	if(!(ret=malloc(sizeof(swap_info)))) die("malloc");
+	assure(ret=malloc(sizeof(swap_info)));
 	char filename [BUFSIZE];
-	if(snprintf(filename, BUFSIZE, "/proc/%d/cmdline", pid) < 0) die("snprintf");
+	assure(snprintf(filename, BUFSIZE, "/proc/%d/cmdline", pid) > 0);
 
 	FILE* fd=0;
 	char *comm = 0; size_t size=0; int len;
@@ -57,16 +58,16 @@ swap_info * getSwapFor(int pid){
 	fclose(fd); fd=0;
 
 	for(char *p=comm; p < comm+len-1; ++p){ // len not including terminal \0
-		if(!*p) *p=' ';
+		*p || (*p=' ');
 	}
 
 	size=0;
-	if(snprintf(filename, BUFSIZE, "/proc/%d/smaps", pid) < 0) die("snprintf");
+	assure(snprintf(filename, BUFSIZE, "/proc/%d/smaps", pid) > 0);
 	if(!(fd = fopen(filename, "r"))) goto err;
 	char *line;
-	for(line = 0; (len=getline(&line, &size, fd)) > 0;){
-		if(strncmp(line, TARGET, 5) == 0){
-			s+=atoi(line+5);
+	for(line = 0; (len=getline(&line, &size, fd)) >= 0;){
+		if(strncmp(line, TARGET, TARGETLEN) == 0){
+			s+=atoi(line+TARGETLEN);
 		}
 		free(line);
 		line=0;
@@ -90,22 +91,22 @@ int comp(const void* a, const void* b){
 swap_info ** getSwap(){
 	swap_info **ret;
 	int size=16;
-	if(!(ret=malloc(sizeof(swap_info*)*size))) die("malloc");
+	assure(ret=malloc(sizeof(swap_info*)*size));
 	int length=0;
 
 	DIR *dp;
 	struct dirent *dirp;
-	if((dp = opendir("/proc")) == NULL) die("opendir");
+	assure(dp = opendir("/proc"));
 
 	while ((dirp = readdir(dp)) != NULL) {
 		int pid = atoi(dirp->d_name);
 		if(pid > 0){
-			if(length==size){
-				size<<=1;
-				if(!(ret=realloc(ret, sizeof(swap_info*)*size))) die("realloc");
-			}
 			swap_info * swapfor = getSwapFor(pid);
 			if(swapfor->size > 0){
+				if(length==size){
+					size<<=1;
+					assure(ret=realloc(ret, sizeof(swap_info*)*size));
+				}
 				ret[length++] = swapfor;
 			}else{
 				free(swapfor->comm);
@@ -118,19 +119,18 @@ swap_info ** getSwap(){
 	qsort(ret, length, sizeof(swap_info*), comp);
 
 	if(length==size){
-		size<<=1;
-		if(!(ret=realloc(ret, sizeof(swap_info*)*size))) die("realloc");
+		size+=1;
+		assure(ret=realloc(ret, sizeof(swap_info*)*size));
 	}
-	ret[length]=0;
+	ret[length]=0; // mark for end
 	return ret;
 }
 
 int main(int argc, char * argv[]){
 	printf(SFORMAT, "PID", "SWAP", "COMMAND");
-	
-	swap_info** info=getSwap();
+	swap_info** infos=getSwap();
 	double total=0;
-	for(swap_info** p=info; *p; ++p){
+	for(swap_info** p=infos; *p; ++p){
 		char* size=filesize((*p)->size);
 		printf(FORMAT, (*p)->pid, size, (*p)->comm);
 		total += (*p)->size;
@@ -138,7 +138,7 @@ int main(int argc, char * argv[]){
 		free((*p)->comm);
 		free(*p);
 	}
-	free(info);
+	free(infos);
 	char* stotal = filesize(total);
 	printf("Total: %8s\n", stotal);
 	free(stotal);

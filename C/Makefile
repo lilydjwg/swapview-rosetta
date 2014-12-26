@@ -1,4 +1,4 @@
-CFLAGS=-g
+CFLAGS=-O4
 CC=gcc
 
 swapview: swapview.c
