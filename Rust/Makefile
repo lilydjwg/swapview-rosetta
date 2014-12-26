@@ -3,7 +3,7 @@ CC=rustc
 .PHONY: all clean
 
 %: %.rs
-	$(CC) -O $<
+	$(CC) -O -C lto $<
 	strip $@
 
 all: swapview
