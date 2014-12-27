@@ -1,4 +1,4 @@
-CPPFLAGS=-O4
+CPPFLAGS=-O4 -Wall
 CPPC=g++
 
 swapview: swapview.cpp

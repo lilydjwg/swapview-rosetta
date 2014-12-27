@@ -68,8 +68,11 @@ swap_info *getSwapFor(int pid){
     goto err;
   char *line;
   for(line = 0, size = 0;
-      (len = getline(&line, &size, fd)) >= 0; free(line), line = 0, size = 0)
-    strncmp(line, TARGET, TARGETLEN) || (s += atoi(line + TARGETLEN));
+      (len = getline(&line, &size, fd)) >= 0;
+      free(line), line = 0, size = 0){
+    if(strncmp(line, TARGET, TARGETLEN) == 0)
+      s += atoi(line + TARGETLEN);
+  }
   free(line);			// need to free when getline fail, see getline(3)
 err:
   if(fd)
