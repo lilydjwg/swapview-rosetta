@@ -3,9 +3,8 @@ TOTALFMT = "Total: %8s"
 
 def filesize size
   units = %w(B KiB MiB GiB TiB)
-  base = (0..5)
   left = size.abs
-  num, unit = base.each do |i|
+  num, unit = units.each_with_index do |_, i|
     l = left / 1024.0 ** i
     break l, i if l <= 1100
   end
