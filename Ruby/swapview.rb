@@ -6,7 +6,8 @@ def filesize size
   left = size.abs
   num, unit = units.each_with_index do |_, i|
     l = left / 1024.0 ** i
-    break l, i if l <= 1100
+    break l, i if l <= 1100 or i == units.length - 1
+    next  l, i
   end
   if unit == 0
     "#{size}B"
@@ -32,7 +33,7 @@ def get_swap
      .select {|dir| dir =~ /^[0-9]+$/ }
      .map    {|pid| get_swap_for pid }
      .select {|s| s[1] > 0 }
-     .sort   {|k| k[1] }
+     .sort   {|a, b| a[1] <=> b[1] }
 end
 
 def main
@@ -43,7 +44,7 @@ def main
     puts FORMAT % [pid, filesize(swap), comm]
   end
   t = results.map {|x| x[1] }.reduce(:+).to_i
-  puts TOTALFMT % t
+  puts TOTALFMT % filesize(t)
 end
 
 if $0 == __FILE__
