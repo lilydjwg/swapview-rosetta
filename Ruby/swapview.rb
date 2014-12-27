@@ -32,7 +32,7 @@ def get_swap
      .select {|dir| dir =~ /^[0-9]+$/ }
      .map    {|pid| get_swap_for pid }
      .select {|s| s[1] > 0 }
-     .sort   {|a, b| a[1] <=> b[1] }
+     .sort_by{|x| x[1] }
 end
 
 def main
