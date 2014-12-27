@@ -62,16 +62,16 @@ fn get_swap() -> Vec<(uint, int, String)> {
 }
 
 fn main() {
-  // let format = "{:5} {:>9} {}";
+  // let format = "{:>5} {:>9} {}";
   // let totalFmt = "Total: {:8}";
   let mut swapinfo = get_swap();
   swapinfo.sort_by(|&(_, a, _), &(_, b, _)| { a.cmp(&b) });
 
-  println!("{:5} {:>9} {}", "PID", "SWAP", "COMMAND");
+  println!("{:>5} {:>9} {}", "PID", "SWAP", "COMMAND");
   let mut total = 0i;
   for &(pid, swap, ref comm) in swapinfo.iter() {
     total += swap;
-    println!("{:5} {:>9} {}", pid, filesize(swap), comm);
+    println!("{:>5} {:>9} {}", pid, filesize(swap), comm);
   }
   println!("Total: {:8}", filesize(total));
 }
