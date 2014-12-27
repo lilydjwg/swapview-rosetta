@@ -7,7 +7,6 @@ def filesize size
   num, unit = units.each_with_index do |_, i|
     l = left / 1024.0 ** i
     break l, i if l <= 1100 or i == units.length - 1
-    next  l, i
   end
   if unit == 0
     "#{size}B"
