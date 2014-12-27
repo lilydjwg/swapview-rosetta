@@ -66,9 +66,9 @@
 )
 
 (define (main) 
-  (let ((FORMATSTR "~5@a ~9@a ~@a~%") 
-        (total 0.0)
-       )
+  (let* ((results (getSwap))
+         (FORMATSTR "~5@a ~9@a ~@a~%") 
+         (total 0.0))
     (begin
       (format #t FORMATSTR "PID" "SWAP" "COMMAND")
       (map 
@@ -82,7 +82,7 @@
             )
           )
         )
-        (getSwap)
+        results
       )
       (format #t "Total: ~8@a~%" (filesize total))
     )
