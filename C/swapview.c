@@ -1,13 +1,13 @@
 #define _POSIX_C_SOURCE 200809L
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<math.h>
 
-#include <errno.h>
-#include <error.h>
-#include <sys/types.h>
-#include <dirent.h>
+#include<errno.h>
+#include<error.h>
+#include<sys/types.h>
+#include<dirent.h>
 
 #define FORMAT "%5d %9s %s\n"
 #define BUFSIZE 32
@@ -17,110 +17,126 @@
 
 #define assure(exp) if(!(exp)) error(1, errno, "\"%s\" failed in %d", #exp, __LINE__)
 
-char* filesize(double size){
-	char units [] = "KMGT";
-	double left = fabs(size);
-	int unit = -1;
+char *filesize(double size){
+  char units[] = "KMGT";
+  double left = fabs(size);
+  int unit = -1;
 
-	char *buf;
-	assure(buf= malloc(BUFSIZE));
+  char *buf;
+  assure(buf = malloc(BUFSIZE));
 
-	while( left > 1100 && unit < 3 ){
-		left /= 1024;
-		unit++;
-	}
-	if(unit == -1){
-		assure(snprintf(buf, BUFSIZE, "%dB", (int)size) > 0);
-	}else{
-		if(size<0)
-			left = -left;
-		assure(snprintf(buf, BUFSIZE, "%.1f%ciB", left, units[unit]) > 0);
-	}
-	return buf;
+  while(left > 1100 && unit < 3){
+    left /= 1024;
+    unit++;
+  }
+  if(unit == -1){
+    assure(snprintf(buf, BUFSIZE, "%dB", (int)size) > 0);
+  }else{
+    if(size < 0)
+      left = -left;
+    assure(snprintf(buf, BUFSIZE, "%.1f%ciB", left, units[unit]) > 0);
+  }
+  return buf;
 }
 
-typedef struct {int pid; double size; char *comm;} swap_info;
+typedef struct {
+  int pid;
+  double size;
+  char *comm;
+} swap_info;
 
-swap_info * getSwapFor(int pid){
-	char filename [BUFSIZE];
-	FILE* fd=0; char *comm = 0; size_t size=0; ssize_t len; double s=0.0;
+swap_info *getSwapFor(int pid){
+  char filename[BUFSIZE];
+  FILE *fd = 0;
+  char *comm = 0;
+  size_t size = 0;
+  ssize_t len;
+  double s = 0.0;
 
-	assure(snprintf(filename, BUFSIZE, "/proc/%d/cmdline", pid) > 0);
-	if(!(fd = fopen(filename, "r"))) goto err;
-	if((len=getline(&comm, &size, fd)) < 0) goto err;
-	fclose(fd); fd=0;
-	for(char *p=comm; p < comm+len-1; ++p) *p || (*p=' ');
+  assure(snprintf(filename, BUFSIZE, "/proc/%d/cmdline", pid) > 0);
+  if(!(fd = fopen(filename, "r")))
+    goto err;
+  if((len = getline(&comm, &size, fd)) < 0)
+    goto err;
+  fclose(fd);
+  fd = 0;
+  for(char *p = comm; p < comm + len - 1; ++p)
+    *p || (*p = ' ');
 
-	assure(snprintf(filename, BUFSIZE, "/proc/%d/smaps", pid) > 0);
-	if(!(fd = fopen(filename, "r"))) goto err;
-	char *line;
-	for(line=0, size=0;
-			(len=getline(&line, &size, fd)) >= 0;
-			free(line), line=0, size=0)
-		strncmp(line, TARGET, TARGETLEN) || (s+=atoi(line+TARGETLEN));
-	free(line); // need to free when getline fail, see getline(3)
+  assure(snprintf(filename, BUFSIZE, "/proc/%d/smaps", pid) > 0);
+  if(!(fd = fopen(filename, "r")))
+    goto err;
+  char *line;
+  for(line = 0, size = 0;
+      (len = getline(&line, &size, fd)) >= 0; free(line), line = 0, size = 0)
+    strncmp(line, TARGET, TARGETLEN) || (s += atoi(line + TARGETLEN));
+  free(line);			// need to free when getline fail, see getline(3)
 err:
-	if(fd) fclose(fd);
-	swap_info *ret;
-	assure(ret=malloc(sizeof(swap_info)));
-	ret->pid = pid;
-	ret->size = s*1024;
-	ret->comm = comm;
-	return ret;
+  if(fd)
+    fclose(fd);
+  swap_info *ret;
+  assure(ret = malloc(sizeof(swap_info)));
+  ret->pid = pid;
+  ret->size = s * 1024;
+  ret->comm = comm;
+  return ret;
 }
 
 
-int comp(const void* a, const void* b){
-	double r=(*((swap_info**)a))->size - (*((swap_info**)b))->size;
-	return (r>0.0) - (r<0.0); // sign of double to int
+int comp(const void *a, const void *b){
+  double r = (*((swap_info **) a))->size - (*((swap_info **) b))->size;
+  return (r > 0.0) - (r < 0.0);	// sign of double to int
 }
 
-swap_info ** getSwap(){
-	int size=16; int length=0;
+swap_info **getSwap(){
+  int size = 16;
+  int length = 0;
 
-	DIR *dp; struct dirent *dirp;
-	assure(dp = opendir("/proc"));
+  DIR *dp;
+  struct dirent *dirp;
+  assure(dp = opendir("/proc"));
 
-	swap_info **ret;
-	assure(ret=malloc(sizeof(swap_info*)*size));
-	while ((dirp = readdir(dp)) != NULL) {
-		int pid = atoi(dirp->d_name);
-		if(pid > 0){
-			swap_info * swapfor = getSwapFor(pid);
-			if(swapfor->size > 0){
-				if(length==size)
-					assure(ret=realloc(ret, sizeof(swap_info*)*(size<<=1)));
-				ret[length++] = swapfor;
-			}else{
-				free(swapfor->comm);
-				free(swapfor);
-			}
-		}
-	}
-	closedir(dp);
+  swap_info **ret;
+  assure(ret = malloc(sizeof(swap_info *) * size));
+  while((dirp = readdir(dp)) != NULL){
+    int pid = atoi(dirp->d_name);
+    if(pid > 0){
+      swap_info *swapfor = getSwapFor(pid);
+      if(swapfor->size > 0){
+	if(length == size)
+	  assure(ret = realloc(ret, sizeof(swap_info *) * (size <<= 1)));
+	ret[length++] = swapfor;
+      }else{
+	free(swapfor->comm);
+	free(swapfor);
+      }
+    }
+  }
+  closedir(dp);
 
-	qsort(ret, length, sizeof(swap_info*), comp);
+  qsort(ret, length, sizeof(swap_info *), comp);
 
-	if(length==size) assure(ret=realloc(ret, sizeof(swap_info*)*(++size)));
-	ret[length]=0; // mark for end
-	return ret;
+  if(length == size)
+    assure(ret = realloc(ret, sizeof(swap_info *) * (++size)));
+  ret[length] = 0;		// mark for end
+  return ret;
 }
 
-int main(int argc, char * argv[]){
-	swap_info **infos=getSwap(), **p=infos;
-	double total=0;
-	printf("%5s %9s %s\n", "PID", "SWAP", "COMMAND");
-	for(; *p; ++p){
-		char* size=filesize((*p)->size);
-		printf(FORMAT, (*p)->pid, size, (*p)->comm);
-		total += (*p)->size;
-		free(size);
-		free((*p)->comm);
-		free(*p);
-	}
-	free(infos);
-	char* stotal = filesize(total);
-	printf("Total: %8s\n", stotal);
-	free(stotal);
-	return 0;
+int main(int argc, char *argv[]){
+  swap_info **infos = getSwap(), **p = infos;
+  double total = 0;
+  printf("%5s %9s %s\n", "PID", "SWAP", "COMMAND");
+  for(; *p; ++p){
+    char *size = filesize((*p)->size);
+    printf(FORMAT, (*p)->pid, size, (*p)->comm);
+    total += (*p)->size;
+    free(size);
+    free((*p)->comm);
+    free(*p);
+  }
+  free(infos);
+  char *stotal = filesize(total);
+  printf("Total: %8s\n", stotal);
+  free(stotal);
+  return 0;
 }
