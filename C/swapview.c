@@ -107,9 +107,9 @@ swap_info ** getSwap(){
 }
 
 int main(int argc, char * argv[]){
-	printf("%5s %9s %s\n", "PID", "SWAP", "COMMAND");
 	swap_info **infos=getSwap(), **p=infos;
 	double total=0;
+	printf("%5s %9s %s\n", "PID", "SWAP", "COMMAND");
 	for(; *p; ++p){
 		char* size=filesize((*p)->size);
 		printf(FORMAT, (*p)->pid, size, (*p)->comm);
