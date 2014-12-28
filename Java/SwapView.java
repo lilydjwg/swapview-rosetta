@@ -8,7 +8,6 @@ public class SwapView{
 	public int pid;
 	public double size;
 	public String comm;
-
 	public SwapView(int p, double s, String c){ pid = p; size = s; comm = c; }
 
 	public static String filesize(double size){
