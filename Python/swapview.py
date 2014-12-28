@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# vim:fileencoding=utf-8
+
+from __future__ import print_function
+from __future__ import division
 
 import os
 
