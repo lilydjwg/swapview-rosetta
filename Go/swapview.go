@@ -38,14 +38,14 @@ func (p swap_infos) Swap(i, j int) {
 func main() {
 	slist := make(swap_infos, 0)
 	getSwap(&slist)
-	sort.Sort(slist)
+	sort.Sort(&slist)
 	fmt.Printf("%5s %9s %s\n", "PID", "SWAP", "COMMAND")
 	var total int64 = 0
 	for _, v := range slist {
 		fmt.Printf(FORMAT, v.Pid, filesize(v.Size), v.Comm)
 		total = total+v.Size
 	}
-	fmt.Printf("Total  %8s\n", filesize(total))
+	fmt.Printf("Total: %8s\n", filesize(total))
 }
 
 
