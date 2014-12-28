@@ -2,3 +2,4 @@
 *.hi
 */swapview
 Haskell/swapview2
+Java/*.class
