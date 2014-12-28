@@ -1,3 +1,5 @@
+#!/usr/bin/env ruby
+
 FORMAT = "%5s %9s %s"
 TOTALFMT = "Total: %8s"
 
@@ -16,7 +18,7 @@ def filesize size
 end
 
 def get_swap_for pid
-  comm = File.read("/proc/#{pid}/cmdline").tr("\x00", ' ').rstrip
+  comm = File.read("/proc/#{pid}/cmdline").tr("\x00", ' ').chop
   s = open("/proc/#{pid}/smaps") do |f|
     f.each_line.map { |l| $1.to_i if l =~ /^Swap: +([0-9]+)/}
      .compact
