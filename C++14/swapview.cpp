@@ -149,9 +149,10 @@ void format_print(swap_info swap){
 }
 
 int main(int argc, char * argv[]){
-    format_print("PID", "SWAP", "COMMAND");
     double t=0.0;
-    for(auto item: getSwap()){
+    auto result = getSwap();
+    format_print("PID", "SWAP", "COMMAND");
+    for(auto item: result){
         format_print(item);
         t+=get<1>(item);
     }
