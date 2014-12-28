@@ -49,15 +49,12 @@ function getSwap(){
 	return ret;
 }
 
-function main(){
-	var results = getSwap();
-	console.log(sprintf("%5s %9s %s", "PID", "SWAP", "COMMAND"));
-	var t=0.0;
-	results.forEach(function (s){
-		console.log(sprintf("%5s %9s %s", s[0], filesize(s[1]), s[2]));
-		t += s[1];
-	});
-	console.log(sprintf("Total: %8s", filesize(t)));
-}
+var results = getSwap();
+console.log(sprintf("%5s %9s %s", "PID", "SWAP", "COMMAND"));
+var t=0.0;
+results.forEach(function (s){
+	console.log(sprintf("%5s %9s %s", s[0], filesize(s[1]), s[2]));
+	t += s[1];
+});
+console.log(sprintf("Total: %8s", filesize(t)));
 
-main();
