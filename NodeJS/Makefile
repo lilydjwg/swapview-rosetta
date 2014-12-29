@@ -6,5 +6,5 @@ node_modules/.timestamp: package.json
 clean:
 	-rm -rf node_modules
 
-run: node_modules
+run: node_modules/.timestamp
 	node swapview.js
