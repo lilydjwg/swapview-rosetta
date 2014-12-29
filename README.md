@@ -10,7 +10,7 @@ You can (edit and then) run `make` to build all that needs to be built.
 * C
 * C++98
 * C++14
-* Chicken, format and loops (will be installed by `make`)
+* Chicken, format (will be installed by `make`)
 * CommonLisp, sbcl
 * Go
 * Guile, tested with 2.0.11
