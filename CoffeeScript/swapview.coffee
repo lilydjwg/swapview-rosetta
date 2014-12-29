@@ -1,3 +1,4 @@
+#!/usr/bin/coffee
 
 fs = require 'fs'
 Promise = require 'promise'
@@ -68,4 +69,3 @@ output = (res) ->
     'Total:'
     fillLength 9, (formatSize0 (res.reduce addSecond, 0))
   ].join('')
-  # fs.writeFileSync 'data.json', JSON.stringify(res, null, 2)
