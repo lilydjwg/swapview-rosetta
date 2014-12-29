@@ -1,6 +1,7 @@
 *.cm?
 *.hi
 */swapview
+*.stamp
 Haskell/swapview2
 Java/*.class
 NodeJS/node_modules
