@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
 
-from __future__ import print_function
-from __future__ import division
-
 import os
 
 format = "%5s %9s %s"
@@ -24,12 +21,12 @@ def filesize(size):
 
 def getSwapFor(pid):
   try:
-    comm = open('/proc/%s/cmdline' % pid).read().replace('\x00', ' ')
+    comm = open('/proc/%s/cmdline' % pid, 'rb').read().replace(b'\x00', b' ')
     s = 0
-    for l in open('/proc/%s/smaps' % pid):
-      if l.startswith('Swap:'):
-        s += int(l.split()[1])
-    return pid, s * 1024, comm and comm[:-1]
+    for l in open('/proc/%s/smaps' % pid, 'rb'):
+      if l.startswith(b'Swap:'):
+        s += int(l.split()[1].decode())
+    return pid, s * 1024, (comm and comm[:-1]).decode()
   except (IOError, OSError):
     return pid, 0, ''
 
