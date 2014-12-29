@@ -47,6 +47,7 @@ readdir('/proc')
     .map (aaa) ->
       aaa[1] = aaa[1].reduce(addString, 0)
       aaa
+    .filter (aaa) -> aaa[1] > 0
     .sort (aaa, bbb) -> aaa[1] - bbb[1]
     output out
 .then null, (error) ->
