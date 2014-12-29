@@ -1,6 +1,6 @@
 .PHONY: all clean
 
-languages=Haskell OCaml Rust C++ C Go NodeJS Java
+languages=Haskell OCaml Rust C++98 C++14 C Go NodeJS Java Chicken
 
 all:
 	for d in $(languages); do $(MAKE) -C "$$d" || exit $?; done

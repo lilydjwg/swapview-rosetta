@@ -8,7 +8,9 @@ You can (edit and then) run `make` to build all that needs to be built.
 
 * Bash, broken, please contribute
 * C
-* C++, C++14 standard
+* C++98
+* C++14
+* Chicken, format and loops (will be installed by `make`)
 * CommonLisp, sbcl
 * Go
 * Guile, tested with 2.0.11
@@ -32,3 +34,5 @@ sure your implementations meet the following requirements:
 2. Output exact the same format as other versions (but sorting may be
    unstable)
 3. Try to be efficient
+4. Please include a `Makefile` if appropriate
+5. Don't forget to tell the compiler to optimize
