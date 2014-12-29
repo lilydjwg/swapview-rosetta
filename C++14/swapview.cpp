@@ -46,10 +46,9 @@ string strformat(UArgs... args){
     return StrFormatHelper<UArgs...>(args...);
 }
 
-string readline(string path){
+string readall(string path){
     ifstream fs(path);
-    string buf;
-    getline(fs, buf);
+    string buf((istreambuf_iterator<char>(fs)), istreambuf_iterator<char>());
     return buf;
 }
 
@@ -111,9 +110,10 @@ string filesize(auto size){
 }
 
 swap_info getSwapFor(int pid){
-    string comm = readline(strformat("/proc/", pid, "/cmdline"));
+    string comm = readall(strformat("/proc/", pid, "/cmdline"));
     if(comm.length() > 0){
-      replace(comm.begin(), comm.end()-1, '\0' , ' ');
+      replace(comm.begin(), comm.end(), '\0' , ' ');
+      comm.pop_back();
     }
     double s=0.0;
     for(auto l: readlines(strformat("/proc/", pid, "/smaps"))){

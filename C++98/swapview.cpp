@@ -81,11 +81,11 @@ string filesize(double size){
 swap_info getSwapFor(int pid){
     ostringstream cmdline, smaps;
     cmdline << "/proc/" << pid << "/cmdline";
-    string comm;
     ifstream fs(cmdline.str().c_str());
-    getline(fs, comm);
+    string comm((istreambuf_iterator<char>(fs)), istreambuf_iterator<char>());
     if(comm.length() > 0){
-      replace(comm.begin(), comm.end()-1, '\0' , ' ');
+      replace(comm.begin(), comm.end(), '\0' , ' ');
+      comm.erase(comm.end()-1);
     }
     double s=0.0;
     smaps << "/proc/" << pid << "/smaps";
