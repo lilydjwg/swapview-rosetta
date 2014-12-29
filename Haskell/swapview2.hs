@@ -65,7 +65,7 @@ swapused pid = sum . map getNumber . filter (T.isPrefixOf "Swap:") . T.lines <$>
                    (Left _) -> 0
 
 transformData :: [(Pid, Int)] -> [(Pid, String)]
-transformData = map (second humanSize) . 
+transformData = map (second humanSize) .
                 sortBy (\ (_, !x) (_, !y) -> compare x y) .
                 filter ((/=) 0 . snd)
   where humanSize = filesize . (* 1024)

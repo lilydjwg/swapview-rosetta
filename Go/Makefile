@@ -5,6 +5,6 @@
 	strip $@
 
 all: swapview
-	
+
 clean:
 	-rm -f swapview

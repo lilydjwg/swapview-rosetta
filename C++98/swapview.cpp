@@ -18,7 +18,7 @@ using namespace std;
 
 // #define TARGET "Size:"     // test with Size: when swap is empty
 #define TARGETLEN 5
-#define TARGET "Swap:"  
+#define TARGET "Swap:"
 
 /////////////////////////////////////////////////////////////////////////////
 void readlines(string path, vector<string> & ret){
@@ -48,7 +48,7 @@ void lsdir(string path, vector<string> & ret){
     closedir(dp);
 }
 
-struct swap_info{ 
+struct swap_info{
     int pid; string comm; double size;
     int operator< (swap_info& other){
         return size < other.size;
@@ -106,7 +106,7 @@ void getSwap(vector<swap_info> & ret){
     lsdir("/proc", dir);
     for(vector<string>::iterator itr=dir.begin(); itr<dir.end(); ++itr){
         int pid = str2i(*itr);
-        if(pid > 0) { 
+        if(pid > 0) {
             swap_info item=getSwapFor(pid);
             if(item.size > 0){
                 ret.push_back(item);

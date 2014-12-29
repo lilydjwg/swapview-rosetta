@@ -3,5 +3,5 @@
 (use data-structures)
 (use utils)
 (use posix)
-(require-extension loops) 
-(require-extension format) 
+(require-extension loops)
+(require-extension format)

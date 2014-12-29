@@ -7,6 +7,6 @@ CC=rustc
 	strip $@
 
 all: swapview
-	
+
 clean:
 	-rm -f swapview

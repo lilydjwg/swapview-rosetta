@@ -2,7 +2,7 @@ let format = "%5s %9s %s" ^^ "\n"
 let totalFmt = "Total: %8s" ^^ "\n"
 
 (* from http://stackoverflow.com/a/5775024/296473 *)
-let readfile filename = 
+let readfile filename =
   let lines = ref [] in
   let chan = open_in filename in
   try

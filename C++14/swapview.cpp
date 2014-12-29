@@ -135,7 +135,7 @@ vector<swap_info> getSwap(){
             }
         }
     }
-    sort(ret.begin(), ret.end(), 
+    sort(ret.begin(), ret.end(),
         [](auto i, auto j){return get<1>(i) < get<1>(j);});
     return ret;
 }

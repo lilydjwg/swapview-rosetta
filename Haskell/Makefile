@@ -8,7 +8,7 @@ CFLAGS=-O2
 	strip $@
 
 all: swapview
-	
+
 # swapview2 needs text-format
 
 clean:
