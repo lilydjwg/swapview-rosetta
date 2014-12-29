@@ -4,7 +4,6 @@
 *.stamp
 Haskell/swapview2
 Java/*.class
-NodeJS/node_modules
 Chicken/*.so
 Chicken/*.o
 Chicken/*.setup-info
