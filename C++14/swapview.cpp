@@ -18,7 +18,8 @@
 using namespace std;
 
 // #define TARGET "Size:"     // test with Size: when swap is empty
-#define TARGET "Swap:"  
+#define TARGET "Swap:"
+#define TARGETLEN 5
 
 /////////////////////////////////////////////////////////////////////////////
 // Helpers for Python to C++14 Conversion
@@ -116,8 +117,8 @@ swap_info getSwapFor(int pid){
     }
     double s=0.0;
     for(auto l: readlines(strformat("/proc/", pid, "/smaps"))){
-        if(l.substr(0, strlen(TARGET))==TARGET){
-            s+=str2i(l.substr(strlen(TARGET)));
+        if(l.substr(0, TARGETLEN)==TARGET){
+            s+=str2i(l.substr(TARGETLEN));
         }
     }
     return make_tuple(pid, s*1024.0, comm);
@@ -125,11 +126,10 @@ swap_info getSwapFor(int pid){
 
 vector<swap_info> getSwap(){
     vector<swap_info> ret;
-    for(string pid: lsdir("/proc")){
-        if(all_of(pid.begin(), pid.end(), 
-            static_cast<int (&)(int)>(isdigit)) // need cast because isdigit template in locale
-            ) { 
-            auto item=getSwapFor(str2i(pid));
+    for(string spid: lsdir("/proc")){
+        int pid = str2i(spid);
+        if(pid > 0) {
+            auto item = getSwapFor(pid);
             if(get<1>(item) > 0){
                 ret.push_back(item);
             }
