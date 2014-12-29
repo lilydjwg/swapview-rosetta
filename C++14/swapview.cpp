@@ -17,7 +17,7 @@
 
 using namespace std;
 
-//#define TARGET "Size:"     // test with Size: when swap is empty
+// #define TARGET "Size:"     // test with Size: when swap is empty
 #define TARGET "Swap:"  
 
 /////////////////////////////////////////////////////////////////////////////
