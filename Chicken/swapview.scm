@@ -29,7 +29,7 @@
           (let ((line (read-line smaps)))
             (if (eof-object? line) (exit '()) 
               (if (> (string-length line) 5)
-                (if (string=? (substring line 0 5) "Size:")
+                (if (string=? (substring line 0 5) "Swap:")
                   (set! s (+ s (string->number (cadr (reverse (string-split line )))))))))))
         (list pid (* 1024 s) comm)))
     ((exn file) (list pid 0 ""))))
