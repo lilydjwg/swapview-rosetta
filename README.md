@@ -14,7 +14,8 @@ You can (edit and then) run `make` to build all that needs to be built.
 * CommonLisp, sbcl
 * Go
 * Guile, tested with 2.0.11
-* Haskell with two versions. swapview2 requires some external dependencies.
+* Haskell
+* Haskell2, another Haskell version which requires some external dependencies
 * Java, >= Java 8
 * Lua, requires lua-filesystem, works with 5.1, 5.2 and LuaJIT
 * NodeJS, requires sprintf (will be installed by `make`)

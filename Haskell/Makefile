@@ -9,7 +9,5 @@ CFLAGS=-O2
 
 all: swapview
 
-# swapview2 needs text-format
-
 clean:
 	-rm -f *.o *.hi swapview swapview2
