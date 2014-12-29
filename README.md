@@ -12,6 +12,7 @@ You can (edit and then) run `make` to build all that needs to be built.
 * C++14
 * Chicken, format and loops (will be installed by `make`)
 * CommonLisp, sbcl
+* CoffeeScript, requires promise (will be installed by `make`)
 * Go
 * Guile, tested with 2.0.11
 * Haskell
