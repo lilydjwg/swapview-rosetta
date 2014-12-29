@@ -73,7 +73,7 @@ fn main() {
     total += swap;
     println!("{:>5} {:>9} {}", pid, filesize(swap), comm);
   }
-  println!("Total: {:8}", filesize(total));
+  println!("Total: {:>8}", filesize(total));
 }
 
 // vim: se sw=2:
