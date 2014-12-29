@@ -34,8 +34,12 @@ readdir('/proc')
     .then (lines) ->
       (read "/proc/#{file}/cmdline", 'ascii')
       .then (text) ->
-        cmdline = text.replace(/\0/g, ' ').trimRight()
+        cmdline = text
+        .replace(/\0$/, '')
+        .replace(/\0/g, ' ')
         [file, lines, cmdline]
+    .then null, (error) ->
+      [file, [], '']
   (Promise.all list)
   .then (res) ->
     out = res
