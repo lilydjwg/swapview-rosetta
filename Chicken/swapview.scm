@@ -33,7 +33,9 @@
     (let* ((port (open-input-file (format #f "/proc/~a/cmdline" pid)))
            (rawcomm (string-map (lambda (x) (if (char=? x #\nul) #\space x))
                                 (read-all port)))
-           (comm (substring rawcomm 0 (string-length rawcomm)))
+           (comm (if (> (string-length rawcomm) 0)
+                     (substring rawcomm 0 (- (string-length rawcomm) 1))
+                     ""))
            (smaps (open-input-file (format #f "/proc/~a/smaps" pid)))
            (s 0.0))
       (begin
