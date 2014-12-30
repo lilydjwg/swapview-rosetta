@@ -1,6 +1,8 @@
 [item.default]
 cmd = ['./swapview']
 dir = '$name'
+time_limit = 60
+valid_percent = 10
 
 [item.C]
 

@@ -1,3 +1,5 @@
+#![feature(macro_rules)]
+
 extern crate toml;
 
 #[deriving(Show)]
@@ -5,6 +7,8 @@ struct OptionalBenchmarkItem {
   name: String,
   dir: Option<String>,
   cmd: Option<Vec<String>>,
+  time_limit: Option<int>,
+  valid_percent: Option<int>,
 }
 
 #[deriving(Show)]
@@ -12,9 +16,31 @@ struct BenchmarkItem {
   name: String,
   dir: String,
   cmd: Vec<String>,
+  time_limit: int,
+  valid_percent: int,
 }
 
-fn parse_item(name: String, conf: &toml::Value) -> Result<OptionalBenchmarkItem,String> {
+macro_rules! valid_int {
+  ($v:ident as $i:ident for $name:expr, ($min:expr, $max:expr)) => ({
+    let v = try!($v.as_integer().ok_or(
+      format!("{} should be an integer, but got {}", stringify!($i), $v)))
+      as int;
+    if $min.is_some() && v < $min.unwrap() {
+      return Err(
+        format!("{} for {} should be greater than {}, but got {}",
+                stringify!($i), $name, $min.unwrap(), v));
+    }
+    if $max.is_some() && v > $max.unwrap() {
+      return Err(
+        format!("{} for {} should be less than {}, but got {}",
+                stringify!($i), $name, $max.unwrap(), v));
+    }
+    $i = Some(v);
+  })
+}
+
+fn parse_item(name: String, conf: &toml::Value)
+  -> Result<OptionalBenchmarkItem,String> {
   let maybe_item = conf.as_table();
   let item = match maybe_item {
     Some(x) => x,
@@ -22,6 +48,8 @@ fn parse_item(name: String, conf: &toml::Value) -> Result<OptionalBenchmarkItem,
   };
   let mut dir = None;
   let mut cmd = None;
+  let mut time_limit = None;
+  let mut valid_percent = None;
   for (key, value) in item.iter() {
     match key.as_slice() {
       "dir" => dir = value.as_str().map(|x| x.to_string()),
@@ -34,29 +62,49 @@ fn parse_item(name: String, conf: &toml::Value) -> Result<OptionalBenchmarkItem,
         }
         Some(maybe_arr_str.iter().map(|x| x.unwrap().to_string()).collect())
       },
+      "time_limit" => valid_int!(value as time_limit for name,
+                                 (Some(-1i), None::<int>)),
+      "valid_percent" => valid_int!(value as valid_percent for name,
+                                    (Some(-1i), Some(101i))),
       _ => return Err(format!("unknown field: {}", key)),
     };
   }
 
-  return Ok(OptionalBenchmarkItem{name: name, dir: dir, cmd: cmd})
+  Ok(OptionalBenchmarkItem{
+    name: name, dir: dir, cmd: cmd,
+    time_limit: time_limit,
+    valid_percent: valid_percent,
+  })
 }
 
 fn merge_default(item: OptionalBenchmarkItem, default: &Option<OptionalBenchmarkItem>)
     -> Result<BenchmarkItem,String> {
   let mut maybe_dir = item.dir;
   let mut maybe_cmd = item.cmd;
+  let mut maybe_time_limit = item.time_limit;
+  let mut maybe_valid_percent = item.valid_percent;
 
   if default.is_some() {
     let d = default.as_ref().unwrap();
     maybe_dir = maybe_dir.or(d.dir.clone());
     maybe_cmd = maybe_cmd.or(d.cmd.clone());
+    maybe_time_limit = maybe_time_limit.or(d.time_limit.clone());
+    maybe_valid_percent = maybe_valid_percent.or(d.valid_percent.clone());
   }
   let dir = try!(maybe_dir.ok_or(
     format!("{} don't have required field dir", item.name)));
   let cmd = try!(maybe_cmd.ok_or(
     format!("{} don't have required field cmd", item.name)));
+  let time_limit = try!(maybe_time_limit.ok_or(
+    format!("{} don't have required field time_limit", item.name)));
+  let valid_percent = try!(maybe_valid_percent.ok_or(
+    format!("{} don't have required field valid_percent", item.name)));
 
-  Ok(BenchmarkItem{name: item.name, dir: dir, cmd: cmd})
+  Ok(BenchmarkItem{
+    name: item.name, dir: dir, cmd: cmd,
+    time_limit: time_limit,
+    valid_percent: valid_percent,
+  })
 }
 
 fn parse_config(toml: &str) -> Result<Vec<BenchmarkItem>,String> {
@@ -77,10 +125,8 @@ fn parse_config(toml: &str) -> Result<Vec<BenchmarkItem>,String> {
       continue;
     }
     ret.push(
-      try!(
-        merge_default(
-          try!(parse_item(name.to_string(), conf)),
-          &default_item
+      try!(merge_default(
+          try!(parse_item(name.to_string(), conf)), &default_item
         )
       )
     );
