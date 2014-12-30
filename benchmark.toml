@@ -41,6 +41,8 @@ dir = 'Lua'
 [item.NodeJS]
 cmd = ['./swapview.js']
 
+[item.OCaml]
+
 [item.Python2]
 cmd = ['python2', 'swapview.py']
 dir = 'Python'
@@ -52,7 +54,8 @@ dir = 'Python'
 [item.Python3_bytes]
 cmd = ['python3', 'swapview.py']
 
-[item.OCaml]
+[item.Racket]
+cmd = ['./swapview.rkt']
 
 [item.Ruby]
 cmd = ['./swapview.rb']
