@@ -23,6 +23,7 @@ You can (edit and then) run `make` to build all that needs to be built.
 * OCaml
 * Python, works with Python 2 & 3
 * Python3_bytes
+* Racket
 * Ruby
 * Rust, use git version please
 
