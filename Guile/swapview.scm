@@ -25,8 +25,11 @@
   (catch #t
     (lambda ()
       (let* ((port (open-input-file (format #f "/proc/~a/cmdline" pid)))
-             (comm (string-trim-right (string-map (lambda (x) (if (char=? x #\nul) #\sp x))
-                               (read-string port))))
+             (rawcomm (string-map (lambda (x) (if (char=? x #\nul) #\sp x))
+                        (read-string port)))
+             (comm (if (> (string-length rawcomm) 0)
+                     (substring rawcomm 0 (- (string-length rawcomm) 1))
+                     ""))
              (smaps (open-input-file (format #f "/proc/~a/smaps" pid)))
              (s 0.0))
         (begin
