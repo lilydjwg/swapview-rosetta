@@ -1,10 +1,10 @@
+# general
 *.cm?
 *.hi
-*/swapview
 *.stamp
-Haskell/swapview2
-Java/*.class
-Chicken/*.so
-Chicken/*.o
-Chicken/*.setup-info
+*.class
 node_modules/
+
+# swapview specific
+*/swapview
+Chicken/format
