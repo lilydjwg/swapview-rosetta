@@ -1,7 +1,7 @@
 .PHONY: all clean
 
 languages=Haskell OCaml Rust C++98 C++14 C Go NodeJS NodeJS_async Java Chicken \
-	  CoffeeScript CoffeeScript_parallel
+	  CoffeeScript CoffeeScript_parallel Racket
 
 all:
 	for d in $(languages); do $(MAKE) -C "$$d" || exit $?; done

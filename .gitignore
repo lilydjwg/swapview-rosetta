@@ -9,3 +9,4 @@ node_modules/
 */swapview
 Chicken/format
 CoffeeScript*/*.js
+Racket/compiled
