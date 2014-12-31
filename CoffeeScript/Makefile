@@ -1,10 +1,13 @@
-default: node_modules/.timestamp
+default: swapview.js node_modules/.timestamp
+
+%.js: %.coffee
+	coffee -bc $<
 
 node_modules/.timestamp: package.json
-	npm install && coffee -bc *.coffee && touch node_modules/.timestamp
+	npm install && touch node_modules/.timestamp
 
 clean:
-	-rm -rf node_modules
+	-rm -rf node_modules *.js
 
 run: node_modules
 	node swapview.js
