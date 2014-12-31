@@ -9,7 +9,7 @@ defmodule SwapView do
 
   defp get_swap_for(pid) do
     try do
-      comm = System.cmd("cat", ["/proc/#{pid}/cmdline"]) |> elem(0)
+      comm = File.open!("/proc/#{pid}/cmdline", [:read], &IO.read(&1, :line))
       comm = comm |> binary_part(0, byte_size(comm) - 1) |> String.replace(<<0>>, " ")
       s = File.stream!("/proc/#{pid}/smaps", [:read])
        |> Stream.filter(&String.starts_with?(&1, "Swap:"))
