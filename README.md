@@ -15,7 +15,7 @@ You can (edit and then) run `make` to build all that needs to be built.
 * CoffeeScript, requires promise (will be installed by `make`)
 * Go
 * Guile, tested with 2.0.11
-* Haskell
+* Haskell, requires `strict` (install from `aur/haskell-strict` or `haskell-core/haskell-strict` or by `cabal install strict`)
 * Haskell2, another Haskell version which requires some external dependencies
 * Java, >= Java 8
 * Lua, requires lua-filesystem, works with 5.1, 5.2 and LuaJIT
