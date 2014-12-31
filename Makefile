@@ -1,6 +1,6 @@
 .PHONY: all clean
 
-languages=Haskell OCaml Rust C++98 C++14 C Go NodeJS Java Chicken \
+languages=Haskell OCaml Rust C++98 C++14 C Go NodeJS NodeJS_async Java Chicken \
 	  CoffeeScript
 
 all:
