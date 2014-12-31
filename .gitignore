@@ -8,3 +8,4 @@ node_modules/
 # swapview specific
 */swapview
 Chicken/format
+CoffeeScript*/*.js
