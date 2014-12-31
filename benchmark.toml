@@ -13,10 +13,18 @@ valid_percent = 10
 [item.Chicken]
 
 [item.CoffeeScript]
-cmd = ['./swapview.coffee']
+cmd = ['node', 'swapview.js']
+
+[item.CoffeeScript_parallel]
+cmd = ['node', 'swapview.js']
 
 [item.CommonLisp]
 cmd = ['./swapview.lisp']
+
+[item.Elixir]
+cmd = ['./swapview.exs']
+
+[item.FreePascal]
 
 [item.Go]
 
@@ -43,6 +51,9 @@ dir = 'Lua'
 [item.NodeJS]
 cmd = ['./swapview.js']
 
+[item.NodeJS_async]
+cmd = ['./swapview.js']
+
 [item.OCaml]
 
 [item.Python2]
@@ -58,6 +69,10 @@ cmd = ['python3', 'swapview.py']
 
 [item.Racket]
 cmd = ['./swapview.rkt']
+
+[item.Racket_compiled]
+dir = 'Racket'
+cmd = ['racket', 'compiled/swapview_rkt.zo']
 
 [item.Ruby]
 cmd = ['./swapview.rb']
