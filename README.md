@@ -13,6 +13,7 @@ You can (edit and then) run `make` to build all that needs to be built.
 * Chicken, format (will be installed by `make`)
 * CommonLisp, sbcl
 * CoffeeScript, requires promise (will be installed by `make`)
+* CoffeeScript_parallel, a parallel version, requires promise (will be installed by `make`)
 * Go
 * Guile, tested with 2.0.11
 * Haskell, requires `strict` (install from `aur/haskell-strict` or `haskell-core/haskell-strict` or by `cabal install strict`)
