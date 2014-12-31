@@ -1,12 +1,13 @@
 #!/usr/bin/env elixir
 
 defmodule SwapView do
-  def filesize(size),        do: filesize(size, ~w(B KiB MiB GiB TiB))
-  def filesize(size, [h]),   do: "#{size}#{h}"
-  def filesize(size, [h|_])  when size < 1100, do: "#{size}#{h}"
-  def filesize(size, [_|t]), do: filesize(size / 1024, t)
+  defp filesize(size)         when size < 1100, do: "#{size}B"
+  defp filesize(size),        do: filesize(size / 1024, ~w(KiB MiB GiB TiB))
+  defp filesize(size, [h]),   do: "#{size |> Float.round 1}#{h}"
+  defp filesize(size, [h|_])  when size < 1100, do: "#{size |> Float.round 1}#{h}"
+  defp filesize(size, [_|t]), do: filesize(size / 1024, t)
 
-  def get_swap_for(pid) do
+  defp get_swap_for(pid) do
     try do
       comm = System.cmd("cat", ["/proc/#{pid}/cmdline"]) |> elem(0)
           |> String.replace(<<0>>, " ") |> String.strip
@@ -22,13 +23,13 @@ defmodule SwapView do
   end
 
 
-  def get_swap do
+  defp get_swap do
     File.ls!("/proc")
  |> Stream.filter(fn pid -> pid =~ ~r/^[0-9]+$/ end)
  |> Stream.map(fn(x) -> Task.async(fn -> get_swap_for(x) end) end)
  |> Stream.map(fn(x) -> Task.await(x) end)
  |> Stream.filter(fn {_, s, _} when s > 0 -> true; _ -> false end)
- |> Enum.sort(fn ({_, s1, _}, {_, s2, _}) -> s1 > s2 end)
+ |> Enum.sort(fn ({_, s1, _}, {_, s2, _}) -> s1 < s2 end)
   end
 
   defp format({pid, size, comm}) do
