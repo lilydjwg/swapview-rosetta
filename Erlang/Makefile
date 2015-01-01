@@ -2,7 +2,7 @@ TARGET = swapview.beam
 all:: $(TARGET)
 
 swapview.beam: swapview.erl
-	erlc $^ -o $@
+	erlc $^
 
 test:: all
 	./erlswapview
