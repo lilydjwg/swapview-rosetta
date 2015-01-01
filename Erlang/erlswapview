@@ -1,0 +1,3 @@
+#!/bin/sh
+
+exec /usr/bin/env erl -noshell -s swapview swap_print -s erlang halt
