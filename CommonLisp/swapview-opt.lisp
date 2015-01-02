@@ -22,8 +22,9 @@
         (with-open-file (stream path :if-does-not-exist nil)
           (if stream
             (loop for line = (read-line stream nil nil)
-                  while (and line  (search "Swap" (the (simple-array character) line)))
-                  summing (the fixnum (parse-integer line :start (the fixnum (1+ (position #\: line))) :junk-allowed t)))
+                  while line
+                  when (search "Swap" line)
+                  summing (parse-integer (subseq line (1+ (position #\: line))) :junk-allowed t))
             0)))
       0))
 
@@ -31,6 +32,7 @@
 (declaim (inline convert-size))
 (defun convert-size (size)
   "For human beings"
+  (declare (type fixnum size))
   (cond
     ((> size 1048576) (format nil "~1$GiB" (/ size 1048576)))
     ((> size 1024) (format nil "~1$MiB" (/ size 1024)))
@@ -40,10 +42,10 @@
 (defun print-result (lis)
   "Print the result in list, which item: (id swap cmdline)"
   (let ((format-string "~5@A~7T~8@A~8T~A~%"))
-   (declare (type (simple-array character) format-string))
+    (declare (type (simple-array character) format-string))
     (format t format-string "PID" "SWAP" "COMMAND")
     (loop for item in lis
-          summing (second item) into (the fixnum total)
+          summing (second item) into total
           do (format t format-string (first item) (convert-size (second item)) (third item))
           finally (format t "Total: ~A~%" (convert-size total)))))
 
