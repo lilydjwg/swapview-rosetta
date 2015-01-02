@@ -13,4 +13,4 @@ clean:
 
 bench:
 	@echo 'Time\tLanguage'
-	@for d in $(languages); do { time (repeat $(TIMES) $$d/swapview*(X) >/dev/null);} |& awk "{print \$$(NF-1)/$(TIMES)\"\\t$$d\"}"; done | sort -n
+	for d in $(languages); do { time (repeat $(TIMES) { $$d/swapview*(X) || $(MAKE) -C $$d run;} >/dev/null);} |& awk "{print \$$(NF-1)/$(TIMES)\"\\t$$d\"}"; done | sort -n
