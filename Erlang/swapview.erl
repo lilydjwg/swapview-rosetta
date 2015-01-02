@@ -48,7 +48,7 @@ getswapfor(Pid) ->
         {ok, Comm} ->
             case io:get_line(Comm, "") of
                 eof -> Cmd = "";
-                Str -> Cmd = lists:map(fun(0) ->32;(C) -> C end, Str)
+                Str -> Cmd = string:strip(lists:map(fun(0) ->32;(C) -> C end, Str), right)
             end;
         {error, _} -> Cmd = ""
     end,
