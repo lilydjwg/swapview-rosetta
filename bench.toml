@@ -1,13 +1,14 @@
 [reference]
-result = "Python3"
+result = "C"
 
 [item.default]
 cmd = ["./swapview"]
 dir = "$name"
 time_limit = 60
-valid_percent = 10
+valid_times = 5
 time_field = "elapsed"
-times = 3
+times = 20
+show_diff_below = 0.9
 
 [item.time_limit]
 # for testing time_limit

@@ -2,15 +2,17 @@
 
 from __future__ import print_function
 
-import toml
 import json
 import os
 import sys
 import resource
-from difflib import SequenceMatcher, ndiff
+import time
+from difflib import (SequenceMatcher, unified_diff)
 from string import Template
 from subprocess import Popen, PIPE
-import time
+from statistics import (mean, stdev)
+
+import toml
 
 rusage_names = """ru_utime
 ru_stime
@@ -48,29 +50,26 @@ def run_profile(cmd, dir, time_limit, times, **kwargs):
     end_usage = resource.getrusage(resource.RUSAGE_CHILDREN)
     end_time = time.time()
     usage = dict(zip(rusage_names,
-                     map(lambda x: x[1]-x[0], zip(start_usage, end_usage))))
+                     map(lambda x: x[1] - x[0], zip(start_usage, end_usage))))
     usage['elapsed'] = end_time - start_time
     return out, err, returncode, usage
 
 
-def bench_profile(profile, reference):
+def bench_profile(profile, ref_result):
     out, err, ret, usage = run_profile(**profile)
-    valid = int(SequenceMatcher(None,
-                                out.split('\n'),
-                                reference.split('\n')).ratio()*100)
-    color = 31
-    if ret == 0:
-        if 100 - valid < profile['valid_percent']:
-            color = 32
-        else:
-            color = 33
-    else:
-        color = 31
-    profile['valid'] = valid
+    ratio = SequenceMatcher(None,
+                            out.split('\n'),
+                            ref_result.split('\n')).ratio()
+    profile['ratio'] = ratio
     print('\033[1;%dm%24s\033[m(%3d%%): %.2f %s' %
-          (color, profile['name'], valid, usage[profile['time_field']], err[:-1]))
-    if color == 33:
-        print('\n'.join(ndiff(out.split('\n'), reference.split('\n'))))
+          (32 if ret == 0 else 31,
+           profile['name'], int(ratio*100),
+           usage[profile['time_field']], err[:-1]))
+    if ret == 0 and ratio < profile['show_diff_below']:
+        print('\n'.join(unified_diff(ref_result.split('\n'), out.split('\n'),
+                                     fromfile='reference result',
+                                     tofile=profile['name'],
+                                     n=0, lineterm='')))
     return out, err[:-1], ret, usage
 
 
@@ -92,39 +91,45 @@ def load_config():
     return items, reference
 
 
+def times2str(item):
+    time = item['time']
+    valid = sorted(time)[:item['valid_times']]
+    avgv = mean(valid)
+    return ("%5s %s [%s]" % (
+        '%2.2f' % avgv,
+        ' '.join(('%5s' % ('%2.2f' % x(time)))
+            for x in (min, mean, max, stdev)),
+        ' '.join(('%5s' % ('%2.2f' % x))
+            for x in valid)))
+
+
 def main():
     items, reference = load_config()
-
-    valids, invalids, fails = [], [], []
+    succ, fails = [], []
     for item in items.values():
-        reference_result, err, ret, _ = run_profile(**items[reference["result"]])
+        ref_result, err, ret, _ = run_profile(**items[reference["result"]])
         if ret != 0:
             die("reference implementation failed")
-        out, err, ret, usage = bench_profile(item, reference_result)
-        item['time'] = usage[item['time_field']]
+        out, err, ret, usage = bench_profile(item, ref_result)
+        item['time'] = [usage[item['time_field']]]
         if ret == 0:
             for i in range(item['times'] - 1):
-                _, err, _, usage = bench_profile(item, reference_result)
-                item['time'] += usage[item['time_field']]
-            if 100-item['valid'] < item['valid_percent']:
-                valids.append(item)
-            else:
-                invalids.append(item)
+                _, err, _, usage = bench_profile(item, ref_result)
+                item['time'].append(usage[item['time_field']])
+            succ.append(item)
         else:
             item['error'] = err
             fails.append(item)
 
-    print("------------Results-------------TIME")
+    print(("---------Results--------(Diff):" +
+           "  KAvg   Min   Avg   Max Stdev [K(%d)-samples raw data]") %
+          items[reference["result"]]['valid_times'])
 
-    valids.sort(key=lambda x: x['time'])
-    for item in valids:
-        print('\033[1;32m%24s\033[m(%3d%%): %.2f' %
-              (item['name'], item['valid'], item['time']))
-
-    print("------------Invalids----------------")
-    for item in invalids:
-        print('\033[1;33m%24s\033[m(%3d%%): %.2f' %
-              (item['name'], item['valid'], item['time']))
+    succ.sort(key=lambda x: sum(sorted(x['time'])[:x['valid_times']]))
+    for item in succ:
+        print('\033[1;%dm%24s\033[m(%3d%%): %s' %
+              (33 if item['ratio'] < item['show_diff_below'] else 32,
+               item['name'], int(item['ratio']*100), times2str(item)))
 
     print("------------Fails-------------------")
     for item in fails:
