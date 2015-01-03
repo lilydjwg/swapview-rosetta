@@ -6,12 +6,8 @@ cmd = ["./swapview"]
 dir = "$name"
 time_limit = 60
 valid_percent = 10
-time_format = "%e"
-# see `man 1 time` for the available time_format
-# %e for elapsed real time
-# %U for user time
-# %S for system time
-times = 5
+time_field = "elapsed"
+times = 3
 
 [item.time_limit]
 # for testing time_limit
@@ -81,6 +77,18 @@ dir = "Python"
 
 [item.Python3_bytes]
 cmd = ["python3", "swapview.py"]
+
+[item.PyPy]
+cmd = ["pypy", "swapview.py"]
+dir = "Python"
+
+[item.PyPy3]
+cmd = ["pypy3", "swapview.py"]
+dir = "Python"
+
+[item.PyPy3_bytes]
+cmd = ["pypy3", "swapview.py"]
+dir = "Python3_bytes"
 
 [item.Racket]
 cmd = ["./swapview.rkt"]
