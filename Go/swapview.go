@@ -8,7 +8,7 @@ import (
 	"os"
 	"sort"
 	"strconv"
-	"time"
+        // "time"
 )
 
 type Info struct {
@@ -24,10 +24,10 @@ func (p Infos) Less(i, j int) bool { return p[i].Size < p[j].Size }
 func (p Infos) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
 
 func main() {
-	t0 := time.Now()
-	defer func() {
-		fmt.Printf("%v\n", time.Now().Sub(t0))
-	}()
+        // t0 := time.Now()
+        // defer func() {
+        //         fmt.Printf("%v\n", time.Now().Sub(t0))
+        // }()
 
 	slist := GetInfos()
 	sort.Sort(Infos(slist))
@@ -99,5 +99,5 @@ func FormatSize(s int64) string {
 		f /= 1024.0
 		unit++
 	}
-	return fmt.Sprintf("%.1f %siB", f, units[unit])
+	return fmt.Sprintf("%.1f%siB", f, units[unit])
 }
