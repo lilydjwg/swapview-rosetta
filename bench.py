@@ -95,12 +95,11 @@ def load_config():
 def main():
     items, reference = load_config()
 
-    reference_result, err, ret, _ = run_profile(**items[reference["result"]])
-    if ret != 0:
-        die("reference implementation failed")
-
     valids, invalids, fails = [], [], []
     for item in items.values():
+        reference_result, err, ret, _ = run_profile(**items[reference["result"]])
+        if ret != 0:
+            die("reference implementation failed")
         out, err, ret, usage = bench_profile(item, reference_result)
         item['time'] = usage[item['time_field']]
         if ret == 0:
