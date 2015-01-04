@@ -52,22 +52,29 @@ getswapfor(Pid) ->
             end;
         {error, _} -> Cmd = ""
     end,
-    case file:open("/proc/"++Pid++"/smaps", [read]) of
-        {ok, L} -> Size = getswapsize(L) * 1024;
-        {error, _} -> Size = 0
-    end,
+    H = line_server:get_handle("/proc/"++Pid++"/smaps"),
+    Size = getswapsize(H, 0) * 1024,
     {Pid, Cmd, Size}.
 
-getswapsize(L) ->
-    getswapsize(L, 0).
-
-getswapsize(L, Acc) ->
-    case io:get_line(L, "") of
-        {error, _} -> file:close(L), 0;
-        eof -> file:close(L), Acc;
-        "Swap:"++Remainder ->
-            Num = string:sub_word(Remainder, 1),
-            getswapsize(L, Acc + list_to_integer(Num));
-         _ ->
-            getswapsize(L, Acc)
+getswapsize(H, Acc) ->
+    case line_server:get_lines(H) of
+        eof -> Acc;
+        Lines ->
+            Size = swapsize(Lines),
+            getswapsize(H, Acc + Size)
     end.
+
+swapsize(Lines) ->
+    swapsize(Lines, 0).
+
+swapsize([H|T], Acc) ->
+    Hsize = getswapsize_bin(H),
+    swapsize(T, Acc + Hsize);
+swapsize([], Acc) ->
+    Acc.
+
+getswapsize_bin(<<"Swap:",  Sizebin/binary>>) ->
+    Sizestr = erlang:binary_to_list(Sizebin),
+    erlang:list_to_integer(string:sub_word(Sizestr, 1));
+getswapsize_bin(_) ->
+    0.
