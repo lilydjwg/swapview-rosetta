@@ -7,6 +7,7 @@ node_modules/
 
 # swapview specific
 */swapview
+*/swapview.o
 Chicken/format
 CoffeeScript*/*.js
 Racket/compiled

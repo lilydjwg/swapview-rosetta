@@ -18,7 +18,9 @@ def filesize size
 end
 
 def get_swap_for pid
-  comm = File.read("/proc/#{pid}/cmdline").tr("\x00", ' ').chop
+  comm = File.read("/proc/#{pid}/cmdline")
+  comm.chop! if comm[-1] == "\0"
+  comm.tr!("\0", ' ')
   s = open("/proc/#{pid}/smaps") do |f|
     f.each_line.map { |l| $1.to_i if l =~ /^Swap: +([0-9]+)/}
      .compact

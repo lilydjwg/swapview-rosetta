@@ -46,7 +46,8 @@ formatResult (pid, size) = do
 getCommand :: Pid -> IO String
 getCommand pid = map transnul . dropLastNull <$> readFile ("/proc/" ++ pid ++ "/cmdline")
   where dropLastNull "" = ""
-        dropLastNull s = init s
+        dropLastNull ['\0'] = []
+        dropLastNull (x:xs) = x : dropLastNull xs
         transnul ch = if ch == '\0' then ' ' else ch
 
 total :: [(Pid, Int)] -> Int

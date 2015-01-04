@@ -22,7 +22,10 @@ function filesize(size){
 function getSwapFor(pid){
 	try{
 		var comm = fs.readFileSync("/proc/"+pid+"/cmdline", encoding="utf-8");
-		comm = comm.replace(/\0/g, " ").substr(0, comm.length - 1);
+                if(comm[comm.length-1] == '\0'){
+                  comm = comm.substr(0, comm.length - 1)
+                }
+		comm = comm.replace(/\0/g, " ");
 		var s=0.0;
 		var smaps = fs.readFileSync("/proc/"+pid+"/smaps", encoding="utf-8");
 		smaps.split(/\n/).forEach(function (l){

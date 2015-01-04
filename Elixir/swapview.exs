@@ -12,9 +12,9 @@ defmodule SwapView do
       comm = File.open!("/proc/#{pid}/cmdline", [:read], &IO.read(&1, :line))
       comm = comm |> binary_part(0, byte_size(comm) - 1) |> String.replace(<<0>>, " ")
       s = File.stream!("/proc/#{pid}/smaps", [:read])
-       |> Stream.filter(&String.starts_with?(&1, "Swap:"))
-       |> Stream.map(&(&1 |> String.split |> Enum.at(1) |> String.to_integer))
-       |> Enum.reduce(0, &+/2)
+      |> Stream.filter(&String.starts_with?(&1, "Swap:"))
+      |> Stream.map(&(&1 |> String.split |> Enum.at(1) |> String.to_integer))
+      |> Enum.reduce(0, &+/2)
       {pid, s * 1024, comm}
     rescue
       _ ->
@@ -25,11 +25,11 @@ defmodule SwapView do
 
   defp get_swap do
     File.ls!("/proc")
- |> Stream.filter(fn pid -> pid =~ ~r/^[0-9]+$/ end)
- |> Stream.map(fn(x) -> Task.async(fn -> get_swap_for(x) end) end)
- |> Stream.map(fn(x) -> Task.await(x) end)
- |> Stream.filter(fn {_, s, _} when s > 0 -> true; _ -> false end)
- |> Enum.sort(fn ({_, s1, _}, {_, s2, _}) -> s1 < s2 end)
+    |> Stream.filter(fn pid -> pid =~ ~r/^[0-9]+$/ end)
+    |> Stream.map(fn(x) -> Task.async(fn -> get_swap_for(x) end) end)
+    |> Stream.map(fn(x) -> Task.await(x) end)
+    |> Stream.filter(fn {_, s, _} when s > 0 -> true; _ -> false end)
+    |> Enum.sort(fn ({_, s1, _}, {_, s2, _}) -> s1 < s2 end)
   end
 
   defp format({pid, size, comm}) do

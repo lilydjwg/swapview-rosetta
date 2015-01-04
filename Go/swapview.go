@@ -1,152 +1,103 @@
 package main
 
 import (
-	"bufio"
-	"errors"
+	"bytes"
 	"fmt"
-	"io"
 	"io/ioutil"
+	"log"
 	"os"
-	"strconv"
-	"strings"
 	"sort"
+	"strconv"
+        // "time"
 )
 
-const TARGET = "Swap:"
-const FORMAT = "%5d %9s %s\n"
-
-type swap_info struct {
-	Pid  int64
+type Info struct {
+	Pid  int
 	Size int64
 	Comm string
 }
 
-type swap_infos []*swap_info
+type Infos []Info
 
-func (p swap_infos) Len() int {
-	return len(p)
-}
-
-func (p swap_infos) Less(i, j int) bool {
-	return p[i].Size < p[j].Size
-}
-
-func (p swap_infos) Swap(i, j int) {
-	p[i], p[j] = p[j], p[i]
-}
+func (p Infos) Len() int           { return len(p) }
+func (p Infos) Less(i, j int) bool { return p[i].Size < p[j].Size }
+func (p Infos) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
 
 func main() {
-	slist := make(swap_infos, 0)
-	getSwap(&slist)
-	sort.Sort(&slist)
+        // t0 := time.Now()
+        // defer func() {
+        //         fmt.Printf("%v\n", time.Now().Sub(t0))
+        // }()
+
+	slist := GetInfos()
+	sort.Sort(Infos(slist))
+
 	fmt.Printf("%5s %9s %s\n", "PID", "SWAP", "COMMAND")
-	var total int64 = 0
+	var total int64
 	for _, v := range slist {
-		fmt.Printf(FORMAT, v.Pid, filesize(v.Size), v.Comm)
-		total = total+v.Size
+		fmt.Printf("%5d %9s %s\n", v.Pid, FormatSize(v.Size), v.Comm)
+		total += v.Size
 	}
-	fmt.Printf("Total: %8s\n", filesize(total))
+	fmt.Printf("Total: %8s\n", FormatSize(total))
 }
 
-
-func getSwap(list *swap_infos) (err error) {
+func GetInfos() (list []Info) {
 	f, _ := os.Open("/proc")
+	defer f.Close()
 	names, err := f.Readdirnames(0)
 	if err != nil {
-		f.Close()
-		return
+		log.Fatalf("read /proc: %v", err)
 	}
 	for _, name := range names {
-		toint, err := strconv.ParseInt(name, 10, 0)
-		if err == nil {
-			info := &swap_info{
-				Pid: toint,
-			}
-			err = getSwapFor(info)
-			if err == nil {
-				*list = append(*list, info)
-			}
-		}
-	}
-	f.Close()
-	return
-}
-
-func getSwapFor(info *swap_info) (err error) {
-	f, err := os.Open(fmt.Sprintf("/proc/%d/cmdline", info.Pid))
-	if err != nil {
-		return
-	}
-
-	buff, err := ioutil.ReadAll(f)
-	if err != nil {
-		f.Close()
-		return
-	}
-
-	f.Close()
-
-	var len = len(buff)
-
-	if len == 0 {
-		return errors.New("o cmdline")
-	}
-
-	for i := 0; i < len; i++ {
-		if buff[i] == 0 {
-			buff[i] = 32
-		}
-	}
-	buff = buff[:len-1]
-	info.Comm = string(buff)
-
-	f, err = os.Open(fmt.Sprintf("/proc/%d/smaps", info.Pid))
-	if err != nil {
-		return
-	}
-
-	size := getSwapSize(bufio.NewReader(f))
-	if size == 0 {
-		return errors.New("wrap 0")
-	}
-
-	info.Size = size
-	f.Close()
-	return
-}
-
-func getSwapSize(r *bufio.Reader) (tatal int64) {
-	tatal = 0
-	for {
-		buf, err := r.ReadString('\n')
-		if err == io.EOF {
-			break
-		}
+		pid, err := strconv.Atoi(name)
 		if err != nil {
-			break
+			continue
 		}
-		b := strings.HasPrefix(buf, TARGET)
-		if b {
-			curr_warp_array := strings.Split(buf, " ")
-			toint, _ := strconv.ParseInt(curr_warp_array[len(curr_warp_array)-2], 10, 0)
-			tatal = tatal+toint
+		info, err := GetInfo(pid)
+		if err != nil || info.Size == 0 {
+			continue
 		}
+		list = append(list, info)
 	}
 	return
 }
 
-var units string = "KMGT"
-
-func filesize(s int64) string {
-	var unit int8 = 0
-	var left float32 = float32(s)
-	for unit < 3 {
-		if left > 1100 {
-			left = left/1024
-		} else {
-			break
+func GetInfo(pid int) (info Info, err error) {
+	info.Pid = pid
+	var bs []byte
+	bs, err = ioutil.ReadFile(fmt.Sprintf("/proc/%d/cmdline", pid))
+	if err != nil {
+		return
+	}
+	info.Comm = string(bs)
+	bs, err = ioutil.ReadFile(fmt.Sprintf("/proc/%d/smaps", pid))
+	if err != nil {
+		return
+	}
+	var total int64
+	for _, line := range bytes.Split(bs, []byte("\n")) {
+		if bytes.HasPrefix(line, []byte("Swap:")) {
+			start := bytes.IndexAny(line, "0123456789")
+			end := bytes.Index(line[start:], []byte(" "))
+			size, err := strconv.ParseInt(string(line[start:start+end]), 10, 0)
+			if err != nil {
+				continue
+			}
+			total += size
 		}
+	}
+	info.Size = total
+	return
+}
+
+var units = []string{"K", "M", "G", "T"}
+
+func FormatSize(s int64) string {
+	unit := 0
+	f := float64(s)
+	for unit < len(units) && f > 1024.0 {
+		f /= 1024.0
 		unit++
 	}
-	return fmt.Sprintf("%.1f", left) + string(units[unit]) + "iB"
+	return fmt.Sprintf("%.1f%siB", f, units[unit])
 }
