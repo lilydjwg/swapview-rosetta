@@ -32,7 +32,7 @@ filesize(Size, Unit) ->
 swap_print() ->
     Ret = getswap(),
     io:format("~5s ~9s ~s~n", ["PID", "SWAP", "COMMAND"]),
-    [io:format("~5s ~9s ~ts~n", [element(1, E), filesize(element(3, E)), unicode:characters_to_list(list_to_binary(element(2, E)))])
+    [io:format("~5s ~9s ~s~n", [element(1, E), filesize(element(3, E)), element(2, E)])
      || E <- Ret],
     Total = lists:foldl(fun(E, Sum) -> element(3, E) + Sum end, 0, Ret),
     io:format("Total: ~8s~n", [filesize(Total)]).
