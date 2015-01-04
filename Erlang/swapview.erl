@@ -48,7 +48,7 @@ getswapfor(Pid) ->
         {ok, Comm} ->
             case io:get_line(Comm, "") of
                 eof -> Cmd = "";
-                Str -> Cmd = string:strip(lists:map(fun(0) ->32;(C) -> C end, Str), right)
+                Str -> Cmd = re:replace(Str, "\\x00", " ", [global, {return, list}])
             end;
         {error, _} -> Cmd = ""
     end,
