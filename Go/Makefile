@@ -1,8 +1,7 @@
 .PHONY: all clean
 
 %: %.go
-	go build $<
-	strip $@
+	go build -ldflags "-w -s" $<
 
 all: swapview
 
