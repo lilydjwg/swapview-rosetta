@@ -1,8 +1,9 @@
 [item.default]
 cmd = ['./swapview']
 dir = '$name'
-time_limit = 60
-valid_percent = 10
+time_limit = 30
+count_limit = 20
+valid_percent = 50
 
 [item.C]
 
@@ -66,6 +67,14 @@ dir = 'Python'
 
 [item.Python3_bytes]
 cmd = ['python3', 'swapview.py']
+
+[item.PyPy]
+cmd = ['pypy', 'swapview.py']
+dir = 'Python'
+
+[item.PyPy3]
+cmd = ['pypy3', 'swapview.py']
+dir = 'Python'
 
 [item.Racket]
 cmd = ['./swapview.rkt']

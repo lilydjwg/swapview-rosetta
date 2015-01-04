@@ -1,23 +1,61 @@
 #![feature(macro_rules)]
+#![feature(slicing_syntax)]
 
 extern crate toml;
+extern crate time;
 
-#[deriving(Show)]
+use std::io::Command;
+use std::io::process::StdioContainer;
+use std::iter::AdditiveIterator;
+use std::num::Float;
+
+#[derive(Show)]
 struct OptionalBenchmarkItem {
   name: String,
   dir: Option<String>,
   cmd: Option<Vec<String>>,
   time_limit: Option<int>,
+  count_limit: Option<int>,
   valid_percent: Option<int>,
 }
 
-#[deriving(Show)]
+#[derive(Show,Clone)]
 struct BenchmarkItem {
   name: String,
   dir: String,
   cmd: Vec<String>,
   time_limit: int,
+  count_limit: int,
   valid_percent: int,
+}
+
+#[derive(Show)]
+struct BenchmarkResult {
+  name: String,
+  topavg: u64,
+  avg: u64,
+  min: u64,
+  max: u64,
+  mdev: u64,
+}
+
+struct AtDir {
+  oldpwd: Path,
+}
+
+impl AtDir {
+  fn new(dir: &str) -> std::io::IoResult<AtDir> {
+    let oldpwd = try!(std::os::getcwd());
+    try!(std::os::change_dir(&Path::new(dir)));
+    Ok(AtDir { oldpwd: oldpwd })
+  }
+}
+
+impl std::ops::Drop for AtDir {
+  fn drop(&mut self) {
+    #![allow(unused_must_use)]
+    std::os::change_dir(&self.oldpwd);
+  }
 }
 
 macro_rules! valid_int {
@@ -49,6 +87,7 @@ fn parse_item(name: String, conf: &toml::Value)
   let mut dir = None;
   let mut cmd = None;
   let mut time_limit = None;
+  let mut count_limit = None;
   let mut valid_percent = None;
   for (key, value) in item.iter() {
     match key.as_slice() {
@@ -60,10 +99,15 @@ fn parse_item(name: String, conf: &toml::Value)
         if maybe_arr_str.iter().any(|x| x.is_none()) {
             return Err(format!("cmd must be an array of strings, but got {}", cmd_arr));
         }
+        if maybe_arr_str.len() == 0 {
+          return Err("cmd must be an non-empty array of strings".to_string());
+        }
         Some(maybe_arr_str.iter().map(|x| x.unwrap().to_string()).collect())
       },
       "time_limit" => valid_int!(value as time_limit for name,
-                                 (Some(-1i), None::<int>)),
+                                 (Some(0i), None::<int>)),
+      "count_limit" => valid_int!(value as count_limit for name,
+                                 (Some(0i), None::<int>)),
       "valid_percent" => valid_int!(value as valid_percent for name,
                                     (Some(-1i), Some(101i))),
       _ => return Err(format!("unknown field: {}", key)),
@@ -73,6 +117,7 @@ fn parse_item(name: String, conf: &toml::Value)
   Ok(OptionalBenchmarkItem{
     name: name, dir: dir, cmd: cmd,
     time_limit: time_limit,
+    count_limit: count_limit,
     valid_percent: valid_percent,
   })
 }
@@ -82,6 +127,7 @@ fn merge_default(item: OptionalBenchmarkItem, default: &Option<OptionalBenchmark
   let mut maybe_dir = item.dir;
   let mut maybe_cmd = item.cmd;
   let mut maybe_time_limit = item.time_limit;
+  let mut maybe_count_limit = item.count_limit;
   let mut maybe_valid_percent = item.valid_percent;
 
   if default.is_some() {
@@ -89,6 +135,7 @@ fn merge_default(item: OptionalBenchmarkItem, default: &Option<OptionalBenchmark
     maybe_dir = maybe_dir.or(d.dir.clone());
     maybe_cmd = maybe_cmd.or(d.cmd.clone());
     maybe_time_limit = maybe_time_limit.or(d.time_limit.clone());
+    maybe_count_limit = maybe_count_limit.or(d.count_limit.clone());
     maybe_valid_percent = maybe_valid_percent.or(d.valid_percent.clone());
   }
   let dir = try!(maybe_dir.ok_or(
@@ -97,12 +144,16 @@ fn merge_default(item: OptionalBenchmarkItem, default: &Option<OptionalBenchmark
     format!("{} don't have required field cmd", item.name)));
   let time_limit = try!(maybe_time_limit.ok_or(
     format!("{} don't have required field time_limit", item.name)));
+  let count_limit = try!(maybe_count_limit.ok_or(
+    format!("{} don't have required field count_limit", item.name)));
   let valid_percent = try!(maybe_valid_percent.ok_or(
     format!("{} don't have required field valid_percent", item.name)));
 
+  let expanded_dir = dir.replace("$name", item.name.as_slice());
   Ok(BenchmarkItem{
-    name: item.name, dir: dir, cmd: cmd,
+    name: item.name, dir: expanded_dir, cmd: cmd,
     time_limit: time_limit,
+    count_limit: count_limit,
     valid_percent: valid_percent,
   })
 }
@@ -134,6 +185,64 @@ fn parse_config(toml: &str) -> Result<Vec<BenchmarkItem>,String> {
   Ok(ret)
 }
 
+fn time_item(item: BenchmarkItem) -> Result<BenchmarkResult,String> {
+  let start = time::precise_time_ns();
+  let limit = (item.time_limit * 1_000_000_000) as u64;
+
+  let _cwd = match AtDir::new(item.dir.as_slice()) {
+    Ok(atdir) => atdir,
+    Err(err) => return Err(err.desc.to_string()),
+  };
+  let mut result = Vec::new();
+
+  for _ in range(0, item.count_limit) {
+    let (used, now) = try!(run_once(&item.cmd));
+    result.push(used);
+    if now - start > limit {
+      break;
+    }
+  }
+
+  if result.len() == 0 {
+    return Err("no result???".to_string());
+  }
+  result.sort();
+  let len = result.len() as u64;
+  let min = *result.first().unwrap();
+  let max = *result.last().unwrap();
+  let sum = result.iter().map(|&x| x).sum();
+  let sum2 = result.iter().map(|&x| x*x).sum();
+  let avg = sum / len;
+  let mdev = ((sum2 / len - avg * avg) as f64).sqrt() as u64;
+  Ok(BenchmarkResult {
+    name: item.name,
+    topavg: 0,
+    avg: avg,
+    min: min,
+    max: max,
+    mdev: mdev,
+  })
+}
+
+fn run_once(cmd: &Vec<String>) -> Result<(u64,u64),String> {
+  let start = time::precise_time_ns();
+  let status = match Command::new(cmd[0].as_slice()).args(cmd[1..])
+                     .stdin(StdioContainer::Ignored)
+                     .stdout(StdioContainer::Ignored)
+                     .stderr(StdioContainer::InheritFd(2))
+                     .status() {
+    Ok(status) => status,
+    Err(err) => return Err(err.desc.to_string()),
+  };
+
+  if !status.success() {
+    return Err(format!("command {} exited with {}", cmd, status));
+  }
+
+  let stop = time::precise_time_ns();
+  Ok((stop - start, stop))
+}
+
 fn main() {
   let stdin = std::io::stdin().read_to_string();
   let toml = match stdin {
@@ -144,4 +253,6 @@ fn main() {
   for item in items.iter() {
     println!("{}", item);
   }
+  let r = time_item(items[0].clone()).unwrap();
+  println!("{}", r);
 }
