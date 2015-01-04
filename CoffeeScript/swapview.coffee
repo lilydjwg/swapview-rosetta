@@ -32,7 +32,7 @@ readdir('/proc')
     .then (text) ->
       text.split('\n').filter (line) -> line[..4] is 'Swap:'
     .then (lines) ->
-      (read "/proc/#{file}/cmdline", 'ascii')
+      (read "/proc/#{file}/cmdline", 'utf-8')
       .then (text) ->
         cmdline = text
         .replace(/\0$/, '')

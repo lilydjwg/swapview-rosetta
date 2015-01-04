@@ -31,7 +31,7 @@ readdir('/proc')
     readSmaps = (read "/proc/#{file}/smaps", 'ascii')
     .then (text) ->
       text.split('\n').filter (line) -> line[..4] is 'Swap:'
-    readCmdline = (read "/proc/#{file}/cmdline", 'ascii')
+    readCmdline = (read "/proc/#{file}/cmdline", 'utf-8')
     .then (text) ->
       cmdline = text
       .replace(/\0$/, '')
