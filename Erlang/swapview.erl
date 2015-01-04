@@ -48,7 +48,7 @@ getswapfor(Pid) ->
         {ok, Comm} ->
             case io:get_line(Comm, "") of
                 eof -> Cmd = "";
-                Str -> Cmd = re:replace(Str, "\\x00", " ", [global, {return, list}])
+                Str -> Cmd = re:replace(Str, "\\x00", " ", [noteol, {return, list}])
             end;
         {error, _} -> Cmd = ""
     end,
