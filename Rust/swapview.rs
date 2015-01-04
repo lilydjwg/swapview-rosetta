@@ -29,7 +29,7 @@ fn chop_null(s: String) -> String {
   if s.len() > 0 && s.as_bytes()[last] == 0 {
     s.truncate(last);
   }
-  s
+  s.replace("\0", " ")
 }
 
 fn get_comm_for(pid: uint) -> String {
