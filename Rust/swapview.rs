@@ -3,7 +3,6 @@
 use std::io::{File,BufferedReader};
 use std::num::SignedInt; // abs method
 use std::io::fs;
-use std::cmp::max;
 
 fn filesize(size: int) -> String {
   let units = "KMGT";
@@ -24,11 +23,20 @@ fn filesize(size: int) -> String {
   }
 }
 
+fn chop_null(s: String) -> String {
+  let last = s.len() - 1;
+  let mut s = s;
+  if s.len() > 0 && s.as_bytes()[last] == 0 {
+    s.truncate(last);
+  }
+  s
+}
+
 fn get_comm_for(pid: uint) -> String {
   let cmdline_path = format!("/proc/{}/cmdline", pid);
   match File::open(&Path::new(&cmdline_path)).read_to_string() {
     // s may be empty for kernel threads
-    Ok(s) => s.slice_to(max(s.len(), 1)-1).replace("\0", " ").to_string(),
+    Ok(s) => chop_null(s),
     Err(_) => String::new(),
   }
 }
