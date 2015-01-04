@@ -61,10 +61,10 @@ def bench_profile(profile, ref_result):
                             out.split('\n'),
                             ref_result.split('\n')).ratio()
     profile['ratio'] = ratio
-    print('\033[1;%dm%24s\033[m(%3d%%): %.2f %s' %
+    print('\033[1;%dm%24s\033[m(%3d%%): %8.2f %s' %
           (32 if ret == 0 else 31,
            profile['name'], int(ratio*100),
-           usage[profile['time_field']], err[:-1]))
+           usage[profile['time_field']]*1000, err[:-1]))
     if ret == 0 and ratio < profile['show_diff_below']:
         print('\n'.join(unified_diff(ref_result.split('\n'), out.split('\n'),
                                      fromfile='reference result',
@@ -95,11 +95,11 @@ def times2str(item):
     time = item['time']
     valid = sorted(time)[:item['valid_times']]
     avgv = mean(valid)
-    return ("%5s %s [%s]" % (
-        '%2.2f' % avgv,
-        ' '.join(('%5s' % ('%2.2f' % x(time)))
+    return ("%s %s [%s]" % (
+        '%8.2f' % (avgv*1000),
+        ' '.join(('%8.2f' % (x(time)*1000))
             for x in (min, mean, max, stdev)),
-        ' '.join(('%5s' % ('%2.2f' % x))
+        ' '.join(('%8.2f' % (x*1000))
             for x in valid)))
 
 
@@ -122,7 +122,7 @@ def main():
             fails.append(item)
 
     print(("---------Results--------(Diff):" +
-           "  KAvg   Min   Avg   Max Stdev [K(%d)-samples raw data]") %
+           "  KMinAvg      Min      Avg      Max    Stdev [K(%d)-samples raw data]") %
           items[reference["result"]]['valid_times'])
 
     succ.sort(key=lambda x: sum(sorted(x['time'])[:x['valid_times']]))
