@@ -49,8 +49,11 @@ getswapfor(Pid) ->
             case io:get_line(Comm, "") of
                 eof -> Cmd = "";
                 Str ->
-                    Cmd_ = re:replace(Str, "\\x00", " ", [global, {return, list}]),
-                    Cmd = string:left(Cmd_, length(Cmd_)-1)
+                    case lists:last(Str) of
+                        0 -> Cmd_ = lists:sublist(Str, length(Str)-1);
+                        _ -> Cmd_ = Str
+                    end,
+                    Cmd = re:replace(Cmd_, "\\x00", " ", [global, {return, list}])
             end;
         {error, _} -> Cmd = ""
     end,
