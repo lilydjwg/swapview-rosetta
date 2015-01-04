@@ -1,0 +1,104 @@
+[reference]
+result = "C"
+
+[item.default]
+cmd = ["./swapview"]
+dir = "$name"
+time_limit = 60
+valid_times = 5
+time_field = "elapsed"
+times = 20
+show_diff_below = 0.9
+
+[item.time_limit]
+# for testing time_limit
+dir = "."
+cmd = ["/usr/bin/bash", "-c", "sleep 10"]
+time_limit = 2
+
+[item.C]
+
+[item.C++14]
+
+[item.C++98]
+
+[item.Chicken]
+
+[item.CoffeeScript]
+cmd = ["node", "swapview.js"]
+
+[item.CoffeeScript_parallel]
+cmd = ["node", "swapview.js"]
+
+[item.CommonLisp]
+cmd = ["./swapview.lisp"]
+
+[item.Elixir]
+cmd = ["./swapview.exs"]
+
+[item.FreePascal]
+
+[item.Go]
+
+[item.Guile]
+cmd = ["./swapview.scm"]
+
+[item.Haskell]
+
+[item.Java]
+cmd = ["java", "SwapView"]
+
+[item.Lua51]
+cmd = ["lua5.1", "swapview.lua"]
+dir = "Lua"
+
+[item.Lua52]
+cmd = ["lua", "swapview.lua"]
+dir = "Lua"
+
+[item.LuaJIT]
+cmd = ["luajit", "swapview.lua"]
+dir = "Lua"
+
+[item.NodeJS]
+cmd = ["./swapview.js"]
+
+[item.NodeJS_async]
+cmd = ["./swapview.js"]
+
+[item.OCaml]
+
+[item.Python2]
+cmd = ["python2", "swapview.py"]
+dir = "Python"
+
+[item.Python3]
+cmd = ["python3", "swapview.py"]
+dir = "Python"
+
+[item.Python3_bytes]
+cmd = ["python3", "swapview.py"]
+
+[item.PyPy]
+cmd = ["pypy", "swapview.py"]
+dir = "Python"
+
+[item.PyPy3]
+cmd = ["pypy3", "swapview.py"]
+dir = "Python"
+
+[item.PyPy3_bytes]
+cmd = ["pypy3", "swapview.py"]
+dir = "Python3_bytes"
+
+[item.Racket]
+cmd = ["./swapview.rkt"]
+
+[item.Racket_compiled]
+dir = "Racket"
+cmd = ["racket", "compiled/swapview_rkt.zo"]
+
+[item.Ruby]
+cmd = ["./swapview.rb"]
+
+[item.Rust]
