@@ -31,7 +31,10 @@ function getSwapFor(pid, callback){
 			return; 
 		}
 		var comm = results[0];
-		comm = comm.replace(/\0/g, " ").substr(0, comm.length - 1);
+                if(comm[comm.length-1] == '\0'){
+                  comm = comm.substr(0, comm.length - 1)
+                }
+		comm = comm.replace(/\0/g, " ");
 		var s=0.0;
 		var smaps = results[1];
 		smaps.split(/\n/).forEach(function (l){
