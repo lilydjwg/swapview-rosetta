@@ -22,8 +22,6 @@ time_limit = 2
 
 [item.C++98]
 
-[item.D]
-
 [item.Chicken]
 
 [item.CoffeeScript]
@@ -37,6 +35,8 @@ cmd = ["./swapview.lisp"]
 
 [item.CommonLisp_opt]
 cmd = ["./swapview"]
+
+[item.D]
 
 [item.Elixir]
 cmd = ["./swapview.exs"]
