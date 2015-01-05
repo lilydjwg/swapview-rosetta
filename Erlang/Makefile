@@ -11,4 +11,4 @@ test:: all
 	./erlswapview
 
 clean::
-	-rm -f $(TARGET)
+	-rm -f $(TARGET) erl_crash.dump

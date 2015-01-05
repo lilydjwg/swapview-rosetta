@@ -4,6 +4,8 @@
 *.stamp
 *.class
 *.fasl
+*.beam
+erl_crash.dump
 node_modules/
 
 # swapview specific
