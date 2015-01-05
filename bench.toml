@@ -31,7 +31,7 @@ cmd = ["node", "swapview.js"]
 cmd = ["node", "swapview.js"]
 
 [item.CommonLisp]
-cmd = ["./swapview.lisp"]
+cmd = ["./swapview-opt"]
 
 [item.Elixir]
 cmd = ["./swapview.exs"]

@@ -11,7 +11,8 @@ You can (edit and then) run `make` to build all that needs to be built.
 * C++98
 * C++14
 * Chicken, format (will be installed by `make`)
-* CommonLisp, sbcl
+* CommonLisp_opt, sbcl
+* CommonLisp_old, sbcl, maynbe others also work
 * CoffeeScript, requires promise (will be installed by `make`)
 * CoffeeScript_parallel, a parallel version, requires promise (will be installed by `make`)
 * Elixir
