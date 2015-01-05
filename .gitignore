@@ -3,6 +3,7 @@
 *.hi
 *.stamp
 *.class
+*.fasl
 node_modules/
 
 # swapview specific
