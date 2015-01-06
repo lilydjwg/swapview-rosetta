@@ -61,15 +61,16 @@ def bench_profile(profile, ref_result):
                             out.split('\n'),
                             ref_result.split('\n')).ratio()
     profile['ratio'] = ratio
-    print('\033[1;%dm%24s\033[m(%3d%%): %8.2f %s' %
-          (32 if ret == 0 else 31,
-           profile['name'], int(ratio*100),
-           usage[profile['time_field']]*1000, err[:-1]))
-    if ret == 0 and ratio < profile['show_diff_below']:
-        print('\n'.join(unified_diff(ref_result.split('\n'), out.split('\n'),
-                                     fromfile='reference result',
-                                     tofile=profile['name'],
-                                     n=0, lineterm='')))
+    if profile['verbose']:
+        print('\033[1;%dm%24s\033[m(%3d%%): %8.2f %s' %
+              (32 if ret == 0 else 31,
+               profile['name'], int(ratio*100),
+               usage[profile['time_field']]*1000, err[:-1]))
+        if ret == 0 and ratio < profile['show_diff_below']:
+            print('\n'.join(unified_diff(ref_result.split('\n'), out.split('\n'),
+                                         fromfile='reference result',
+                                         tofile=profile['name'],
+                                         n=0, lineterm='')))
     return out, err[:-1], ret, usage
 
 
@@ -106,7 +107,7 @@ def times2str(item):
 def main():
     items, reference = load_config()
     succ, fails = [], []
-    for item in items.values():
+    for item in sorted(items.values(), key=lambda x:x['name']):
         ref_result, err, ret, _ = run_profile(**items[reference["result"]])
         if ret != 0:
             die("reference implementation failed")

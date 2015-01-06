@@ -9,6 +9,7 @@ valid_times = 5
 time_field = "elapsed"
 times = 20
 show_diff_below = 0.9
+verbose = false
 
 [item.time_limit]
 # for testing time_limit
@@ -27,7 +28,7 @@ time_limit = 2
 cmd = ["env", "OMP_NUM_THREADS=32", "./swapview"]
 
 [item.Erlang]
-cmd = ["./erswapview"]
+cmd = ["./erlswapview"]
 
 [item.Chicken]
 
