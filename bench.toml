@@ -9,6 +9,7 @@ valid_times = 5
 time_field = "elapsed"
 times = 20
 show_diff_below = 0.9
+verbose = false
 
 [item.time_limit]
 # for testing time_limit
@@ -22,6 +23,13 @@ time_limit = 2
 
 [item.C++98]
 
+
+[item.C++98_omp]
+cmd = ["env", "OMP_NUM_THREADS=32", "./swapview"]
+
+[item.Erlang]
+cmd = ["./erlswapview"]
+
 [item.Chicken]
 
 [item.CoffeeScript]
@@ -30,8 +38,11 @@ cmd = ["node", "swapview.js"]
 [item.CoffeeScript_parallel]
 cmd = ["node", "swapview.js"]
 
-[item.CommonLisp]
-cmd = ["./swapview-opt"]
+[item.CommonLisp_old]
+cmd = ["./swapview.lisp"]
+
+[item.CommonLisp_opt]
+cmd = ["./swapview"]
 
 [item.Elixir]
 cmd = ["./swapview.exs"]

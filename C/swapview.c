@@ -10,7 +10,7 @@
 #include<dirent.h>
 
 #define FORMAT "%5d %9s %s\n"
-#define BUFSIZE 32
+#define BUFSIZE 512
 //#define TARGET "Size:" // For Test
 #define TARGET "Swap:"
 #define TARGETLEN 5
@@ -48,20 +48,24 @@ typedef struct {
 swap_info *getSwapFor(int pid){
   char filename[BUFSIZE];
   FILE *fd = 0;
-  char *comm = 0;
-  size_t size = 0;
-  ssize_t len;
+  size_t size = BUFSIZE;
+  char *comm = malloc(size + 1); // +1 for last \0
+  ssize_t len=0;
   double s = 0.0;
 
   assure(snprintf(filename, BUFSIZE, "/proc/%d/cmdline", pid) > 0);
   if(!(fd = fopen(filename, "r")))
     goto err;
-  if((len = getline(&comm, &size, fd)) < 0)
-    goto err;
+  for(int got;
+      (got = fread(comm + len, 1, size - len, fd)) > 0;
+      len += got){
+    assure(comm = realloc(comm, (size<<=1) + 1)); // +1 for last \0
+  }
   fclose(fd);
-  fd = 0;
+
   for(char *p = comm; p < comm + len - 1; ++p)
-    *p || (*p = ' ');
+    *p || (*p = ' '); // comm[len-1] is \0 or non-space
+  comm[len]='\0'; // assure string is terminated
 
   assure(snprintf(filename, BUFSIZE, "/proc/%d/smaps", pid) > 0);
   if(!(fd = fopen(filename, "r")))

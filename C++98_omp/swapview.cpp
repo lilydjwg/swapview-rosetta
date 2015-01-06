@@ -105,11 +105,14 @@ swap_info getSwapFor(int pid){
 void getSwap(vector<swap_info> & ret){
     vector<string> dir;
     lsdir("/proc", dir);
+#pragma omp parallel for
     for(vector<string>::iterator itr=dir.begin(); itr<dir.end(); ++itr){
         int pid = str2i(*itr);
         if(pid > 0) {
             swap_info item=getSwapFor(pid);
-            if(item.size > 0){
+            if(item.size > 0)
+#pragma omp critical
+            {
                 ret.push_back(item);
             }
         }
