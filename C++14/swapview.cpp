@@ -110,14 +110,14 @@ string filesize(auto size){
 }
 
 swap_info getSwapFor(int pid){
-    string comm = readall(strformat("/proc/", pid, "/cmdline"));
+    string comm = readall("/proc/"s + to_string(pid) + "/cmdline"s);
     if(comm.length() > 0){
       replace(comm.begin(), comm.end(), '\0' , ' ');
       if(comm.back() == ' ')
         comm.pop_back();
     }
     double s=0.0;
-    for(auto l: readlines(strformat("/proc/", pid, "/smaps"))){
+    for(auto l: readlines("/proc/"s + to_string(pid) + "/smaps"s)){
         if(l.substr(0, TARGETLEN)==TARGET){
             s+=str2i(l.substr(TARGETLEN));
         }
@@ -127,7 +127,7 @@ swap_info getSwapFor(int pid){
 
 vector<swap_info> getSwap(){
     vector<swap_info> ret;
-    for(string spid: lsdir("/proc")){
+    for(string spid: lsdir("/proc"s)){
         int pid = str2i(spid);
         if(pid > 0) {
             auto item = getSwapFor(pid);
@@ -152,11 +152,11 @@ void format_print(swap_info swap){
 int main(int argc, char * argv[]){
     double t=0.0;
     auto result = getSwap();
-    format_print("PID", "SWAP", "COMMAND");
+    format_print("PID"s, "SWAP"s, "COMMAND"s);
     for(auto item: result){
         format_print(item);
         t+=get<1>(item);
     }
-    cout<<"Total:"<<setw(9)<<filesize(t)<<endl;
+    cout<<"Total:"s<<setw(9)<<filesize(t)<<endl;
     return 0;
 }
