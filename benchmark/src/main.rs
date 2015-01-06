@@ -8,6 +8,7 @@ use std::io::Command;
 use std::io::process::StdioContainer;
 use std::iter::AdditiveIterator;
 use std::num::Float;
+use std::cmp::Ordering::{Less, Greater};
 
 #[derive(Show)]
 struct OptionalBenchmarkItem {
@@ -31,12 +32,18 @@ struct BenchmarkItem {
 
 #[derive(Show)]
 struct BenchmarkResult {
-  name: String,
   topavg: u64,
   avg: u64,
   min: u64,
   max: u64,
   mdev: u64,
+  count: uint,
+}
+
+macro_rules! ns2ms {
+  ($ns:expr) => ({
+    $ns as f64 / 1_000_000.
+  })
 }
 
 struct AtDir {
@@ -185,7 +192,7 @@ fn parse_config(toml: &str) -> Result<Vec<BenchmarkItem>,String> {
   Ok(ret)
 }
 
-fn time_item(item: BenchmarkItem) -> Result<BenchmarkResult,String> {
+fn time_item(item: &BenchmarkItem) -> Result<BenchmarkResult,String> {
   let start = time::precise_time_ns();
   let limit = (item.time_limit * 1_000_000_000) as u64;
 
@@ -214,13 +221,17 @@ fn time_item(item: BenchmarkItem) -> Result<BenchmarkResult,String> {
   let sum2 = result.iter().map(|&x| x*x).sum();
   let avg = sum / len;
   let mdev = ((sum2 / len - avg * avg) as f64).sqrt() as u64;
+
+  let top_n = result.len() * item.valid_percent as uint / 100;
+  let tops = result.slice_to(top_n);
+  let topavg = tops.iter().map(|&x| x).sum() / top_n as u64;
   Ok(BenchmarkResult {
-    name: item.name,
-    topavg: 0,
+    topavg: topavg,
     avg: avg,
     min: min,
     max: max,
     mdev: mdev,
+    count: result.len(),
   })
 }
 
@@ -243,6 +254,7 @@ fn run_once(cmd: &Vec<String>) -> Result<(u64,u64),String> {
   Ok((stop - start, stop))
 }
 
+#[allow(unused_must_use)]
 fn main() {
   let stdin = std::io::stdin().read_to_string();
   let toml = match stdin {
@@ -250,9 +262,39 @@ fn main() {
     Err(e) => panic!("can't read input data: {}", e),
   };
   let items = parse_config(toml.as_slice()).unwrap();
-  for item in items.iter() {
-    println!("{}", item);
+  // for item in items.iter() {
+  //   println!("{}", item);
+  // }
+
+  let mut stderr = std::io::stderr();
+  let mut results: Vec<_> = items.iter().map(|x| {
+    stderr.write_fmt(format_args!("Running {}...", x.name));
+    stderr.flush();
+    let r = time_item(x);
+    stderr.write_fmt(format_args!("{}\n", r));
+    (x.name.as_slice(), r)
+  }).collect();
+  results.sort_by(|&(m, ref a), &(n, ref b)|
+    match (a.as_ref(), b.as_ref()) {
+      (Ok(c), Ok(d)) => c.topavg.cmp(&d.topavg),
+      (Err(_), Err(_)) => m.cmp(n),
+      (Ok(_), _) => Less,
+      _ => Greater,
+    }
+  );
+  for &(name, ref r) in results.iter() {
+    match r.as_ref() {
+      Ok(x) => {
+        println!("{green}{:>24}{r}: top: {bright}{:>7.2}{r}, min: {:>7.2}, \
+avg: {:>7.2}, max: {:>7.2}, mdev: {:>7.2}, cnt: {:>3}",
+                 name, ns2ms!(x.topavg), ns2ms!(x.min), ns2ms!(x.avg),
+                 ns2ms!(x.max), ns2ms!(x.mdev), x.count,
+                 green = "\x1b[1;32m", bright = "\x1b[1;37m",
+                 r = "\x1b[m",
+                 );
+      },
+      Err(x) => println!("{red}{:>20}{r}: FAILED with {}", name, x,
+                         red = "\x1b[1;31m", r = "\x1b[m"),
+    };
   }
-  let r = time_item(items[0].clone()).unwrap();
-  println!("{}", r);
 }
