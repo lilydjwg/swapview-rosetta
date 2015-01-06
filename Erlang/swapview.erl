@@ -1,5 +1,5 @@
 -module(swapview).
--export([swap_print/0]).
+-export([getswapfor/2, swap_print/0]).
 
 is_integer(S) ->
     try
@@ -40,10 +40,19 @@ swap_print() ->
 getswap() ->
     {ok, F} = file:list_dir_all("/proc"),
     Pids = lists:filter(fun is_integer/1, F),
-    S = lists:map(fun getswapfor/1, Pids),
+    lists:map(fun(Pid) -> spawn(?MODULE, getswapfor, [self(), Pid]) end, Pids),
+    S = read_result(length(Pids), []),
     lists:keysort(3, [E || E <- S, element(3, E) > 0]).
 
-getswapfor(Pid) ->
+read_result(0, L) ->
+    L;
+read_result(Count_spawn, L) ->
+    receive
+        {ok, Data} ->
+            read_result(Count_spawn-1, [Data|L])
+    end.
+
+getswapfor(Master, Pid) ->
     case file:open("/proc/"++Pid++"/cmdline", [read]) of
         {ok, Comm} ->
             case io:get_line(Comm, "") of
@@ -59,7 +68,7 @@ getswapfor(Pid) ->
     end,
     H = line_server:get_handle("/proc/"++Pid++"/smaps"),
     Size = getswapsize(H, 0) * 1024,
-    {Pid, Cmd, Size}.
+    Master ! {ok, {Pid, Cmd, Size}}.
 
 getswapsize(H, Acc) ->
     case line_server:get_lines(H) of
