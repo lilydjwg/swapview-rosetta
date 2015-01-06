@@ -1,0 +1,12 @@
+[item.default]
+cmd = ['./swapview']
+dir = '$name'
+time_limit = 30
+count_limit = 20
+valid_percent = 50
+
+[item.C]
+
+[item.Rust]
+
+[item.Fail]

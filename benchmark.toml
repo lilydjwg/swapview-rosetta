@@ -1,0 +1,94 @@
+[item.default]
+cmd = ['./swapview']
+dir = '$name'
+time_limit = 30
+count_limit = 20
+valid_percent = 50
+
+[item.C]
+
+[item.C++14]
+
+[item.C++98]
+
+[item.Chicken]
+
+[item.CoffeeScript]
+cmd = ['node', 'swapview.js']
+
+[item.CoffeeScript_parallel]
+cmd = ['node', 'swapview.js']
+
+[item.CommonLisp_old]
+cmd = ['./swapview.lisp']
+
+[item.CommonLisp_opt]
+
+[item.Elixir]
+cmd = ['./swapview.exs']
+
+[item.Erlang]
+cmd = ['./erlswapview']
+
+[item.FreePascal]
+
+[item.Go]
+
+[item.Guile]
+cmd = ['./swapview.scm']
+
+[item.Haskell]
+
+[item.Java]
+cmd = ['java', 'SwapView']
+
+[item.Lua51]
+cmd = ['lua5.1', 'swapview.lua']
+dir = 'Lua'
+
+[item.Lua52]
+cmd = ['lua', 'swapview.lua']
+dir = 'Lua'
+
+[item.LuaJIT]
+cmd = ['luajit', 'swapview.lua']
+dir = 'Lua'
+
+[item.NodeJS]
+cmd = ['./swapview.js']
+
+[item.NodeJS_async]
+cmd = ['./swapview.js']
+
+[item.OCaml]
+
+[item.Python2]
+cmd = ['python2', 'swapview.py']
+dir = 'Python'
+
+[item.Python3]
+cmd = ['python3', 'swapview.py']
+dir = 'Python'
+
+[item.Python3_bytes]
+cmd = ['python3', 'swapview.py']
+
+[item.PyPy]
+cmd = ['pypy', 'swapview.py']
+dir = 'Python'
+
+[item.PyPy3]
+cmd = ['pypy3', 'swapview.py']
+dir = 'Python'
+
+[item.Racket]
+cmd = ['./swapview.rkt']
+
+[item.Racket_compiled]
+dir = 'Racket'
+cmd = ['racket', 'compiled/swapview_rkt.zo']
+
+[item.Ruby]
+cmd = ['./swapview.rb']
+
+[item.Rust]
