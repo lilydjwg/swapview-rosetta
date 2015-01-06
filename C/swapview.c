@@ -10,7 +10,7 @@
 #include<dirent.h>
 
 #define FORMAT "%5d %9s %s\n"
-#define BUFSIZE 32
+#define BUFSIZE 512
 //#define TARGET "Size:" // For Test
 #define TARGET "Swap:"
 #define TARGETLEN 5
