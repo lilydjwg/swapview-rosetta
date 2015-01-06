@@ -113,7 +113,8 @@ swap_info getSwapFor(int pid){
     string comm = readall(strformat("/proc/", pid, "/cmdline"));
     if(comm.length() > 0){
       replace(comm.begin(), comm.end(), '\0' , ' ');
-      comm.pop_back();
+      if(comm.back() == ' ')
+        comm.pop_back();
     }
     double s=0.0;
     for(auto l: readlines(strformat("/proc/", pid, "/smaps"))){
