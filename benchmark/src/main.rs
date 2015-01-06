@@ -293,7 +293,7 @@ avg: {:>7.2}, max: {:>7.2}, mdev: {:>7.2}, cnt: {:>3}",
                  r = "\x1b[m",
                  );
       },
-      Err(x) => println!("{red}{:>20}{r}: FAILED with {}", name, x,
+      Err(x) => println!("{red}{:>24}{r}: FAILED with {}", name, x,
                          red = "\x1b[1;31m", r = "\x1b[m"),
     };
   }
