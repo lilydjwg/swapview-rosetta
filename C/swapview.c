@@ -56,9 +56,9 @@ swap_info *getSwapFor(int pid){
   assure(snprintf(filename, BUFSIZE, "/proc/%d/cmdline", pid) > 0);
   if(!(fd = fopen(filename, "r")))
     goto err;
-  for(int readed;
-      (readed = fread(comm + len, 1, size - len, fd)) > 0;
-      len += readed){
+  for(int got;
+      (got = fread(comm + len, 1, size - len, fd)) > 0;
+      len += got){
     assure(comm = realloc(comm, (size<<=1) + 1)); // +1 for last \0
   }
   fclose(fd);

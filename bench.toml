@@ -26,6 +26,9 @@ time_limit = 2
 [item.C++98_omp]
 cmd = ["env", "OMP_NUM_THREADS=32", "./swapview"]
 
+[item.Erlang]
+cmd = ["./erswapview"]
+
 [item.Chicken]
 
 [item.CoffeeScript]
