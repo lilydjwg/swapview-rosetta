@@ -1,0 +1,26 @@
+#!/usr/bin/env python3
+
+import os
+from subprocess import check_output
+
+def countlines(d):
+  files = check_output(['git', 'ls-files', d]).decode('utf-8').splitlines()
+  c = 0
+  for f in files:
+    if f.endswith('/Makefile'):
+      continue
+    with open(f, 'rb') as fobj:
+      c += fobj.read().count(b'\n')
+  return c
+
+def main():
+  os.chdir(os.path.dirname(os.path.abspath(__file__)))
+  result = {}
+  for d in os.listdir():
+    if d[0].isupper() and os.path.isdir(d):
+      result[d] = countlines(d)
+  for name, lines in sorted(result.items(), key=lambda x: x[1]):
+    print('%24s: %4d' % (name, lines))
+
+if __name__ == '__main__':
+  main()
