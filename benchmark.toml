@@ -11,6 +11,8 @@ valid_percent = 50
 
 [item.C++98]
 
+[item.D]
+
 [item.Chicken]
 
 [item.CoffeeScript]
