@@ -11,7 +11,7 @@ valid_percent = 50
 
 [item.C++98]
 
-[item.D]
+[item.C++98_omp]
 
 [item.Chicken]
 
@@ -25,6 +25,8 @@ cmd = ['node', 'swapview.js']
 cmd = ['./swapview.lisp']
 
 [item.CommonLisp_opt]
+
+[item.D]
 
 [item.Elixir]
 cmd = ['./swapview.exs']

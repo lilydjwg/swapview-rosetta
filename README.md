@@ -9,6 +9,7 @@ You can (edit and then) run `make` to build all that needs to be built.
 * Bash, broken, please contribute
 * C
 * C++98
+* C++98_omp, openmp paralleled version
 * C++14
 * Chicken, format (will be installed by `make`)
 * CommonLisp_opt, sbcl
