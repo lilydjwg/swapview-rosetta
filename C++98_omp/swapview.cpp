@@ -14,6 +14,7 @@
 #include <error.h>
 #include <errno.h>
 
+#include <omp.h>
 using namespace std;
 
 // #define TARGET "Size:"     // test with Size: when swap is empty
@@ -129,6 +130,7 @@ void format_print(swap_info& swap){
 }
 
 int main(int argc, char * argv[]){
+    omp_set_num_threads(omp_get_num_procs()*4);
     double t=0.0;
     vector<swap_info> result;
     getSwap(result);

@@ -12,7 +12,6 @@ valid_percent = 50
 [item.C++98]
 
 [item.C++98_omp]
-cmd = ["env", "OMP_NUM_THREADS=32", "./swapview"]
 
 [item.Chicken]
 
