@@ -1,6 +1,6 @@
 .PHONY: all clean
 
-languages=Haskell OCaml Rust C++98 C++14 C D Go NodeJS NodeJS_async Java Chicken \
+languages=Haskell OCaml Rust C++98 C++98_omp C++14 C D Go NodeJS NodeJS_async Java Chicken \
 	  CoffeeScript CoffeeScript_parallel Racket FreePascal Erlang CommonLisp_opt
 
 all:
