@@ -5,7 +5,6 @@
 #include <iomanip>
 #include <tuple>
 #include <algorithm>
-#include <vector>
 
 #include <cstring>
 #include <cmath>
@@ -48,42 +47,76 @@ string strformat(UArgs... args){
 
 string readall(string path){
     ifstream fs(path);
-    string buf((istreambuf_iterator<char>(fs)), istreambuf_iterator<char>());
-    return buf;
+    return string((istreambuf_iterator<char>(fs)), istreambuf_iterator<char>());
 }
 
-vector<string> readlines(string path){
-    ifstream fs(path);
-    vector<string> result;
-    for(string buf; getline(fs, buf);){
-        result.push_back(buf);
+template<typename T>
+struct range_wrapper {
+    struct iterator {
+        iterator(range_wrapper * rw) : rw(rw) {
+            if(rw) ++(*this); // read the first file
+        }
+
+        typename T::value_type
+        operator * (void) const { 
+            return rw->t.get();
+        }
+
+        iterator& operator ++ (void) {
+            rw->t.next(); 
+            return *this;
+        }
+
+        bool end(void) const { return (!rw) || (rw->t.end()); }
+
+        bool operator == (iterator const& i) const {
+            return (end() == i.end());
+        }
+
+        bool operator != (iterator const& i ) const {
+            return (end() != i.end());
+        }
+        range_wrapper * rw;
+    };
+
+    template<typename... Args>
+    range_wrapper(Args... args)
+        : t(args...)
+    { }
+
+    iterator begin() { return iterator(this); }
+    iterator end() { return iterator(nullptr); }
+
+    T t;
+};
+
+struct readlines {
+    readlines (string const& path) : fs(path) { } 
+    string const& get(void) const { return cur_line; }
+    void next(void) { getline(fs, cur_line); }
+    bool end(void) const { return !fs; }
+
+    using value_type = string const&;
+    ifstream fs;
+    string cur_line;
+};
+
+struct lsdir {
+    lsdir(string const& path) {
+        if((dp = opendir(path.c_str())) == nullptr) {
+            error(errno, errno, "opening %s \n", path.c_str());
+        }
     }
-    return result;
-}
+    ~lsdir() { if(dp) closedir(dp); }
 
-int str2i(string str){
-    int result;
-    istringstream ssin(str);
-    ssin>>result;
-    return result;
-}
+    const char * get(void) const { return dirp->d_name; }
+    void next(void) { dirp = readdir(dp); }
+    bool end(void) const { return dirp == nullptr; }
 
-vector<string> lsdir(string path){
-    vector<string> ret;
-
-    DIR *dp;
-    struct dirent *dirp;
-    if((dp  = opendir(path.c_str())) == NULL) {
-        error(errno, errno, "opening %s \n", path.c_str());
-    }
-
-    while ((dirp = readdir(dp)) != NULL) {
-        ret.push_back(string(dirp->d_name));
-    }
-    closedir(dp);
-
-    return ret;
-}
+    using value_type = const char *;
+    DIR * dp;
+    struct dirent * dirp = nullptr;
+};
 
 typedef tuple<int, double, string> swap_info;
 
@@ -109,6 +142,14 @@ string filesize(auto size){
     }
 }
 
+bool starts_with (string const& s1, string const& s2) {
+    if(s1.size() < s2.size())
+        return false;
+
+    auto r = mismatch(s2.begin(), s2.end(), s1.begin());
+    return (r.first == s2.end());
+}
+
 swap_info getSwapFor(int pid){
     string comm = readall(strformat("/proc/", pid, "/cmdline"));
     if(comm.length() > 0){
@@ -116,9 +157,9 @@ swap_info getSwapFor(int pid){
       comm.pop_back();
     }
     double s=0.0;
-    for(auto l: readlines(strformat("/proc/", pid, "/smaps"))){
-        if(l.substr(0, TARGETLEN)==TARGET){
-            s+=str2i(l.substr(TARGETLEN));
+    for(auto const& l: range_wrapper<readlines>(strformat("/proc/", pid, "/smaps"))){
+        if(starts_with(l, TARGET)) {
+            s += strtol(l.c_str() + TARGETLEN, nullptr, 10);
         }
     }
     return make_tuple(pid, s*1024.0, comm);
@@ -126,8 +167,8 @@ swap_info getSwapFor(int pid){
 
 vector<swap_info> getSwap(){
     vector<swap_info> ret;
-    for(string spid: lsdir("/proc")){
-        int pid = str2i(spid);
+    for(auto const& spid: range_wrapper<lsdir>("/proc")){
+        int pid = strtol(spid, nullptr, 10);
         if(pid > 0) {
             auto item = getSwapFor(pid);
             if(get<1>(item) > 0){
@@ -136,15 +177,15 @@ vector<swap_info> getSwap(){
         }
     }
     sort(ret.begin(), ret.end(),
-        [](auto i, auto j){return get<1>(i) < get<1>(j);});
+        [](auto const& i, auto const& j){return get<1>(i) < get<1>(j);});
     return ret;
 }
 
-void format_print(auto pid, auto swap, auto command){
+void format_print(auto const& pid, auto const& swap, auto const& command){
     cout<<setw(5)<<pid<<' '<<setw(9)<<swap<<' '<<command<<endl;
 }
 
-void format_print(swap_info swap){
+void format_print(swap_info const& swap){
     format_print(get<0>(swap), filesize(get<1>(swap)), get<2>(swap));
 }
 
