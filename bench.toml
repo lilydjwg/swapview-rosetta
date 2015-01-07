@@ -30,11 +30,17 @@ cmd = ["node", "swapview.js"]
 [item.CoffeeScript_parallel]
 cmd = ["node", "swapview.js"]
 
-[item.CommonLisp]
-cmd = ["./swapview-opt"]
+[item.CommonLisp_old]
+cmd = ["./swapview.lisp"]
+
+[item.CommonLisp_opt]
+cmd = ["./swapview"]
 
 [item.Elixir]
 cmd = ["./swapview.exs"]
+
+[item.Erlang]
+cmd = ["./erlswapview"]
 
 [item.FreePascal]
 
