@@ -36,11 +36,11 @@ cmd = ["./swapview.lisp"]
 [item.CommonLisp_opt]
 cmd = ["./swapview"]
 
-[item.Erlang]
-cmd = ["./erlswapview"]
-
 [item.Elixir]
 cmd = ["./swapview.exs"]
+
+[item.Erlang]
+cmd = ["./erlswapview"]
 
 [item.FreePascal]
 
