@@ -110,12 +110,12 @@ swap_info **getSwap(){
     if(pid > 0){
       swap_info *swapfor = getSwapFor(pid);
       if(swapfor->size > 0){
-	if(length == size)
-	  assure(ret = realloc(ret, sizeof(swap_info *) * (size <<= 1)));
-	ret[length++] = swapfor;
+        if(length == size)
+          assure(ret = realloc(ret, sizeof(swap_info *) * (size <<= 1)));
+        ret[length++] = swapfor;
       }else{
-	free(swapfor->comm);
-	free(swapfor);
+        free(swapfor->comm);
+        free(swapfor);
       }
     }
   }
