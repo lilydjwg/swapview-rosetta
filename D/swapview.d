@@ -1,10 +1,10 @@
 #!/usr/bin/dmd -run
 
-import std.stdio, std.file, std.path, std.string, std.conv, std.math;
+import std.stdio, std.file, std.path, std.string, std.conv, std.math, std.container, std.algorithm;
 
-string filesize(int size){
+string filesize(double size){
     string units = "KMGT";
-    int left = size.abs();
+    double left = size.fabs();
     int unit = -1;
 
     while(left > 1100 && unit < 3){
@@ -13,21 +13,27 @@ string filesize(int size){
     }
 
     if(unit == -1){
-        return format("%sB", size);
+        return format("%dB", to!int(size));
     }else{
         if(size < 0)
             left = -left;
-        return format("%s%siB", left, units[unit]);
+        return format("%.1f%siB", left, units[unit]);
     }
 }
 
 string getcmdln(string pid){
-    File file = File("/proc/"~pid~"/cmdline", "r");
-    return file.readln();
+    auto ret = cast(ubyte[]) read("/proc/"~pid~"/cmdline");
+    foreach(ref ubyte c; ret){
+        if(c=='\0') c=' ';
+    }
+    if(ret[$-1] == ' ')
+        ret = ret[0 .. $-1];
+    ret ~= '\0';
+    return cast(string) ret;
 }
 
-int checkswap(string pid){
-    int size = 0;
+double checkswap(string pid){
+    double size = 0;
     File file = File("/proc/"~pid~"/smaps", "r");
     while (!file.eof()){
         string line = chomp(file.readln());
@@ -35,18 +41,46 @@ int checkswap(string pid){
             size += to!int(line.split()[1]);
         }
     }
-    return size * 2014 ;
+    return size * 1024 ;
 }
 
-void main(){
-    string m = "%5s %9s %s";
-    writeln(format(m , "PID", "SWAP", "COMMAND"));
+struct SwapInfo
+{
+    int pid;
+    double size;
+    string comm;
+
+    int opCmp(ref const SwapInfo s) const {
+        double r = size - s.size;
+        return (r > 0) - (r < 0);
+    }
+};
+
+SwapInfo[] getSwap(){
+    SwapInfo[] ret;
     foreach(DirEntry dirs; dirEntries("/proc", SpanMode.shallow)){
         string pid = baseName(dirs.name);
         if(pid.isNumeric()){
-            int size = checkswap(pid);
-            if(size)
-                writeln(format(m, pid, filesize(size), getcmdln(pid)));
+            try{
+                double size = checkswap(pid);
+                if(size)
+                    ret ~= SwapInfo(to!int(pid), size, getcmdln(pid));
+            }catch(Exception){} // do nothing for error
         }
     }
+    sort(ret);
+    return ret;
+}
+
+
+void main(){
+    string m = "%5s %9s %s";
+    double total=0;
+    auto result=getSwap();
+    writeln(format(m , "PID", "SWAP", "COMMAND"));
+    foreach(SwapInfo item; result){
+        total += item.size;
+        writeln(format(m , item.pid, filesize(item.size), item.comm));
+    }
+    writeln(format("Total: %8s", filesize(total)));
 }
