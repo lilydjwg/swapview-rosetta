@@ -112,3 +112,5 @@ cmd = ["racket", "compiled/swapview_rkt.zo"]
 cmd = ["./swapview.rb"]
 
 [item.Rust]
+
+[item.Rust_parallel]
