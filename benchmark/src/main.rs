@@ -9,6 +9,7 @@ use std::io::process::StdioContainer;
 use std::iter::AdditiveIterator;
 use std::num::Float;
 use std::cmp::Ordering::{Less, Greater};
+use std::collections::HashSet;
 
 #[derive(Show)]
 struct OptionalBenchmarkItem {
@@ -266,8 +267,15 @@ fn main() {
   //   println!("{}", item);
   // }
 
+  let args: HashSet<String> = std::os::args().tail().iter().map(|x| x.clone()).collect();
+  let items_to_run = if args.len() > 0 {
+    items.into_iter().filter(|x| args.contains(&x.name)).collect()
+  } else {
+    items
+  };
+
   let mut stderr = std::io::stderr();
-  let mut results: Vec<_> = items.iter().map(|x| {
+  let mut results: Vec<_> = items_to_run.iter().map(|x| {
     stderr.write_fmt(format_args!("Running {}...", x.name));
     stderr.flush();
     let r = time_item(x);
