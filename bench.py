@@ -75,7 +75,8 @@ def bench_profile(profile, ref_result):
 
 
 def load_config():
-    with open('bench.toml') as configfile:
+    filename = sys.argv[1] if len(sys.argv) > 1 else 'bench.toml'
+    with open(filename) as configfile:
         config = toml.loads(configfile.read())
     items = config['item']
     default = items['default']
@@ -137,4 +138,5 @@ def main():
         print('\033[1;31m%24s\033[m       : %s' %
               (item['name'], item['error']))
 
-main()
+if __name__=='__main__':
+    main()
