@@ -1,4 +1,4 @@
-CPPFLAGS=-O4 -Wall
+CPPFLAGS=-O4 -Wall -fno-exceptions -fno-rtti
 CPPC=g++
 
 swapview: swapview.cpp

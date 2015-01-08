@@ -1,6 +1,5 @@
 #include <iostream>
 #include <string>
-#include <sstream>
 #include <fstream>
 #include <tuple>
 #include <algorithm>
@@ -18,7 +17,7 @@ constexpr size_t TARGETLEN = 5;
 using swap_info = tuple<int, double, string>;
 
 auto filesize(double size) {
-    static const char * units = "KMGT";
+    constexpr const char * units = "KMGT";
     auto left = abs(size); 
     int unit = -1;
     while( left > 1100 && unit < 3 ){
