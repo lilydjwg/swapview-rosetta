@@ -20,6 +20,8 @@ time_limit = 2
 
 [item.C++14]
 
+[item.C++14_boost]
+
 [item.C++98]
 
 [item.C++98_omp]
