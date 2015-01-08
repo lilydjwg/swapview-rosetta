@@ -20,7 +20,7 @@ struct OptionalBenchmarkItem {
   valid_percent: Option<int>,
 }
 
-#[derive(Show,Clone)]
+#[derive(Show)]
 struct BenchmarkItem {
   name: String,
   dir: String,
