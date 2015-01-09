@@ -76,7 +76,8 @@ swap_info getSwapFor(int pid, const string & spid){
     string comm((istreambuf_iterator<char>(fs)), istreambuf_iterator<char>());
     if(comm.length() > 0){
         replace(comm.begin(), comm.end(), '\0' , ' ');
-        comm.erase(comm.end()-1);
+        if(*(comm.end()-1) == ' ')
+            comm.erase(comm.end()-1);
     }
 
     double s=0.0;
