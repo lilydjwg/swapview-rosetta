@@ -1,4 +1,4 @@
-CPPFLAGS=-O4 -Wall -fno-exceptions -fno-rtti
+CPPFLAGS=-O4 -Wall -lboost_filesystem -lboost_system -fno-rtti
 CPPC=g++
 
 swapview: swapview.cpp
