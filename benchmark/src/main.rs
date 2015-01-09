@@ -226,7 +226,7 @@ fn time_item(item: &BenchmarkItem) -> Result<BenchmarkResult,String> {
   let avg = sum / len;
   let mdev = ((sum2 / len - avg * avg) as f64).sqrt() as u64;
 
-  let top_n = result.len() * item.valid_percent as uint / 100;
+  let top_n = ((result.len() * item.valid_percent as uint) as f64 / 100.).round() as uint;
   let tops = result.slice_to(top_n);
   let topavg = tops.iter().map(|&x| x).sum() / top_n as u64;
   Ok(BenchmarkResult {
