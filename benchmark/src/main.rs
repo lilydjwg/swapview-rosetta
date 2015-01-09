@@ -117,7 +117,11 @@ fn parse_item(name: String, conf: &toml::Value)
                                  (Some(0i), None::<int>)),
       "valid_percent" => valid_int!(value as valid_percent for name,
                                     (Some(-1i), Some(101i))),
-      _ => return Err(format!("unknown field: {}", key)),
+      //TODO: use log
+      _ => {
+        std::io::stderr().write_fmt(
+        format_args!("warning: unknown field: {}", key)).unwrap();
+      },
     };
   }
 
