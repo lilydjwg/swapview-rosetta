@@ -41,8 +41,10 @@ bool starts_with (string const& s1, string const& s2) {
 swap_info getSwapFor(int pid){
     ifstream cmd_inf("/proc/" + to_string(pid) + "/cmdline");
     string comm((istreambuf_iterator<char>(cmd_inf)), istreambuf_iterator<char>());
-    replace(comm.begin(), comm.end(), '\0' , ' ');
-    if(!comm.empty()) comm.pop_back();
+    if(!comm.empty()) {
+        if(common.back() == 0) comm.pop_back();
+        replace(comm.begin(), comm.end(), '\0' , ' ');
+    }
     double s=0.0;
     ifstream inf("/proc/" + to_string(pid) + "/smaps");
     string l;
