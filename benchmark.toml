@@ -1,6 +1,6 @@
 [item.default]
-cmd = ['./swapview']
-dir = '$name'
+cmd = ["./swapview"]
+dir = "$name"
 time_limit = 30
 count_limit = 20
 valid_percent = 50
@@ -18,53 +18,53 @@ valid_percent = 50
 [item.Chicken]
 
 [item.CoffeeScript]
-cmd = ['node', 'swapview.js']
+cmd = ["node", "swapview.js"]
 
 [item.CoffeeScript_parallel]
-cmd = ['node', 'swapview.js']
+cmd = ["node", "swapview.js"]
 
 [item.CommonLisp_old]
-cmd = ['./swapview.lisp']
+cmd = ["./swapview.lisp"]
 
 [item.CommonLisp_opt]
 
 [item.D]
 
 [item.Elixir]
-cmd = ['./swapview.exs']
+cmd = ["./swapview.exs"]
 
 [item.Erlang]
-cmd = ['./erlswapview']
+cmd = ["./erlswapview"]
 
 [item.FreePascal]
 
 [item.Go]
 
 [item.Guile]
-cmd = ['./swapview.scm']
+cmd = ["./swapview.scm"]
 
 [item.Haskell]
 
 [item.Java]
-cmd = ['java', 'SwapView']
+cmd = ["java", "SwapView"]
 
 [item.Lua51]
-cmd = ['lua5.1', 'swapview.lua']
-dir = 'Lua'
+cmd = ["lua5.1", "swapview.lua"]
+dir = "Lua"
 
 [item.Lua52]
-cmd = ['lua', 'swapview.lua']
-dir = 'Lua'
+cmd = ["lua", "swapview.lua"]
+dir = "Lua"
 
 [item.LuaJIT]
-cmd = ['luajit', 'swapview.lua']
-dir = 'Lua'
+cmd = ["luajit", "swapview.lua"]
+dir = "Lua"
 
 [item.NodeJS]
-cmd = ['./swapview.js']
+cmd = ["./swapview.js"]
 
 [item.NodeJS_async]
-cmd = ['./swapview.js']
+cmd = ["./swapview.js"]
 
 [item.OCaml]
 
@@ -72,33 +72,37 @@ cmd = ['./swapview.js']
 cmd = ['./swapview.php']
 
 [item.Python2]
-cmd = ['python2', 'swapview.py']
-dir = 'Python'
+cmd = ["python2", "swapview.py"]
+dir = "Python"
 
 [item.Python3]
-cmd = ['python3', 'swapview.py']
-dir = 'Python'
+cmd = ["python3", "swapview.py"]
+dir = "Python"
 
 [item.Python3_bytes]
-cmd = ['python3', 'swapview.py']
+cmd = ["python3", "swapview.py"]
 
 [item.PyPy]
-cmd = ['pypy', 'swapview.py']
-dir = 'Python'
+cmd = ["pypy", "swapview.py"]
+dir = "Python"
 
 [item.PyPy3]
-cmd = ['pypy3', 'swapview.py']
-dir = 'Python'
+cmd = ["pypy3", "swapview.py"]
+dir = "Python"
+
+[item.PyPy3_bytes]
+cmd = ["pypy3", "swapview.py"]
+dir = "Python3_bytes"
 
 [item.Racket]
-cmd = ['./swapview.rkt']
+cmd = ["./swapview.rkt"]
 
 [item.Racket_compiled]
-dir = 'Racket'
-cmd = ['racket', 'compiled/swapview_rkt.zo']
+dir = "Racket"
+cmd = ["racket", "compiled/swapview_rkt.zo"]
 
 [item.Ruby]
-cmd = ['./swapview.rb']
+cmd = ["./swapview.rb"]
 
 [item.Rust]
 
