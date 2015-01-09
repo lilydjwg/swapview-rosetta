@@ -13,6 +13,10 @@ valid_percent = 50
 
 [item.D]
 
+[item.D_llvm]
+cmd = ["./swapview-llvm"]
+dir = "D"
+
 [item.Chicken]
 
 [item.CoffeeScript]
