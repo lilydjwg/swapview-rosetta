@@ -68,6 +68,10 @@ cmd = ['./swapview.js']
 
 [item.OCaml]
 
+[item.PHP]
+cmd = ['./swapview.php']
+dir = 'PHP'
+
 [item.Python2]
 cmd = ['python2', 'swapview.py']
 dir = 'Python'
