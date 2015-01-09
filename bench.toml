@@ -1,15 +1,18 @@
+# only valid for bench.py:
 [reference]
 result = "C"
 
 [item.default]
 cmd = ["./swapview"]
 dir = "$name"
-time_limit = 60
-valid_times = 5
+time_limit = 30
+count_limit = 20
+valid_percent = 50
+
+# only valid for bench.py:
 time_field = "elapsed"
-times = 20
 show_diff_below = 0.9
-verbose = false
+verbose = true
 
 [item.time_limit]
 # for testing time_limit
@@ -39,7 +42,6 @@ cmd = ["node", "swapview.js"]
 cmd = ["./swapview.lisp"]
 
 [item.CommonLisp_opt]
-cmd = ["./swapview"]
 
 [item.D]
 

@@ -37,7 +37,7 @@ def die(msg):
     sys.exit(1)
 
 
-def run_profile(cmd, dir, time_limit, times, **kwargs):
+def run_profile(cmd, dir, time_limit, **kwargs):
     start_usage = resource.getrusage(resource.RUSAGE_CHILDREN)
     out, err = '', ''
     returncode = 0
@@ -87,6 +87,7 @@ def load_config():
         profile.update(item)
         profile['name'] = name
         items[name] = profile
+        profile['valid_times'] = int(profile['count_limit']*profile['valid_percent']/100)
         for k, v in zip(profile, profile.values()):
             if type(v) is str:
                 profile[k] = Template(v).safe_substitute(**profile)
@@ -115,7 +116,7 @@ def main():
         out, err, ret, usage = bench_profile(item, ref_result)
         item['time'] = [usage[item['time_field']]]
         if ret == 0:
-            for i in range(item['times'] - 1):
+            for i in range(item['count_limit'] - 1):
                 _, err, _, usage = bench_profile(item, ref_result)
                 item['time'].append(usage[item['time_field']])
             succ.append(item)
