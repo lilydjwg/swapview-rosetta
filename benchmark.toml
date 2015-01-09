@@ -1,3 +1,10 @@
+[options]
+# only valid for bench.py:
+ref_result = "C"
+time_field = "elapsed"
+show_diff_below = 0.9
+verbose = true
+
 [item.default]
 cmd = ["./swapview"]
 dir = "$name"
