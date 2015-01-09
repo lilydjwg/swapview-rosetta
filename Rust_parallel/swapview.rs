@@ -61,7 +61,7 @@ fn get_swap_for(pid: uint) -> int {
 }
 
 fn get_swap() -> Vec<(uint, int, String)> {
-  let pool = TaskPool::new(std::os::num_cpus() * 4);
+  let pool = TaskPool::new(std::os::num_cpus());
   let (tx, rx) = channel();
   let mut count = 0u;
   for d in fs::readdir(&Path::new("/proc")).unwrap().iter() {
