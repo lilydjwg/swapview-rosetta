@@ -31,7 +31,9 @@ public class SwapView{
 			String comm = new String(Files.readAllBytes(
 				Paths.get(String.format("/proc/%d/cmdline", pid))),
 				StandardCharsets.UTF_8);
-			comm = comm.replace('\0',' ').substring(0, comm.length() - 1);
+			comm = comm.replace('\0',' ');
+			if(comm.charAt(comm.length() - 1) == ' ')
+				comm = comm.substring(0, comm.length() - 1);
 			double s = 0;
 			for(String l: Files.readAllLines(
 				Paths.get(String.format("/proc/%d/smaps", pid)),

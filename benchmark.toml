@@ -57,7 +57,7 @@ cmd = ["./swapview.scm"]
 [item.Haskell]
 
 [item.Java]
-cmd = ["java", "SwapView"]
+cmd = ["java", "-dsa", "-Xmixed", "-XX:CompileThreshold=4096", "-XX:+TieredCompilation", "-XX:TieredStopAtLevel=1", "-XX:+UseAES", "-XX:+UseSerialGC", "SwapView"]
 
 [item.Lua51]
 cmd = ["lua5.1", "swapview.lua"]
