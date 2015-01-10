@@ -1,4 +1,5 @@
 #![feature(slicing_syntax)]
+#![allow(unstable)]
 
 extern crate toml;
 extern crate time;
@@ -15,9 +16,9 @@ struct OptionalBenchmarkItem {
   name: String,
   dir: Option<String>,
   cmd: Option<Vec<String>>,
-  time_limit: Option<int>,
-  count_limit: Option<int>,
-  valid_percent: Option<int>,
+  time_limit: Option<i32>,
+  count_limit: Option<i32>,
+  valid_percent: Option<i32>,
 }
 
 #[derive(Show)]
@@ -25,9 +26,9 @@ struct BenchmarkItem {
   name: String,
   dir: String,
   cmd: Vec<String>,
-  time_limit: int,
-  count_limit: int,
-  valid_percent: int,
+  time_limit: i32,
+  count_limit: i32,
+  valid_percent: i32,
 }
 
 #[derive(Show)]
@@ -37,7 +38,7 @@ struct BenchmarkResult {
   min: u64,
   max: u64,
   mdev: u64,
-  count: uint,
+  count: u32,
 }
 
 macro_rules! ns2ms {
@@ -69,7 +70,7 @@ macro_rules! valid_int {
   ($v:ident as $i:ident for $name:expr, ($min:expr, $max:expr)) => ({
     let v = try!($v.as_integer().ok_or(
       format!("{} should be an integer, but got {}", stringify!($i), $v)))
-      as int;
+      as i32;
     if $min.is_some() && v < $min.unwrap() {
       return Err(
         format!("{} for {} should be greater than {}, but got {}",
@@ -104,7 +105,7 @@ fn parse_item(name: String, conf: &toml::Value)
                 format!("cmd must be an array of strings, but got {}", value)));
         let maybe_arr_str: Vec<_> = cmd_arr.iter().map(|ref x| x.as_str()).collect();
         if maybe_arr_str.iter().any(|x| x.is_none()) {
-            return Err(format!("cmd must be an array of strings, but got {}", cmd_arr));
+            return Err(format!("cmd must be an array of strings, but got {:?}", cmd_arr));
         }
         if maybe_arr_str.len() == 0 {
           return Err("cmd must be an non-empty array of strings".to_string());
@@ -112,11 +113,11 @@ fn parse_item(name: String, conf: &toml::Value)
         Some(maybe_arr_str.iter().map(|x| x.unwrap().to_string()).collect())
       },
       "time_limit" => valid_int!(value as time_limit for name,
-                                 (Some(0i), None::<int>)),
+                                 (Some(0), None::<i32>)),
       "count_limit" => valid_int!(value as count_limit for name,
-                                 (Some(0i), None::<int>)),
+                                 (Some(0), None::<i32>)),
       "valid_percent" => valid_int!(value as valid_percent for name,
-                                    (Some(-1i), Some(101i))),
+                                    (Some(-1), Some(101))),
       //TODO: use log
       _ => {
         std::io::stderr().write_fmt(
@@ -171,7 +172,7 @@ fn merge_default(item: OptionalBenchmarkItem, default: &Option<OptionalBenchmark
 
 fn parse_config(toml: &str) -> Result<Vec<BenchmarkItem>,String> {
   let mut parser = toml::Parser::new(toml.as_slice());
-  let config = try!(parser.parse().ok_or(format!("bad TOML data: {}", parser.errors)));
+  let config = try!(parser.parse().ok_or(format!("bad TOML data: {:?}", parser.errors)));
 
   let item_v = try!(config.get("item").ok_or("no item definitions".to_string()));
   let items = try!(item_v.as_table().ok_or("item definitions should be in a table".to_string()));
@@ -226,7 +227,7 @@ fn time_item(item: &BenchmarkItem) -> Result<BenchmarkResult,String> {
   let avg = sum / len;
   let mdev = ((sum2 / len - avg * avg) as f64).sqrt() as u64;
 
-  let top_n = ((result.len() * item.valid_percent as uint) as f64 / 100.).round() as uint;
+  let top_n = ((result.len() * item.valid_percent as usize) as f64 / 100.).round() as usize;
   let tops = result.slice_to(top_n);
   let topavg = tops.iter().map(|&x| x).sum() / top_n as u64;
   Ok(BenchmarkResult {
@@ -235,13 +236,13 @@ fn time_item(item: &BenchmarkItem) -> Result<BenchmarkResult,String> {
     min: min,
     max: max,
     mdev: mdev,
-    count: result.len(),
+    count: result.len() as u32,
   })
 }
 
 fn run_once(cmd: &Vec<String>) -> Result<(u64,u64),String> {
   let start = time::precise_time_ns();
-  let status = match Command::new(cmd[0].as_slice()).args(cmd[1..])
+  let status = match Command::new(cmd[0].as_slice()).args(cmd.slice_from(1))
                      .stdin(StdioContainer::Ignored)
                      .stdout(StdioContainer::Ignored)
                      .stderr(StdioContainer::InheritFd(2))
@@ -251,7 +252,7 @@ fn run_once(cmd: &Vec<String>) -> Result<(u64,u64),String> {
   };
 
   if !status.success() {
-    return Err(format!("command {} exited with {}", cmd, status));
+    return Err(format!("command {:?} exited with {}", cmd, status));
   }
 
   let stop = time::precise_time_ns();
@@ -282,7 +283,7 @@ fn main() {
     stderr.write_fmt(format_args!("Running {}...", x.name));
     stderr.flush();
     let r = time_item(x);
-    stderr.write_fmt(format_args!("{}\n", r));
+    stderr.write_fmt(format_args!("{:?}\n", r));
     (x.name.as_slice(), r)
   }).collect();
   results.sort_by(|&(m, ref a), &(n, ref b)|
