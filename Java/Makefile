@@ -1,10 +1,10 @@
 default: SwapView.class
 
 SwapView.class: SwapView.java
-	javac SwapView.java
+	javac -g:none SwapView.java
 
 clean:
 	-rm -f SwapView.class
 
 run: SwapView.class
-	java SwapView
+	java -dsa -Xmixed -XX:CompileThreshold=4096 -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:+UseSerialGC SwapView
