@@ -1,14 +1,13 @@
-default: swapview
+all: swapview swapview-llvm
 
 swapview: swapview.d
-	dmd -O -release -inline -boundscheck=off ./swapview.d
+	dmd -O -release -inline -boundscheck=off $<
 	strip $@
 
-swapview-llvm: swapview
-	ldmd -O -release -inline -boundscheck=off ./swapview.d
-	mv swapview swapview-llvm
-	strip swapview-llvm
+swapview-llvm: swapview.d
+	ldmd -O -release -inline -boundscheck=off $< -of$@
+	strip $@
 
 clean:
-	-rm -f swapview{,.o}
+	-rm -f swapview{,-llvm} *.o
 

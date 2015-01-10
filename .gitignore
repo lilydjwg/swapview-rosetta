@@ -5,12 +5,13 @@
 *.class
 *.fasl
 *.beam
+*.o
 erl_crash.dump
 node_modules/
 
 # swapview specific
 */swapview
-*/swapview.o
 Chicken/format
 CoffeeScript*/*.js
+D/swapview-llvm
 Racket/compiled
