@@ -14,6 +14,9 @@
 #include <error.h>
 #include <errno.h>
 
+#ifdef USE_OMP
+#include <omp.h>
+#endif
 using namespace std;
 
 // #define TARGET "Size:"     // test with Size: when swap is empty
@@ -92,12 +95,18 @@ struct not_digit { bool operator() (char x){ return !isdigit(x); } };
 vector<swap_info> getSwap(){
     vector<swap_info> ret;
     vector<string> dir = lsdir("/proc");
+#ifdef USE_OMP
+#pragma omp parallel for
+#endif
     for(vector<string>::iterator itr=dir.begin(); itr<dir.end(); ++itr){
         if(find_if(itr->begin(), itr->end(), not_digit()) == itr->end()){
             int pid = atoi(itr->c_str());
             assert(pid > 0);
             swap_info item = getSwapFor(pid, *itr);
             if(item.size > 0)
+#ifdef USE_OMP
+#pragma omp critical
+#endif
             {
                 ret.push_back(item);
             }
@@ -117,6 +126,9 @@ void format_print(const swap_info& swap){
 }
 
 int main(int argc, char * argv[]){
+#ifdef USE_OMP
+    omp_set_num_threads(omp_get_num_procs()*4);
+#endif
     double t=0.0;
     vector<swap_info> result = getSwap();
     format_print("PID", "SWAP", "COMMAND");

@@ -21,6 +21,8 @@ valid_percent = 50
 [item.C++98]
 
 [item.C++98_omp]
+cmd = ["./swapview_omp"]
+dir = "C++98"
 
 [item.D_llvm]
 cmd = ["./swapview-llvm"]

@@ -1,7 +1,7 @@
 .PHONY: all clean
 
 languages = Haskell OCaml Rust Rust_parallel \
-	    C++98 C++98_omp C++14 C++14_boost C D Go \
+	    C++98 C++14 C++14_boost C D Go \
 	    NodeJS NodeJS_async CoffeeScript CoffeeScript_parallel \
 	    Java Chicken Racket FreePascal Erlang CommonLisp_opt
 
