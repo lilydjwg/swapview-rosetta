@@ -1,4 +1,5 @@
 #![feature(slicing_syntax)]
+#![allow(unstable)]
 
 use std::io::{File,BufferedReader};
 use std::num::SignedInt; // abs method
@@ -6,10 +7,10 @@ use std::io::fs;
 use std::sync::TaskPool;
 use std::sync::mpsc::channel;
 
-fn filesize(size: int) -> String {
+fn filesize(size: isize) -> String {
   let units = "KMGT";
   let mut left = size.abs() as f64;
-  let mut unit = -1i;
+  let mut unit = -1;
 
   while left > 1100. && unit < 3 {
     left /= 1024.;
@@ -21,7 +22,7 @@ fn filesize(size: int) -> String {
     if size < 0 {
       left = -left;
     }
-    format!("{:.1}{}iB", left, units.char_at(unit as uint))
+    format!("{:.1}{}iB", left, units.char_at(unit as usize))
   }
 }
 
@@ -34,7 +35,7 @@ fn chop_null(s: String) -> String {
   s.replace("\0", " ")
 }
 
-fn get_comm_for(pid: uint) -> String {
+fn get_comm_for(pid: usize) -> String {
   let cmdline_path = format!("/proc/{}/cmdline", pid);
   match File::open(&Path::new(&cmdline_path)).read_to_string() {
     // s may be empty for kernel threads
@@ -43,7 +44,7 @@ fn get_comm_for(pid: uint) -> String {
   }
 }
 
-fn get_swap_for(pid: uint) -> int {
+fn get_swap_for(pid: usize) -> isize {
   let smaps_path = format!("/proc/{}/smaps", pid);
   let mut file = BufferedReader::new(File::open(&Path::new(smaps_path)));
   let mut s = 0;
@@ -60,10 +61,10 @@ fn get_swap_for(pid: uint) -> int {
   s * 1024
 }
 
-fn get_swap() -> Vec<(uint, int, String)> {
+fn get_swap() -> Vec<(usize, isize, String)> {
   let pool = TaskPool::new(std::os::num_cpus());
   let (tx, rx) = channel();
-  let mut count = 0u;
+  let mut count = 0;
   for d in fs::readdir(&Path::new("/proc")).unwrap().iter() {
     if let Some(pid) = d.filename_str().unwrap().parse() {
       let tx = tx.clone();
@@ -86,7 +87,7 @@ fn main() {
   swapinfo.sort_by(|&(_, a, _), &(_, b, _)| { a.cmp(&b) });
 
   println!("{:>5} {:>9} {}", "PID", "SWAP", "COMMAND");
-  let mut total = 0i;
+  let mut total = 0;
   for &(pid, swap, ref comm) in swapinfo.iter() {
     total += swap;
     println!("{:>5} {:>9} {}", pid, filesize(swap), comm);
