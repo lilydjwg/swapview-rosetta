@@ -13,7 +13,7 @@ def filesize(size):
   left = abs(size)
   unit = -1
   while left > 1100 and unit < 3:
-    left = left / 1024
+    left /= 1024
     unit += 1
   if unit == -1:
     return '%dB' % size
@@ -28,10 +28,8 @@ def getSwapFor(pid):
     if comm and comm[-1] == '\x00':
       comm = comm[:-1]
     comm = comm.replace('\x00', ' ')
-    s = 0
-    for l in open('/proc/%s/smaps' % pid):
-      if l.startswith('Swap:'):
-        s += int(l.split()[1])
+    with open('/proc/%s/smaps' % pid) as f:
+      s = sum(int(l.split()[1]) for l in f if l.startswith('Swap:'))
     return pid, s * 1024, comm
   except (IOError, OSError):
     return pid, 0, ''
