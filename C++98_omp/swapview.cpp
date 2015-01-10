@@ -6,6 +6,9 @@
 #include <algorithm>
 #include <vector>
 
+#include <cmath>
+#include <cassert>
+
 #include <sys/types.h>
 #include <dirent.h>
 #include <error.h>
@@ -17,20 +20,11 @@ using namespace std;
 // #define TARGET "Size:"     // test with Size: when swap is empty
 #define TARGETLEN 5
 #define TARGET "Swap:"
-#define ABS(x) ((x<0)?(-x):(x))
 
 /////////////////////////////////////////////////////////////////////////////
 
-int inline str2i(const string & s){
-    int ret = 0;
-    for(string::const_iterator i = s.begin() ;i < s.end(); ++i){
-        if ( *i <= '9' && *i >= '0')
-            ret = ret * 10 + ( *i - '0');
-    }
-    return ret;
-}
-
-void inline lsdir(const string & path, vector<string> & ret){
+vector<string> inline lsdir(const string & path){
+    vector<string> ret;
     DIR *dp;
     struct dirent *dirp;
     if((dp  = opendir(path.c_str())) == NULL) {
@@ -40,11 +34,12 @@ void inline lsdir(const string & path, vector<string> & ret){
         ret.push_back(string(dirp->d_name));
     }
     closedir(dp);
+    return ret;
 }
 
 struct swap_info{
     int pid; string comm; double size;
-    int operator< (swap_info& other){
+    int operator< (const swap_info& other){
         return size < other.size;
     }
 };
@@ -53,7 +48,7 @@ struct swap_info{
 
 string filesize(double size){
     char units [] = "KMGT";
-    double left = ABS(size);
+    double left = fabs(size);
     int unit = -1;
     while( left > 1100 && unit < 3 ){
         left /= 1024;
@@ -83,21 +78,25 @@ swap_info getSwapFor(int pid, const string & spid){
     double s=0.0;
     ifstream sfs((string("/proc/") + spid + string("/smaps")).c_str());
     for(string buf; getline(sfs, buf);){
-        if(buf.substr(0, TARGETLEN)==TARGET){
-            s += str2i(buf);
+        if(mismatch(TARGET, TARGET + TARGETLEN, buf.begin())
+            .first == TARGET + TARGETLEN){
+            s += atoi(buf.c_str()+TARGETLEN);
         }
     }
     swap_info ret = {pid, comm, s*1024.0};
     return ret;
 }
 
-void getSwap(vector<swap_info> & ret){
-    vector<string> dir;
-    lsdir("/proc", dir);
+struct not_digit { bool operator() (char x){ return !isdigit(x); } };
+
+vector<swap_info> getSwap(){
+    vector<swap_info> ret;
+    vector<string> dir = lsdir("/proc");
 #pragma omp parallel for
     for(vector<string>::iterator itr=dir.begin(); itr<dir.end(); ++itr){
-        int pid = str2i(*itr);
-        if(pid > 0) {
+        if(find_if(itr->begin(), itr->end(), not_digit()) == itr->end()){
+            int pid = atoi(itr->c_str());
+            assert(pid > 0);
             swap_info item = getSwapFor(pid, *itr);
             if(item.size > 0)
 #pragma omp critical
@@ -107,6 +106,7 @@ void getSwap(vector<swap_info> & ret){
         }
     }
     sort(ret.begin(), ret.end());
+    return ret;
 }
 
 template<typename T1, typename T2, typename T3>
@@ -121,8 +121,7 @@ void format_print(const swap_info& swap){
 int main(int argc, char * argv[]){
     omp_set_num_threads(omp_get_num_procs()*4);
     double t=0.0;
-    vector<swap_info> result;
-    getSwap(result);
+    vector<swap_info> result = getSwap();
     format_print("PID", "SWAP", "COMMAND");
     for(vector<swap_info>::iterator itr = result.begin(); itr < result.end(); ++itr){
         format_print(*itr);
