@@ -4,23 +4,23 @@ from __future__ import print_function
 from __future__ import division
 
 import os
+import re
 
 format = "%5s %9s %s"
 totalFmt = "Total: %8s"
+swap_size_pattern = re.compile(r'Swap:\s+([^\s]+)')
 
 def filesize(size):
   units = 'KMGT'
   left = abs(size)
   unit = -1
   while left > 1100 and unit < 3:
-    left = left / 1024
+    left /= 1024
     unit += 1
   if unit == -1:
     return '%dB' % size
   else:
-    if size < 0:
-      left = -left
-    return '%.1f%siB' % (left, units[unit])
+    return '%.1f%siB' % (left if size > 0 else -left, units[unit])
 
 def getSwapFor(pid):
   try:
@@ -28,10 +28,7 @@ def getSwapFor(pid):
     if comm and comm[-1] == '\x00':
       comm = comm[:-1]
     comm = comm.replace('\x00', ' ')
-    s = 0
-    for l in open('/proc/%s/smaps' % pid):
-      if l.startswith('Swap:'):
-        s += int(l.split()[1])
+    s = sum(int(i.group(1)) for i in swap_size_pattern.finditer(open('/proc/%s/smaps' % pid).read()))
     return pid, s * 1024, comm
   except (IOError, OSError):
     return pid, 0, ''
