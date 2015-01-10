@@ -7,7 +7,7 @@
 #include <vector>
 
 #include <cmath>
-#include <cctype>
+#include <cassert>
 
 #include <sys/types.h>
 #include <dirent.h>
@@ -21,40 +21,27 @@ using namespace std;
 #define TARGET "Swap:"
 
 /////////////////////////////////////////////////////////////////////////////
-void readlines(string path, vector<string> & ret){
-    ifstream fs(path.c_str());
-    for(string buf; getline(fs, buf);){
-        ret.push_back(buf);
-    }
-}
 
-int str2i(string str){
-    int result;
-    istringstream ssin(str);
-    ssin>>result;
-    return result;
-}
-
-void lsdir(string path, vector<string> & ret){
+vector<string> inline lsdir(const string & path){
+    vector<string> ret;
     DIR *dp;
     struct dirent *dirp;
     if((dp  = opendir(path.c_str())) == NULL) {
         error(errno, errno, "opening %s \n", path.c_str());
     }
-
     while ((dirp = readdir(dp)) != NULL) {
         ret.push_back(string(dirp->d_name));
     }
     closedir(dp);
+    return ret;
 }
 
 struct swap_info{
     int pid; string comm; double size;
-    int operator< (swap_info& other){
+    int operator< (const swap_info& other){
         return size < other.size;
     }
 };
-
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -78,61 +65,64 @@ string filesize(double size){
     return sout.str();
 }
 
-swap_info getSwapFor(int pid){
-    ostringstream cmdline, smaps;
-    cmdline << "/proc/" << pid << "/cmdline";
-    ifstream fs(cmdline.str().c_str());
+swap_info getSwapFor(int pid, const string & spid){
+    ifstream fs((string("/proc/") + spid + string("/cmdline")).c_str());
     string comm((istreambuf_iterator<char>(fs)), istreambuf_iterator<char>());
     if(comm.length() > 0){
-      replace(comm.begin(), comm.end(), '\0' , ' ');
-      comm.erase(comm.end()-1);
+        replace(comm.begin(), comm.end(), '\0' , ' ');
+        if(*(comm.end()-1) == ' ')
+            comm.erase(comm.end()-1);
     }
+
     double s=0.0;
-    smaps << "/proc/" << pid << "/smaps";
-    vector<string> lines;
-    readlines(smaps.str(), lines);
-    for(vector<string>::iterator itr=lines.begin(); itr<lines.end(); ++itr ){
-        if(itr->substr(0, TARGETLEN)==TARGET){
-            s+=str2i(itr->substr(TARGETLEN));
+    ifstream sfs((string("/proc/") + spid + string("/smaps")).c_str());
+    for(string buf; getline(sfs, buf);){
+        if(buf.size() > TARGETLEN &&
+            mismatch(TARGET, TARGET + TARGETLEN, buf.begin())
+            .first == TARGET + TARGETLEN){
+            s += atoi(buf.c_str()+TARGETLEN);
         }
     }
     swap_info ret = {pid, comm, s*1024.0};
     return ret;
 }
 
+struct not_digit { bool operator() (char x){ return !isdigit(x); } };
 
-void getSwap(vector<swap_info> & ret){
-    vector<string> dir;
-    lsdir("/proc", dir);
+vector<swap_info> getSwap(){
+    vector<swap_info> ret;
+    vector<string> dir = lsdir("/proc");
     for(vector<string>::iterator itr=dir.begin(); itr<dir.end(); ++itr){
-        int pid = str2i(*itr);
-        if(pid > 0) {
-            swap_info item=getSwapFor(pid);
-            if(item.size > 0){
+        if(find_if(itr->begin(), itr->end(), not_digit()) == itr->end()){
+            int pid = atoi(itr->c_str());
+            assert(pid > 0);
+            swap_info item = getSwapFor(pid, *itr);
+            if(item.size > 0)
+            {
                 ret.push_back(item);
             }
         }
     }
     sort(ret.begin(), ret.end());
+    return ret;
 }
 
 template<typename T1, typename T2, typename T3>
-void format_print(T1 pid, T2 swap, T3 command){
-    cout<<setw(5)<<pid<<' '<<setw(9)<<swap<<' '<<command<<endl;
+void format_print(const T1 & pid, const T2 & swap, const T3 & command){
+    cout<<setw(5)<<pid<<' '<<setw(9)<<swap<<' '<<command<<'\n';
 }
 
-void format_print(swap_info& swap){
+void format_print(const swap_info& swap){
     format_print(swap.pid, filesize(swap.size), swap.comm);
 }
 
 int main(int argc, char * argv[]){
     double t=0.0;
-    vector<swap_info> result;
-    getSwap(result);
+    vector<swap_info> result = getSwap();
     format_print("PID", "SWAP", "COMMAND");
-    for(vector<swap_info>::iterator itr= result.begin(); itr<result.end();++itr){
+    for(vector<swap_info>::iterator itr = result.begin(); itr < result.end(); ++itr){
         format_print(*itr);
-        t+=itr->size;
+        t += itr->size;
     }
     cout<<"Total:"<<setw(9)<<filesize(t)<<endl;
     return 0;
