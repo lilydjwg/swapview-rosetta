@@ -77,7 +77,8 @@ swap_info getSwapFor(int pid, const string & spid){
     double s=0.0;
     ifstream sfs((string("/proc/") + spid + string("/smaps")).c_str());
     for(string buf; getline(sfs, buf);){
-        if(mismatch(TARGET, TARGET + TARGETLEN, buf.begin())
+        if(buf.size() > TARGETLEN &&
+            mismatch(TARGET, TARGET + TARGETLEN, buf.begin())
             .first == TARGET + TARGETLEN){
             s += atoi(buf.c_str()+TARGETLEN);
         }
