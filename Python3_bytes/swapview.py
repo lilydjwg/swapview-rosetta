@@ -25,10 +25,7 @@ def getSwapFor(pid):
     if comm and comm[-1] == b'\x00':
       comm = comm[:-1]
     comm = comm.replace(b'\x00', b' ')
-    s = 0
-    for l in open('/proc/%s/smaps' % pid, 'rb'):
-      if l.startswith(b'Swap:'):
-        s += int(l.split()[1].decode())
+    s = sum(int(l.split()[1].decode()) for l in open('/proc/%s/smaps' % pid, 'rb') if l.startswith(b'Swap:'))
     return pid, s * 1024, comm.decode()
   except (IOError, OSError):
     return pid, 0, ''
