@@ -1,12 +1,27 @@
 swapview is a simple program to view processes' swap usage on Linux. This is intended to be a lilydjwg's version of Hello World program.
 
+How to play
+----
+
+Install all the dependencies for your interested versions, then run `make -k`. It will build all that can be built.
+
+To test and see the speed comparison, either use `bench.py` or `runbenchmark`. `bench.py` uses Python 3.4+ and depends on `python-toml`.
+
+`runbenchmark` is a Rust version. Install latest Rust and Cargo, then change your working directory to `benchmark` and run `cargo build --release`. If the build fails, it's because your Rust is too old or too new....
+
+Run `./runbenchmark <benchmark.toml` and wait for it to finish. Failed ones (e.g. because you don't have the dependencies installed) will be marked as failed so you don't need to edit `benchmark.toml` to disable the ones you can't run.
+
+You can give `./runbenchmark` names to selectively run some versions, e.g.
+
+    ./runbenchmark C C++14 Rust Rust_parallel <benchmark.toml
+
 Implementions and their requirements
 ----
 
 Of course you should have corresponding compilers / interpreters installed.
 You can (edit and then) run `make` to build all that needs to be built.
 
-* Bash, broken, please contribute
+* Bash, broken, contribution welcome!
 * C
 * C++98
 * C++98_omp, openmp paralleled version
@@ -17,6 +32,7 @@ You can (edit and then) run `make` to build all that needs to be built.
 * CommonLisp_old, sbcl, maynbe others also work
 * CoffeeScript, requires promise (will be installed by `make`)
 * CoffeeScript_parallel, a parallel version, requires promise (will be installed by `make`)
+* D, `dmd` or `ldmd` (LLVM version)
 * Elixir
 * Erlang
 * Go
