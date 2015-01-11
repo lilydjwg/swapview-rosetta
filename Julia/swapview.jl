@@ -1,6 +1,6 @@
 #!/usr/bin/julia -f
 
-@inline function filesizeKB(size::Int)
+function filesizeKB(size::Int)
     left::Float64 = size
     unit::Int = 1
     while left > 1100 && unit < 4
@@ -11,7 +11,7 @@
     @sprintf("%.1f%siB", left, u)
 end
 
-@inline function getSwapFor(pid::ASCIIString)
+function getSwapFor(pid::ASCIIString)
     s::Int = 0
     for m in eachmatch(r"Swap: *([0-9]*)", open(readall, "/proc/$pid/smaps"))
         s += int(m.captures[1])
@@ -19,13 +19,13 @@ end
     return s
 end
 
-@inline function getCmd(pid::ASCIIString)
+function getCmd(pid::ASCIIString)
     comm::String = open(readall, "/proc/$pid/cmdline")
     !isempty(comm) && comm[end] == '\x00' && (comm = comm[1:end - 1])
     return replace(comm, "\x00", " ")
 end
 
-@inline function getSwap()
+function getSwap()
     ret = Any[]
     for f in readdir("/proc")
         isdigit(f) && try
@@ -39,8 +39,8 @@ end
 end
 
 function main()
-    @printf("%5s %9s %s\n", "PID", "SWAP", "COMMAND")
     results = getSwap()
+    @printf("%5s %9s %s\n", "PID", "SWAP", "COMMAND")
     for (pid, swap, comm) in results
         @printf("%5s %9s %s\n", pid, filesizeKB(swap), comm)
     end
