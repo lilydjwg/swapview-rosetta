@@ -13,7 +13,7 @@ end
 
 @inline function getSwapFor(pid::ASCIIString)
     s::Int = 0
-    for m in eachmatch(r"Size: *([0-9]*)", open(readall, "/proc/$pid/smaps"))
+    for m in eachmatch(r"Swap: *([0-9]*)", open(readall, "/proc/$pid/smaps"))
         s += int(m.captures[1])
     end
     return s
