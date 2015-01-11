@@ -1,0 +1,65 @@
+before_install:
+    - wget http://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb
+    - sudo dpkg -i erlang-solutions_1.0_all.deb
+    - wget http://downloads.dlang.org/releases/2014/dmd_2.066.1-0_amd64.deb
+    - sudo dpkg -i dmd_2.066.1-0_amd64.deb
+    - wget https://github.com/ldc-developers/ldc/releases/download/v0.15.1/ldc2-0.15.1-linux-x86_64.tar.xz
+    - tar xfv ldc2-0.15.1-linux-x86_64.tar.xz >/dev/null
+    - mv ldc2-0.15.1-linux-x86_64 ldc2
+    - sudo cp -r ldc2 /opt
+    - wget https://bitbucket.org/pypy/pypy/downloads/pypy3-2.4.0-linux64.tar.bz2
+    - tar xfv pypy3-2.4.0-linux64.tar.bz2
+    - mv pypy3-2.4.0-linux64 pypy3
+    - sudo cp -r pypy3 /opt
+    - wget https://bootstrap.pypa.io/get-pip.py
+    - wget http://static.rust-lang.org/cargo-dist/cargo-nightly-x86_64-unknown-linux-gnu.tar.gz
+    - tar xfv cargo-nightly-x86_64-unknown-linux-gnu.tar.gz
+    - sudo add-apt-repository ppa:hansjorg/rust -y
+    - sudo add-apt-repository ppa:webupd8team/java -y
+    - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+    - sudo add-apt-repository ppa:hvr/ghc -y
+    - sudo add-apt-repository ppa:boost-latest/ppa -y
+    - sudo add-apt-repository ppa:plt/racket -y
+    - sudo add-apt-repository ppa:fkrull/deadsnakes -y
+    - sudo add-apt-repository ppa:staticfloat/juliareleases -y
+    - sudo add-apt-repository ppa:kalon33/gamesgiroll -y
+    - sudo apt-get update
+
+install:
+    - sudo apt-get install python3.4 dmd g++-4.9 libstdc++-4.9-dev boost1.55 ghc-7.8.4 cabal-install-1.22 ocaml fp-compiler nodejs npm sbcl elixir erlang golang guile-2.0 oracle-java8-installer lua5.2 lua5.1 luajit lua-filesystem python3 pypy racket ruby coffeescript chicken-bin julia php5
+    - sudo apt-get install rust-nightly
+    - echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections
+    - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 90
+    - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.9 90
+    - sudo update-alternatives --install /usr/bin/cc cc /usr/bin/gcc 90
+    - sudo update-alternatives --set cc /usr/bin/gcc
+    - sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++ 90
+    - sudo update-java-alternatives -s java-8-oracle
+    - sudo apt-get install oracle-java8-set-default
+    - sudo update-alternatives --install /usr/bin/ghc ghc /opt/ghc/7.8.4/bin/ghc-7.8.4 90
+    - sudo update-alternatives --install /usr/bin/ghc-pkg ghc-pkg /opt/ghc/7.8.4/bin/ghc-pkg-7.8.4 90
+    - sudo update-alternatives --install /usr/bin/cabal cabal /opt/cabal/1.22/bin/cabal 90
+    - sudo update-alternatives --install /usr/bin/ldmd ldmd /opt/ldc2/bin/ldmd2 90
+    - sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.4 90
+    - sudo update-alternatives --install /usr/bin/luajit luajit /usr/bin/luajit-2.* 90
+    - sudo update-alternatives --install /usr/bin/pypy3 pypy3 /opt/pypy3/bin/pypy3.2 90
+    - sudo python3 get-pip.py
+    - sudo ./cargo-nightly-x86_64-unknown-linux-gnu/install.sh
+    - ghc --version
+    - cabal --version
+    - racket --version
+    - dmd --help | head -n1
+    - ldmd --help | head -n1
+    - python3 --version
+    - pip3 --version
+    - pypy3 --version
+    - rustc --version
+    - php --version
+    - cabal update
+    - cabal install strict
+    - sudo pip3 install toml
+    - cargo --version
+    - (cd benchmark; cargo build --release)
+    - make -k
+
+script: benchmark/target/release/benchmark <benchmark.toml
