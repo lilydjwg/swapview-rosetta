@@ -27,7 +27,9 @@ function renderSize($size)
 function getSwapFor($pid)
 {
     $comm = file_get_contents("/proc/$pid/cmdline", "r");
-    $comm = rtrim($comm, "\0");
+    if ("\0" == substr($comm, -1)) {
+        $comm = substr($comm, 0, strlen($comm) - 1);
+    }
     $comm = str_replace("\0", " ", $comm);
 
     $s = 0;
