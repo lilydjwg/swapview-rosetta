@@ -61,6 +61,9 @@ cmd = ["./swapview.scm"]
 [item.Java]
 cmd = ["java", "-dsa", "-Xmixed", "-XX:CompileThreshold=4096", "-XX:+TieredCompilation", "-XX:TieredStopAtLevel=1", "-XX:+UseSerialGC", "SwapView"]
 
+[item.Julia]
+cmd = ["./swapview.jl"]
+
 [item.Lua51]
 cmd = ["lua5.1", "swapview.lua"]
 dir = "Lua"
