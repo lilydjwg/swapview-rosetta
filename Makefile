@@ -13,3 +13,9 @@ $(languages): %:
 
 clean:
 	for d in $(languages); do $(MAKE) clean -C "$$d"; done
+
+maketime: clean
+	> $@
+	for d in $(languages); do time -f "%e $$d" -a -o $@ $(MAKE) -C "$$d"; done
+	sort $@ -o $@  -t" " -k1 -n
+	cat $@
