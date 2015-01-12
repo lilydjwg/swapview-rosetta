@@ -26,18 +26,28 @@ function renderSize($size)
 
 function getSwapFor($pid)
 {
-    $comm = file_get_contents("/proc/$pid/cmdline", "r");
+    $fallback = array($pid, 0, '');
+
+    $commFile = "/proc/$pid/cmdline";
+    if (!is_readable($commFile)) {
+        return $fallback;
+    }
+    $comm = file_get_contents($commFile, "r");
     if ("\0" == substr($comm, -1)) {
         $comm = substr($comm, 0, strlen($comm) - 1);
     }
     $comm = str_replace("\0", " ", $comm);
 
     $s = 0;
+    $smapsFile = "/proc/$pid/smaps";
+    if (!is_readable($smapsFile)) {
+        return $fallback;
+    }
     $smaps = file_get_contents("/proc/$pid/smaps", "r");
     $matchCount = preg_match_all('/\nSwap:\s+(\d+)/', $smaps, $matches);
 
     if (false === $matchCount) {
-        return array($pid, 0, '');
+        return $fallback;
 
     } else {
         foreach ($matches[1] as $match) {
