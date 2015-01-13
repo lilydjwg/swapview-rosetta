@@ -6,6 +6,8 @@
 *.fasl
 *.beam
 *.o
+*.exe
+*.so
 erl_crash.dump
 node_modules/
 
