@@ -123,3 +123,5 @@ cmd = ["./swapview.rb"]
 [item.Rust]
 
 [item.Rust_parallel]
+
+[item.Vala]

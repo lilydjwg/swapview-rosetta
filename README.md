@@ -50,6 +50,7 @@ You can (edit and then) run `make` to build all that needs to be built.
 * Racket
 * Ruby
 * Rust, use git version please
+* Vala, requires `glib2` (`libglib-2.0` and `libgio-2.0`)
 
 Contributions
 ----
