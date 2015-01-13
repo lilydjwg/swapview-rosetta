@@ -29,10 +29,11 @@ function getSwapFor($pid)
     $fallback = array($pid, 0, '');
 
     $commFile = "/proc/$pid/cmdline";
-    if (!is_readable($commFile)) {
+    if (!is_readable($commFile) ||
+        false === ($comm = file_get_contents($commFile, 'r'))
+    ) {
         return $fallback;
     }
-    $comm = file_get_contents($commFile, "r");
     if ("\0" == substr($comm, -1)) {
         $comm = substr($comm, 0, strlen($comm) - 1);
     }
@@ -40,10 +41,11 @@ function getSwapFor($pid)
 
     $s = 0;
     $smapsFile = "/proc/$pid/smaps";
-    if (!is_readable($smapsFile)) {
+    if (!is_readable($smapsFile) ||
+        false === ($smaps = file_get_contents($smapsFile, 'r'))
+    ) {
         return $fallback;
     }
-    $smaps = file_get_contents("/proc/$pid/smaps", "r");
     $matchCount = preg_match_all('/\nSwap:\s+(\d+)/', $smaps, $matches);
 
     if (false === $matchCount) {
