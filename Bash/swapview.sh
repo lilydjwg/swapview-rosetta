@@ -28,7 +28,7 @@ function getSwap(){
     > $sumfile
     cd /proc
     (for pid in [0-9]*; do
-        command=$(cat /proc/$pid/cmdline 2>/dev/null | tr '\0' ' ')
+        command=$(tr '\0' ' ' </proc/$pid/cmdline 2>/dev/null)
         len=$((${#command}-1))
         if [[ "${command:$len:1}"x = " "x ]]; then
             command="${command:0:$len}"
@@ -44,8 +44,8 @@ function getSwap(){
         )
         [[ $? -ne 0 ]] && continue
 
-        if (( $swap > 0 )); then
-            fs=`filesize $((swap*1024))`
+        if (( swap > 0 )); then
+            fs=$(filesize $((swap*1024)))
             echo $swap >>$sumfile
             printf "%5s %9s %s\n" "$pid" "$fs" "$command"
         fi
