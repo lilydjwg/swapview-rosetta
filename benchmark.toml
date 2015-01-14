@@ -12,6 +12,10 @@ time_limit = 30
 count_limit = 20
 valid_percent = 50
 
+
+[item.Bash]
+cmd = ["./swapview.sh"]
+
 [item.C]
 
 [item.C++14]
