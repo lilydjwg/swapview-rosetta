@@ -21,7 +21,8 @@ Implementions and their requirements
 Of course you should have corresponding compilers / interpreters installed.
 You can (edit and then) run `make` to build all that needs to be built.
 
-* Bash, broken, contribution welcome!
+* Bash
+* Bash_parallel, Bash version using GNU parallel
 * C
 * C++98
 * C++98_omp, openmp paralleled version
