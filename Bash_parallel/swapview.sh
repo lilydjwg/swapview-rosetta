@@ -55,7 +55,7 @@ function getSwap(){
     export -f filesize
     export sumfile
     cd /proc
-    ls -d [0-9]* | parallel -I% "getSwapFor %" | sort -k2 -h
+    ls -d [0-9]* | parallel --no-notice -I% "getSwapFor %" | sort -k2 -h
     sumsize=$(paste -sd+ <$sumfile)
     if [[ "$sumsize"x = ""x ]]; then
         sumsize=0
