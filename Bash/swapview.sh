@@ -28,7 +28,7 @@ function getSwap(){
     > $sumfile
     cd /proc
     (for pid in [0-9]*; do
-        command=$(tr '\0' ' ' </proc/$pid/cmdline 2>/dev/null)
+        [[ -f /proc/$pid/cmdline ]] && command=$(tr '\0' ' ' </proc/$pid/cmdline 2>/dev/null)
         [[ $? -ne 0 ]] && continue
         len=$((${#command}-1))
         if [[ "${command:$len:1}"x = " "x ]]; then
