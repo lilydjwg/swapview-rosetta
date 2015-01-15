@@ -29,11 +29,11 @@ function getSwap(){
     cd /proc
     (for pid in [0-9]*; do
         command=$(tr '\0' ' ' </proc/$pid/cmdline 2>/dev/null)
+        [[ $? -ne 0 ]] && continue
         len=$((${#command}-1))
         if [[ "${command:$len:1}"x = " "x ]]; then
             command="${command:0:$len}"
         fi
-        [[ $? -ne 0 ]] && continue
 
         swap=$(
             awk '
@@ -50,7 +50,11 @@ function getSwap(){
             printf "%5s %9s %s\n" "$pid" "$fs" "$command"
         fi
     done) | sort -k2 -h
-    total=$(filesize $(( $(paste -sd+ <$sumfile | bc) *1024)))
+    sumsize=$(paste -sd+ <$sumfile)
+    if [[ "$sumsize"x = ""x ]]; then
+        sumsize=0
+    fi
+    total=$(filesize $(( $(echo $sumsize | bc) *1024)))
     printf "Total: %8s\n" $total
     rm $sumfile
 }
