@@ -25,7 +25,7 @@ EOF
 
 function getSwapFor(){
     pid=$1
-    [[ -f /proc/$pid/cmdline ]] && command=$(tr '\0' ' ' </proc/$pid/cmdline 2>/dev/null)
+    command=$(tr '\0' ' ' 2>/dev/null </proc/$pid/cmdline)
     [[ $? -ne 0 ]] && return
     len=$((${#command}-1))
     if [[ "${command:$len:1}"x = " "x ]]; then
@@ -55,7 +55,7 @@ function getSwap(){
     export -f filesize
     export sumfile
     cd /proc
-    ls -d [0-9]* | parallel -I% "getSwapFor %" | sort -k2 -h
+    ls -d [0-9]* | parallel --no-notice -I% "getSwapFor %" | sort -k2 -h
     sumsize=$(paste -sd+ <$sumfile)
     if [[ "$sumsize"x = ""x ]]; then
         sumsize=0
