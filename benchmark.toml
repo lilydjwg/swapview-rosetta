@@ -21,13 +21,13 @@ cmd = ["./swapview.sh"]
 
 [item.C]
 
-[item.C++14]
+[item."C++14"]
 
-[item.C++14_boost]
+[item."C++14_boost"]
 
-[item.C++98]
+[item."C++98"]
 
-[item.C++98_omp]
+[item."C++98_omp"]
 cmd = ["./swapview_omp"]
 dir = "C++98"
 
