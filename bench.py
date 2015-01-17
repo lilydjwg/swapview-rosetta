@@ -56,6 +56,8 @@ def bench_profile(profile, ref_result_out, verbose,
                   time_field, show_diff_below, **kwargs):
     try:
         out, err, ret, usage = run_profile(**profile)
+    except KeyboardInterrupt:
+        die("Keyboard Interrupt from user")
     except:
         out, err, ret, usage = (
             "", ('Error cmd: %s\n' % " ".join(profile['cmd'])), 1, dict(elapsed=0))
