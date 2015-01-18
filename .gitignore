@@ -10,6 +10,9 @@
 *.so
 erl_crash.dump
 node_modules/
+.cabal-sandbox/
+dist/
+cabal.sandbox.config
 
 # swapview specific
 */swapview

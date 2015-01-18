@@ -1,0 +1,10 @@
+Name:           swapview
+Version:        0.1
+Cabal-Version:  >= 1.2
+Build-Type:     Simple
+
+Executable swapview
+  Build-Depends:  strict, base, directory, text, time, text-format
+  Main-Is:        swapview.hs
+  Hs-Source-Dirs: .
+  GHC-Options: -O2
