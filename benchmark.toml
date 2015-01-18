@@ -123,6 +123,9 @@ dir = "Python"
 cmd = ["pypy3", "swapview.py"]
 dir = "Python3_bytes"
 
+[item.R]
+cmd = ["./swapview.r"]
+
 [item.Racket]
 cmd = ["./swapview.rkt"]
 

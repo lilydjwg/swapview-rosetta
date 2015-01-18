@@ -47,8 +47,10 @@ You can (edit and then) run `make` to build all that needs to be built.
 * NodeJS_async, another NodeJS version which use async I/O, requires sprintf and async (will be installed by `make`)
 * OCaml
 * FreePascal
+* Perl
 * Python, works with Python 2 & 3
 * Python3_bytes
+* R
 * Racket
 * Ruby
 * Rust, use git version please
