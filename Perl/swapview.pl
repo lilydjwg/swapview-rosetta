@@ -24,12 +24,12 @@ sub filesize{
 
 sub getSwapFor{
     my ($pid) = @_;
-    open FILE,"/proc/$pid/cmdline" or return ($pid, 0, '');
+    open FILE,"/proc/$pid/cmdline" or return (pid=>$pid, size=>0, comm=>'');
     my $comm = join("", <FILE>); 
     close FILE;
     substr($comm, length($comm) - 1, 1) eq "\0" and chop($comm);
     $comm =~ s/\0/ /g;
-    open FILE,"/proc/$pid/smaps" or return ($pid, 0, '');
+    open FILE,"/proc/$pid/smaps" or return (pid=>$pid, size=>0, comm=>'');
     my $s=0;
     while(<FILE>){
         if(/^Swap:/){
