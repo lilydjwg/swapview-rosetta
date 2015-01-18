@@ -94,6 +94,9 @@ cmd = ["./swapview.js"]
 
 [item.OCaml]
 
+[item.Perl]
+cmd = ["./swapview.pl"]
+
 [item.PHP]
 cmd = ["./swapview.php"]
 
