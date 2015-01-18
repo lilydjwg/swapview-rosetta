@@ -56,6 +56,8 @@ def bench_profile(profile, ref_result_out, verbose,
                   time_field, show_diff_below, **kwargs):
     try:
         out, err, ret, usage = run_profile(**profile)
+    except KeyboardInterrupt:
+        die("Keyboard Interrupt from user")
     except:
         out, err, ret, usage = (
             "", ('Error cmd: %s\n' % " ".join(profile['cmd'])), 1, dict(elapsed=0))
@@ -90,16 +92,21 @@ def load_config():
                        time_field="elapsed",
                        show_diff_below=0.9,
                        verbose=True)
-    del items['default']
+    ret_items = {}
     for name, item in zip(items, items.values()):
+        if name == 'default':
+            continue
+        if name.startswith('"') and name.endswith('"'):
+            import ast
+            name = ast.literal_eval(name)
         profile = dict(default)
         profile.update(item)
         profile['name'] = name
-        items[name] = profile
         for k, v in zip(profile, profile.values()):
             if type(v) is str:
                 profile[k] = Template(v).safe_substitute(**profile)
-    return items, options
+        ret_items[name] = profile
+    return ret_items, options
 
 
 def times2str(item):
