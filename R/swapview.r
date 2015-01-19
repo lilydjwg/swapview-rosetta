@@ -48,7 +48,9 @@ getSwap <- function(){
   all = data.frame(pid=unlist(unname(all[1,])), 
                    size=unlist(unname(all[2,])), 
                    comm=unlist(unname(all[3,])))
-  all = all[order(all[,2]),]
+  if(length(all)>0){
+      all = all[order(all[,2]),]
+  }
   all
 }
 
@@ -57,7 +59,9 @@ write(sprintf("%5s %9s %s", "PID", "SIZE", "COMMAND"), stdout())
 t = 0
 for(i in 1:nrow(result)){
   size = as.numeric(result[i,2])
-  write(sprintf("%5s %9s %s", result[i,1], filesize(size), result[i,3]), stdout())
-  t = t + size
+  if(length(size)>0){
+    write(sprintf("%5s %9s %s", result[i,1], filesize(size), result[i,3]), stdout())
+    t = t + size
+  }
 }
 write(sprintf("Total: %8s", filesize(t)), stdout())
