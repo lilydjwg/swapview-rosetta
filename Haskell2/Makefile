@@ -5,7 +5,7 @@ all: swapview
 swapview: .cabal-sandbox/.timestamp swapview.hs
 	cabal install --reinstall
 	strip .cabal-sandbox/bin/swapview
-	ln -s .cabal-sandbox/bin/swapview swapview
+	ln -sf .cabal-sandbox/bin/swapview swapview
 
 deps: .cabal-sandbox/.timestamp
 
