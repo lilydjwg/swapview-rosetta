@@ -62,8 +62,7 @@ impl AtDir {
 
 impl std::ops::Drop for AtDir {
   fn drop(&mut self) {
-    #![allow(unused_must_use)]
-    std::os::change_dir(&self.oldpwd);
+    std::os::change_dir(&self.oldpwd).unwrap();
   }
 }
 
