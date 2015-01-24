@@ -3,13 +3,14 @@
 
 extern crate toml;
 extern crate time;
+extern crate glob;
 
 use std::io::Command;
 use std::io::process::StdioContainer;
 use std::iter::AdditiveIterator;
 use std::num::Float;
 use std::cmp::Ordering::{Less, Greater};
-use std::collections::HashSet;
+use glob::Pattern;
 
 #[derive(Show)]
 struct OptionalBenchmarkItem {
@@ -228,7 +229,7 @@ fn time_item(item: &BenchmarkItem) -> Result<BenchmarkResult,String> {
   let mdev = ((sum2 / len - avg * avg) as f64).sqrt() as u64;
 
   let top_n = ((result.len() * item.valid_percent as usize) as f64 / 100.).round() as usize;
-  let tops = result.slice_to(top_n);
+  let tops = &result[..top_n];
   let topavg = tops.iter().map(|&x| x).sum() / top_n as u64;
   Ok(BenchmarkResult {
     topavg: topavg,
@@ -242,7 +243,7 @@ fn time_item(item: &BenchmarkItem) -> Result<BenchmarkResult,String> {
 
 fn run_once(cmd: &Vec<String>) -> Result<(u64,u64),String> {
   let start = time::precise_time_ns();
-  let status = match Command::new(cmd[0].as_slice()).args(cmd.slice_from(1))
+  let status = match Command::new(cmd[0].as_slice()).args(&cmd[1..])
                      .stdin(StdioContainer::Ignored)
                      .stdout(StdioContainer::Ignored)
                      .stderr(StdioContainer::InheritFd(2))
@@ -267,13 +268,12 @@ fn main() {
     Err(e) => panic!("can't read input data: {}", e),
   };
   let items = parse_config(toml.as_slice()).unwrap();
-  // for item in items.iter() {
-  //   println!("{}", item);
-  // }
 
-  let args: HashSet<String> = std::os::args().tail().iter().map(|x| x.clone()).collect();
+  let args: Vec<_> = std::os::args().tail()
+    .iter().map(|x| Pattern::new(x.as_slice()).unwrap()).collect();
   let items_to_run = if args.len() > 0 {
-    items.into_iter().filter(|x| args.contains(&x.name)).collect()
+    items.into_iter().filter(
+      |x| args.iter().any(|p| p.matches(x.name.as_slice()))).collect()
   } else {
     items
   };

@@ -13,7 +13,7 @@ Run `./runbenchmark <benchmark.toml` and wait for it to finish. Failed ones (e.g
 
 You can give `./runbenchmark` names to selectively run some versions, e.g.
 
-    ./runbenchmark C C++14 Rust Rust_parallel <benchmark.toml
+    ./runbenchmark C C++14 'Rust*' <benchmark.toml
 
 Implementions and their requirements
 ----
