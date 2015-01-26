@@ -53,7 +53,8 @@ readdir('/proc')
     .sort (aaa, bbb) -> aaa[1] - bbb[1]
     output out
 .then null, (error) ->
-  console.error 'error', error
+  console.error error.stack
+  process.exit 1
 
 output = (res) ->
   console.log [
