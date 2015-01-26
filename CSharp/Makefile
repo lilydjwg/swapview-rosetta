@@ -4,7 +4,7 @@ MONO=mono-sgen
 default: SwapView.exe.so
 
 SwapView.exe: SwapView.cs
-	mcs -clscheck- -debug- -optimize+ SwapView.cs
+	dmcs -clscheck- -debug- -optimize+ SwapView.cs
 
 SwapView.exe.so: SwapView.exe
 	$(MONO) --aot -O=all,-shared $(MONOFLAGS) SwapView.exe
