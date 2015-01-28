@@ -1,6 +1,7 @@
 #!/bin/sh -
 
 readonly CURRENT_USER_ID="$(id -u)"
+readonly PRINTF_FORMAT='%5s %9s %s\n'
 
 main() {
     printf "$PRINTF_FORMAT" 'PID' 'SWAP' 'COMMAND'
@@ -29,10 +30,10 @@ main() {
             fi
             if [ "$(printf '%s\n' "${swap_size} > 0" | bc)" -eq 1 ]
             then
-                printf '%5s %9s %s\n' "$pid" "$swap_size" "$cmd"
+                printf "$PRINTF_FORMAT" "$pid" "$swap_size" "$cmd"
             fi
         done | sort -k2n | \
-        awk 'function convert_file_size_from_kB(size, _ARGV_END_, unit, units) {
+        awk -v "printf_format=${PRINTF_FORMAT}" 'function convert_file_size_from_kB(size, _ARGV_END_, unit, units) {
                 split("KMGT", units, "")
                 unit=1
                 while (size > 1100 && unit < 4) {
@@ -54,7 +55,7 @@ main() {
             }
             {
                 total += $2
-                printf("%5s %9s %s\n", $1, convert_file_size_from_kB($2), join_field(3, NF, " "))
+                printf(printf_format, $1, convert_file_size_from_kB($2), join_field(3, NF, " "))
             }
             END{
                 printf("Total: %s\n", convert_file_size_from_kB(total))
