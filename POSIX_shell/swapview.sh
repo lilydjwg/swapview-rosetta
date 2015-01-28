@@ -33,7 +33,8 @@ main() {
                 printf "$PRINTF_FORMAT" "$pid" "$swap_size" "$cmd"
             fi
         done | sort -k2n | \
-        awk -v "printf_format=${PRINTF_FORMAT}" 'function convert_file_size_from_kB(size, _ARGV_END_, unit, units) {
+        awk -v "printf_format=${PRINTF_FORMAT}" \
+            'function convert_file_size_from_kB(size, _ARGV_END_, unit, units) {
                 split("KMGT", units, "")
                 unit=1
                 while (size > 1100 && unit < 4) {
