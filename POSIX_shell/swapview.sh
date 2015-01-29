@@ -8,7 +8,11 @@ main() {
     find '/proc' -maxdepth 2 -regextype posix-basic -regex '/proc/[[:digit:]]\+' -type d -print | \
         while read dir_path || [ -n "$dir_path" ]
         do
-            local pid="$(grep -o '[[:digit:]]\+' <<< "$dir_path")"
+            # Dash isn't support here string, so I use here document instead.
+            local pid="$(grep -o '[[:digit:]]\+' <<EOF
+$dir_path
+EOF
+            )"
             local smaps_file="${dir_path}/smaps"
             local cmdline_file="${dir_path}/cmdline"
             local swap_size=0
