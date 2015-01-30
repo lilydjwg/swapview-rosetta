@@ -199,7 +199,7 @@ fn parse_config(toml: &str) -> Result<Vec<BenchmarkItem>,String> {
 
 fn time_item(item: &BenchmarkItem) -> Result<BenchmarkResult,String> {
   let start = time::precise_time_ns();
-  let limit = (item.time_limit * 1_000_000_000) as u64;
+  let limit = item.time_limit as u64 * 1_000_000_000u64;
 
   let _cwd = match AtDir::new(item.dir.as_slice()) {
     Ok(atdir) => atdir,
