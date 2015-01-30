@@ -19,6 +19,18 @@ cmd = ["./swapview.sh"]
 [item.Bash_parallel]
 cmd = ["./swapview.sh"]
 
+[item.POSIX_dash]
+dir = "POSIX_shell"
+cmd = ["dash", "./swapview.sh"]
+
+[item.POSIX_bash]
+dir = "POSIX_shell"
+cmd = ["bash", "./swapview.sh"]
+
+[item.POSIX_zsh]
+dir = "POSIX_shell"
+cmd = ["zsh", "./swapview.sh"]
+
 [item.C]
 
 [item."C++14"]
