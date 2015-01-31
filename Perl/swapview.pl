@@ -63,13 +63,13 @@ sub convert_file_size_from_kB {
 
 sub main {
     my $printf_format = qq{%5s %9s %s\n};
-    printf $printf_format, qw{PID SWAP COMMAND};
     opendir( my $proc_dh, q{/proc} );
     chdir $proc_dh;
     my @pid_dirs = grep { -d && /^[[:digit:]]+$/xms } readdir $proc_dh;
     closedir $proc_dh;
     my @results = sort { $a->{'swap'} <=> $b->{'swap'} } get_swap_info_from( \@pid_dirs );
     my $total_swap_size = 0;
+    printf $printf_format, qw{PID SWAP COMMAND};
     for my $result ( @results ) {
         $total_swap_size += $result->{'swap'};
         printf $printf_format, $result->{'pid'}, convert_file_size_from_kB( $result->{'swap'} ), $result->{'cmd'};
