@@ -1,9 +1,12 @@
 #![feature(slicing_syntax)]
-#![allow(unstable)]
+#![feature(io)]
+#![feature(collections)]
+#![feature(path)]
+#![feature(core)]
 
-use std::io::{File,BufferedReader};
+use std::old_io::{File,BufferedReader};
 use std::num::SignedInt; // abs method
-use std::io::fs;
+use std::old_io::fs;
 
 fn filesize(size: isize) -> String {
   let units = "KMGT";

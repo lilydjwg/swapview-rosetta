@@ -1,9 +1,14 @@
 #![feature(slicing_syntax)]
-#![allow(unstable)]
+#![feature(io)]
+#![feature(os)]
+#![feature(collections)]
+#![feature(path)]
+#![feature(core)]
+#![feature(std_misc)]
 
-use std::io::{File,BufferedReader};
+use std::old_io::{File,BufferedReader};
 use std::num::SignedInt; // abs method
-use std::io::fs;
+use std::old_io::fs;
 use std::sync::TaskPool;
 use std::sync::mpsc::channel;
 
