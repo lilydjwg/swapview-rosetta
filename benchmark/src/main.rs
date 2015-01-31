@@ -1,18 +1,23 @@
 #![feature(slicing_syntax)]
-#![allow(unstable)]
+#![feature(io)]
+#![feature(os)]
+#![feature(collections)]
+#![feature(core)]
+#![feature(path)]
 
 extern crate toml;
 extern crate time;
 extern crate glob;
 
-use std::io::Command;
-use std::io::process::StdioContainer;
+use std::old_io as io;
+use std::old_io::Command;
+use std::old_io::process::StdioContainer;
 use std::iter::AdditiveIterator;
 use std::num::Float;
 use std::cmp::Ordering::{Less, Greater};
 use glob::Pattern;
 
-#[derive(Show)]
+#[derive(Debug)]
 struct OptionalBenchmarkItem {
   name: String,
   dir: Option<String>,
@@ -22,7 +27,7 @@ struct OptionalBenchmarkItem {
   valid_percent: Option<i32>,
 }
 
-#[derive(Show)]
+#[derive(Debug)]
 struct BenchmarkItem {
   name: String,
   dir: String,
@@ -32,7 +37,7 @@ struct BenchmarkItem {
   valid_percent: i32,
 }
 
-#[derive(Show)]
+#[derive(Debug)]
 struct BenchmarkResult {
   topavg: u64,
   avg: u64,
@@ -53,7 +58,7 @@ struct AtDir {
 }
 
 impl AtDir {
-  fn new(dir: &str) -> std::io::IoResult<AtDir> {
+  fn new(dir: &str) -> io::IoResult<AtDir> {
     let oldpwd = try!(std::os::getcwd());
     try!(std::os::change_dir(&Path::new(dir)));
     Ok(AtDir { oldpwd: oldpwd })
@@ -120,7 +125,7 @@ fn parse_item(name: String, conf: &toml::Value)
                                     (Some(-1), Some(101))),
       //TODO: use log
       _ => {
-        std::io::stderr().write_fmt(
+        io::stderr().write_fmt(
         format_args!("warning: unknown field: {}", key)).unwrap();
       },
     };
@@ -261,7 +266,7 @@ fn run_once(cmd: &Vec<String>) -> Result<(u64,u64),String> {
 
 #[allow(unused_must_use)]
 fn main() {
-  let stdin = std::io::stdin().read_to_string();
+  let stdin = io::stdin().read_to_string();
   let toml = match stdin {
     Ok(v) => v,
     Err(e) => panic!("can't read input data: {}", e),
@@ -277,7 +282,7 @@ fn main() {
     items
   };
 
-  let mut stderr = std::io::stderr();
+  let mut stderr = io::stderr();
   let mut results: Vec<_> = items_to_run.iter().map(|x| {
     stderr.write_fmt(format_args!("Running {}...", x.name));
     stderr.flush();
