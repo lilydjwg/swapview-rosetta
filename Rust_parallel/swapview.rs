@@ -1,7 +1,6 @@
 #![feature(slicing_syntax)]
 #![feature(io)]
 #![feature(os)]
-#![feature(collections)]
 #![feature(path)]
 #![feature(core)]
 #![feature(std_misc)]
@@ -71,7 +70,7 @@ fn get_swap() -> Vec<(usize, isize, String)> {
   let (tx, rx) = channel();
   let mut count = 0;
   for d in fs::readdir(&Path::new("/proc")).unwrap().iter() {
-    if let Some(pid) = d.filename_str().unwrap().parse() {
+    if let Ok(pid) = d.filename_str().unwrap().parse() {
       let tx = tx.clone();
       pool.execute(move || {
         tx.send(match get_swap_for(pid) {

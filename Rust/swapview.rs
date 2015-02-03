@@ -1,6 +1,5 @@
 #![feature(slicing_syntax)]
 #![feature(io)]
-#![feature(collections)]
 #![feature(path)]
 #![feature(core)]
 
@@ -64,7 +63,7 @@ fn get_swap_for(pid: usize) -> isize {
 
 fn get_swap() -> Vec<(usize, isize, String)> {
   fs::readdir(&Path::new("/proc")).unwrap().iter().filter_map(
-    |d| d.filename_str().unwrap().parse().and_then(|pid|
+    |d| d.filename_str().unwrap().parse().ok().and_then(|pid|
       match get_swap_for(pid) {
        0 => None,
        swap => Some((pid, swap, get_comm_for(pid))),
