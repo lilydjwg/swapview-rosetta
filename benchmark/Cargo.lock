@@ -2,9 +2,9 @@
 name = "benchmark"
 version = "0.0.1"
 dependencies = [
- "glob 0.1.8 (registry+https://github.com/rust-lang/crates.io-index)",
+ "glob 0.1.9 (registry+https://github.com/rust-lang/crates.io-index)",
  "time 0.1.15 (registry+https://github.com/rust-lang/crates.io-index)",
- "toml 0.1.15 (registry+https://github.com/rust-lang/crates.io-index)",
+ "toml 0.1.16 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -14,7 +14,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "glob"
-version = "0.1.8"
+version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
@@ -24,7 +24,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "rustc-serialize"
-version = "0.2.10"
+version = "0.2.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
@@ -38,9 +38,9 @@ dependencies = [
 
 [[package]]
 name = "toml"
-version = "0.1.15"
+version = "0.1.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "rustc-serialize 0.2.10 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rustc-serialize 0.2.12 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 

@@ -1,9 +1,10 @@
 #![feature(slicing_syntax)]
 #![feature(io)]
 #![feature(os)]
-#![feature(collections)]
 #![feature(core)]
 #![feature(path)]
+#![feature(env)]
+#![feature(std_misc)]
 
 extern crate toml;
 extern crate time;
@@ -15,6 +16,7 @@ use std::old_io::process::StdioContainer;
 use std::iter::AdditiveIterator;
 use std::num::Float;
 use std::cmp::Ordering::{Less, Greater};
+use std::ffi::AsOsStr;
 use glob::Pattern;
 
 #[derive(Debug)]
@@ -59,15 +61,15 @@ struct AtDir {
 
 impl AtDir {
   fn new(dir: &str) -> io::IoResult<AtDir> {
-    let oldpwd = try!(std::os::getcwd());
-    try!(std::os::change_dir(&Path::new(dir)));
+    let oldpwd = try!(std::env::current_dir());
+    try!(std::env::set_current_dir(&Path::new(dir)));
     Ok(AtDir { oldpwd: oldpwd })
   }
 }
 
 impl std::ops::Drop for AtDir {
   fn drop(&mut self) {
-    std::os::change_dir(&self.oldpwd).unwrap();
+    std::env::set_current_dir(&self.oldpwd).unwrap();
   }
 }
 
@@ -273,8 +275,8 @@ fn main() {
   };
   let items = parse_config(toml.as_slice()).unwrap();
 
-  let args: Vec<_> = std::os::args().tail()
-    .iter().map(|x| Pattern::new(x.as_slice()).unwrap()).collect();
+  let args: Vec<_> = std::env::args().skip(1)
+    .map(|x| Pattern::new(x.as_os_str().to_string_lossy().as_slice()).unwrap()).collect();
   let items_to_run = if args.len() > 0 {
     items.into_iter().filter(
       |x| args.iter().any(|p| p.matches(x.name.as_slice()))).collect()
