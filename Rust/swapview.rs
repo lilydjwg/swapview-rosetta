@@ -1,11 +1,13 @@
 #![feature(slicing_syntax)]
 #![feature(io)]
+#![feature(fs)]
+#![feature(os)]
 #![feature(path)]
 #![feature(core)]
 
-use std::old_io::{File,BufferedReader};
+use std::fs::{File,read_dir};
+use std::io::{Read,BufReader,BufReadExt};
 use std::num::SignedInt; // abs method
-use std::old_io::fs;
 
 fn filesize(size: isize) -> String {
   let units = "KMGT";
@@ -37,19 +39,28 @@ fn chop_null(s: String) -> String {
 
 fn get_comm_for(pid: usize) -> String {
   let cmdline_path = format!("/proc/{}/cmdline", pid);
-  match File::open(&Path::new(&cmdline_path)).read_to_string() {
-    // s may be empty for kernel threads
-    Ok(s) => chop_null(s),
-    Err(_) => String::new(),
-  }
+  let mut buf = String::new();
+  let mut file = match File::open(&cmdline_path) {
+    Ok(f) => f,
+    Err(_) => return String::new(),
+  };
+  match file.read_to_string(&mut buf) {
+    Ok(()) => (),
+    Err(_) => return String::new(),
+  };
+  chop_null(buf)
 }
 
 fn get_swap_for(pid: usize) -> isize {
-  let smaps_path = format!("/proc/{}/smaps", pid);
-  let mut file = BufferedReader::new(File::open(&Path::new(smaps_path)));
   let mut s = 0;
+  let smaps_path = format!("/proc/{}/smaps", pid);
+  let file = match File::open(&smaps_path) {
+    Ok(f) => f,
+    Err(_) => return 0,
+  };
+  let reader = BufReader::new(file);
 
-  for l in file.lines() {
+  for l in reader.lines() {
     let line = match l {
       Ok(s) => s,
       Err(_) => return 0,
@@ -62,14 +73,16 @@ fn get_swap_for(pid: usize) -> isize {
 }
 
 fn get_swap() -> Vec<(usize, isize, String)> {
-  fs::readdir(&Path::new("/proc")).unwrap().iter().filter_map(
-    |d| d.filename_str().unwrap().parse().ok().and_then(|pid|
+  read_dir("/proc").unwrap().filter_map(|d| {
+    let path = d.unwrap().path();
+    path.file_name().unwrap().to_str().unwrap()
+    .parse().ok().and_then(|pid|
       match get_swap_for(pid) {
        0 => None,
        swap => Some((pid, swap, get_comm_for(pid))),
       }
     )
-  ).collect()
+  }).collect()
 }
 
 fn main() {
