@@ -1,0 +1,125 @@
+package main
+
+import (
+	"bytes"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
+	"sort"
+	"strconv"
+	"sync"
+        "runtime"
+	// "time"
+)
+
+type Info struct {
+	Pid  int
+	Size int64
+	Comm string
+}
+
+type Infos []Info
+
+func (p Infos) Len() int           { return len(p) }
+func (p Infos) Less(i, j int) bool { return p[i].Size < p[j].Size }
+func (p Infos) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+
+func main() {
+	// t0 := time.Now()
+	// defer func() {
+	//         fmt.Printf("%v\n", time.Now().Sub(t0))
+	// }()
+
+        runtime.GOMAXPROCS(4)
+
+	slist := GetInfos()
+	sort.Sort(Infos(slist))
+
+	fmt.Printf("%5s %9s %s\n", "PID", "SWAP", "COMMAND")
+	var total int64
+	for _, v := range slist {
+		fmt.Printf("%5d %9s %s\n", v.Pid, FormatSize(v.Size), v.Comm)
+		total += v.Size
+	}
+	fmt.Printf("Total: %8s\n", FormatSize(total))
+}
+
+func GetInfos() (list []Info) {
+	f, _ := os.Open("/proc")
+	defer f.Close()
+	names, err := f.Readdirnames(0)
+	if err != nil {
+		log.Fatalf("read /proc: %v", err)
+	}
+
+	info_ch := make(chan *Info, 1024)
+	wg := new(sync.WaitGroup)
+
+	go func(info_ch chan *Info, list []Info) {
+		for {
+			tmp := <-info_ch
+			if tmp != nil {
+				list = append(list, *tmp)
+			}
+		}
+	}(info_ch, list)
+
+	for _, name := range names {
+		pid, err := strconv.Atoi(name)
+		if err != nil {
+			continue
+		}
+		wg.Add(1)
+		go GetInfo(pid, info_ch, wg)
+	}
+	wg.Wait()
+
+	return
+}
+
+func GetInfo(pid int, info_ch chan<- *Info, wg *sync.WaitGroup) {
+	defer wg.Done()
+	info := new(Info)
+        info.Pid = pid
+	var bs []byte
+	var err error
+	bs, err = ioutil.ReadFile(fmt.Sprintf("/proc/%d/cmdline", pid))
+	if err != nil {
+		info_ch <- nil
+		return
+	}
+	info.Comm = string(bs)
+	bs, err = ioutil.ReadFile(fmt.Sprintf("/proc/%d/smaps", pid))
+	if err != nil {
+		info_ch <- nil
+		return
+	}
+	var total int64
+	for _, line := range bytes.Split(bs, []byte("\n")) {
+		if bytes.HasPrefix(line, []byte("Swap:")) {
+			start := bytes.IndexAny(line, "0123456789")
+			end := bytes.Index(line[start:], []byte(" "))
+			size, err := strconv.ParseInt(string(line[start:start+end]), 10, 0)
+			if err != nil {
+				continue
+			}
+			total += size
+		}
+	}
+	info.Size = total
+	info_ch <- info
+	return
+}
+
+var units = []string{"K", "M", "G", "T"}
+
+func FormatSize(s int64) string {
+	unit := 0
+	f := float64(s)
+	for unit < len(units) && f > 1024.0 {
+		f /= 1024.0
+		unit++
+	}
+	return fmt.Sprintf("%.1f%siB", f, units[unit])
+}
