@@ -1,4 +1,4 @@
-#![feature(slicing_syntax)]
+#![feature(str_words)]
 #![feature(io)]
 #![feature(fs)]
 #![feature(os)]
