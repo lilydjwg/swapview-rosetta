@@ -69,4 +69,5 @@ var t: float = 0
 for i in infos:
     echo i
     t += i.swap
-echo "Total:       " & filesize(t)
+var total = filesize(t)
+echo "Total: " & repeatChar(max(0, 8 - total.len)) & total
