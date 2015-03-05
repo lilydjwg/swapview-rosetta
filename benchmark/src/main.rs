@@ -1,22 +1,22 @@
-#![feature(slicing_syntax)]
 #![feature(io)]
 #![feature(os)]
 #![feature(core)]
 #![feature(path)]
-#![feature(env)]
 #![feature(std_misc)]
 
 extern crate toml;
 extern crate time;
 extern crate glob;
 
-use std::old_io as io;
-use std::old_io::Command;
-use std::old_io::process::StdioContainer;
+use std::io;
+use std::process::Command;
+use std::path::{Path,PathBuf};
+use std::process::Stdio;
 use std::iter::AdditiveIterator;
 use std::num::Float;
 use std::cmp::Ordering::{Less, Greater};
 use std::ffi::AsOsStr;
+use std::io::{Read,Write};
 use glob::Pattern;
 
 #[derive(Debug)]
@@ -56,11 +56,11 @@ macro_rules! ns2ms {
 }
 
 struct AtDir {
-  oldpwd: Path,
+  oldpwd: PathBuf,
 }
 
 impl AtDir {
-  fn new(dir: &str) -> io::IoResult<AtDir> {
+  fn new(dir: &str) -> io::Result<AtDir> {
     let oldpwd = try!(std::env::current_dir());
     try!(std::env::set_current_dir(&Path::new(dir)));
     Ok(AtDir { oldpwd: oldpwd })
@@ -210,7 +210,7 @@ fn time_item(item: &BenchmarkItem) -> Result<BenchmarkResult,String> {
 
   let _cwd = match AtDir::new(item.dir.as_slice()) {
     Ok(atdir) => atdir,
-    Err(err) => return Err(err.desc.to_string()),
+    Err(err) => return Err(err.description().to_string()),
   };
   let mut result = Vec::new();
 
@@ -250,12 +250,12 @@ fn time_item(item: &BenchmarkItem) -> Result<BenchmarkResult,String> {
 fn run_once(cmd: &Vec<String>) -> Result<(u64,u64),String> {
   let start = time::precise_time_ns();
   let status = match Command::new(cmd[0].as_slice()).args(&cmd[1..])
-                     .stdin(StdioContainer::Ignored)
-                     .stdout(StdioContainer::Ignored)
-                     .stderr(StdioContainer::InheritFd(2))
+                     .stdin(Stdio::null())
+                     .stdout(Stdio::null())
+                     .stderr(Stdio::inherit())
                      .status() {
     Ok(status) => status,
-    Err(err) => return Err(err.desc.to_string()),
+    Err(err) => return Err(err.description().to_string()),
   };
 
   if !status.success() {
@@ -268,11 +268,11 @@ fn run_once(cmd: &Vec<String>) -> Result<(u64,u64),String> {
 
 #[allow(unused_must_use)]
 fn main() {
-  let stdin = io::stdin().read_to_string();
-  let toml = match stdin {
-    Ok(v) => v,
-    Err(e) => panic!("can't read input data: {}", e),
-  };
+  let mut toml = String::new();
+  let result = io::stdin().read_to_string(&mut toml);
+  if let Err(e) = result {
+    panic!("can't read input data: {}", e);
+  }
   let items = parse_config(toml.as_slice()).unwrap();
 
   let args: Vec<_> = std::env::args().skip(1)

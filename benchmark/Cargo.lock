@@ -2,45 +2,45 @@
 name = "benchmark"
 version = "0.0.1"
 dependencies = [
- "glob 0.1.9 (registry+https://github.com/rust-lang/crates.io-index)",
- "time 0.1.15 (registry+https://github.com/rust-lang/crates.io-index)",
- "toml 0.1.16 (registry+https://github.com/rust-lang/crates.io-index)",
+ "glob 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "time 0.1.19 (registry+https://github.com/rust-lang/crates.io-index)",
+ "toml 0.1.18 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "gcc"
-version = "0.1.7"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "glob"
-version = "0.1.9"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "libc"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "rustc-serialize"
-version = "0.2.12"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "time"
-version = "0.1.15"
+version = "0.1.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "gcc 0.1.7 (registry+https://github.com/rust-lang/crates.io-index)",
- "libc 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gcc 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "libc 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "toml"
-version = "0.1.16"
+version = "0.1.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "rustc-serialize 0.2.12 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rustc-serialize 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
