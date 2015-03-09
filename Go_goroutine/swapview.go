@@ -6,10 +6,10 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"runtime"
 	"sort"
 	"strconv"
 	"sync"
-        "runtime"
 	// "time"
 )
 
@@ -31,7 +31,7 @@ func main() {
 	//         fmt.Printf("%v\n", time.Now().Sub(t0))
 	// }()
 
-        runtime.GOMAXPROCS(4)
+	runtime.GOMAXPROCS(4)
 
 	slist := GetInfos()
 	sort.Sort(Infos(slist))
@@ -56,14 +56,14 @@ func GetInfos() (list []Info) {
 	info_ch := make(chan *Info, 1024)
 	wg := new(sync.WaitGroup)
 
-	go func(info_ch chan *Info, list []Info) {
+	go func(info_ch chan *Info, list *[]Info) {
 		for {
 			tmp := <-info_ch
 			if tmp != nil {
-				list = append(list, *tmp)
+				*list = append(*list, *tmp)
 			}
 		}
-	}(info_ch, list)
+	}(info_ch, &list)
 
 	for _, name := range names {
 		pid, err := strconv.Atoi(name)
@@ -74,14 +74,13 @@ func GetInfos() (list []Info) {
 		go GetInfo(pid, info_ch, wg)
 	}
 	wg.Wait()
-
 	return
 }
 
 func GetInfo(pid int, info_ch chan<- *Info, wg *sync.WaitGroup) {
 	defer wg.Done()
 	info := new(Info)
-        info.Pid = pid
+	info.Pid = pid
 	var bs []byte
 	var err error
 	bs, err = ioutil.ReadFile(fmt.Sprintf("/proc/%d/cmdline", pid))
