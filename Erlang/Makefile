@@ -1,10 +1,7 @@
-TARGET = swapview.beam line_server.beam
+TARGET = swapview.beam
 all:: $(TARGET)
 
 swapview.beam: swapview.erl
-	erlc $^
-
-line_server.beam: line_server.erl
 	erlc $^
 
 test:: all

@@ -1,94 +1,93 @@
 -module(swapview).
--export([getswapfor/2, swap_print/0]).
+-export([swap_print/0, getswapfor/2]).
 
 is_integer(S) ->
-    try
-        _ = list_to_integer(S),
-        true
-    catch error:badarg ->
-        false
+    case string:to_integer(S) of
+        {_, []} ->
+            true;
+        _ ->
+            false
     end.
 
 filesize(Size) ->
     Units = "KMGT",
-    {Filesize, Unit} = filesize(Size, 0),
-    if Size < 0 -> Fixsize = -1.0 * Filesize;
-       true -> Fixsize = 1.0 * Filesize
-    end,
-    if Unit > 0 ->
-           float_to_list(Fixsize, [{decimals, 1}])++[lists:nth(Unit, Units)]++"iB";
-       Unit =:= 0 ->
-           float_to_list(Fixsize, [{decimals, 0}])++"B"
+    case filesize(Size, 0) of
+        {Fixsize, 0} ->
+            io_lib:format("~.0fB", [Fixsize]);
+        {Fixsize, Unit} when Unit > 0 ->
+            io_lib:format("~.1f~ciB", [Fixsize, lists:nth(Unit, Units)])
     end.
 
+filesize(Size, Unit) 
+  when Size < 0 ->
+    {Size1, Unit1} = filesize(-Size, Unit),
+    {-Size1, Unit1};
+filesize(Size, Unit)
+  when Unit < 4, Size > 1100 ->
+    filesize(Size / 1024, Unit + 1);
 filesize(Size, Unit) ->
-    Left = abs(Size),
-    if Unit < 4, Left > 1100 ->
-           filesize(Left / 1024, Unit + 1);
-       true ->
-           {Size, Unit}
-    end.
+    {Size, Unit}.
 
 swap_print() ->
     Ret = getswap(),
     io:format("~5s ~9s ~s~n", ["PID", "SWAP", "COMMAND"]),
-    [io:format("~5s ~9s ~s~n", [element(1, E), filesize(element(3, E)), element(2, E)])
-     || E <- Ret],
-    Total = lists:foldl(fun(E, Sum) -> element(3, E) + Sum end, 0, Ret),
+    [io:format("~5s ~9s ~s~n", [Pid, filesize(Size), Cmd]) || {Pid, Cmd, Size} <- Ret],
+    Total = lists:sum([Size || {_,_,Size} <- Ret]),
     io:format("Total: ~8s~n", [filesize(Total)]).
 
 getswap() ->
     {ok, F} = file:list_dir_all("/proc"),
     Pids = lists:filter(fun is_integer/1, F),
-    lists:map(fun(Pid) -> spawn(?MODULE, getswapfor, [self(), Pid]) end, Pids),
-    S = read_result(length(Pids), []),
-    lists:keysort(3, [E || E <- S, element(3, E) > 0]).
+    [spawn(?MODULE, getswapfor, [self(), Pid]) || Pid <- Pids],
+    S = [read_result() || _ <- Pids],
+    lists:keysort(3, [E || E = {_,_,Size} <- S, Size > 0]).
 
-read_result(0, L) ->
-    L;
-read_result(Count_spawn, L) ->
+read_result() ->
     receive
+        Data ->
+            Data
+    end.
+
+read_file(File) ->
+    case file:read(File, 4096) of
         {ok, Data} ->
-            read_result(Count_spawn-1, [Data|L])
+            Data ++ read_file(File);
+        eof ->
+            []
     end.
 
 getswapfor(Master, Pid) ->
-    case file:open("/proc/"++Pid++"/cmdline", [read]) of
-        {ok, Comm} ->
-            case io:get_line(Comm, "") of
-                eof -> Cmd = "";
-                Str ->
-                    case lists:last(Str) of
-                        0 -> Cmd_ = lists:sublist(Str, length(Str)-1);
-                        _ -> Cmd_ = Str
-                    end,
-                    Cmd = re:replace(Cmd_, "\\x00", " ", [global, {return, list}])
-            end;
-        {error, _} -> Cmd = ""
-    end,
-    H = line_server:get_handle("/proc/"++Pid++"/smaps"),
-    Size = getswapsize(H, 0) * 1024,
-    Master ! {ok, {Pid, Cmd, Size}}.
+    case file:open("/proc/"++Pid++"/cmdline", [read, raw, read_ahead]) of
+        {ok, File} ->
+            Cmd =
+                try
+                    string:join(string:tokens(read_file(File), [0]), " ")
+                after
+                    file:close(File)
+                end,
 
-getswapsize(H, Acc) ->
-    case line_server:get_lines(H) of
-        eof -> Acc;
-        Lines ->
-            Size = swapsize(Lines),
-            getswapsize(H, Acc + Size)
+            case file:open("/proc/"++Pid++"/smaps", [read, raw, read_ahead]) of
+                {ok, File2} ->
+                    Size =
+                        try
+                            getswapsize(File2, 0) * 1024
+                        after
+                            file:close(File2)
+                        end,
+                    Master ! {Pid, Cmd, Size};
+                {error, _} ->
+                    Master ! 0
+            end;
+        {error, _} ->
+            Master ! 0
     end.
 
-swapsize(Lines) ->
-    swapsize(Lines, 0).
-
-swapsize([H|T], Acc) ->
-    Hsize = getswapsize_bin(H),
-    swapsize(T, Acc + Hsize);
-swapsize([], Acc) ->
-    Acc.
-
-getswapsize_bin(<<"Swap:",  Sizebin/binary>>) ->
-    Sizestr = erlang:binary_to_list(Sizebin),
-    erlang:list_to_integer(string:sub_word(Sizestr, 1));
-getswapsize_bin(_) ->
-    0.
+getswapsize(File, Acc) ->
+    case file:read_line(File) of
+        eof -> Acc;
+        {ok, "Swap:" ++ Rest} ->
+            {Size, _} = string:to_integer(string:strip(Rest, left, 32)),
+            getswapsize(File, Acc+Size);
+        {ok, _} ->
+            getswapsize(File, Acc)
+    end.
