@@ -56,12 +56,21 @@ read_file(File) ->
             []
     end.
 
+convert_cmdline([]) ->
+  [];
+convert_cmdline(Cmd) ->
+  Cmd_ = case lists:last(Cmd) of
+    0 -> lists:sublist(Cmd, length(Cmd)-1);
+    _ -> Cmd
+  end,
+  lists:map(fun(0) -> 32; (C) -> C end, Cmd_).
+
 getswapfor(Master, Pid) ->
     case file:open("/proc/"++Pid++"/cmdline", [read, raw, read_ahead]) of
         {ok, File} ->
             Cmd =
                 try
-                    string:join(string:tokens(read_file(File), [0]), " ")
+                    convert_cmdline(read_file(File))
                 after
                     file:close(File)
                 end,
@@ -89,5 +98,6 @@ getswapsize(File, Acc) ->
             {Size, _} = string:to_integer(string:strip(Rest, left, 32)),
             getswapsize(File, Acc+Size);
         {ok, _} ->
-            getswapsize(File, Acc)
+            getswapsize(File, Acc);
+        {error, _} -> 0
     end.
