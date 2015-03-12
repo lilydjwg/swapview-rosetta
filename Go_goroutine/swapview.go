@@ -89,7 +89,11 @@ func GetInfo(pid int, info_ch chan<- *Info, wg *sync.WaitGroup) {
 		info_ch <- nil
 		return
 	}
-	info.Comm = strings.Trim(string(bs), "\x00")
+        var comm = string(bs)
+        if strings.HasSuffix(comm, "\x00") {
+            comm = comm[:len(comm)-1]
+        }
+	info.Comm = strings.Replace(comm, "\x00", " ", -1)
 	bs, err = ioutil.ReadFile(fmt.Sprintf("/proc/%d/smaps", pid))
 	if err != nil {
 		info_ch <- nil
