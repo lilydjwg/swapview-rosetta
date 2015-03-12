@@ -1,7 +1,6 @@
 #![feature(str_words)]
 #![feature(io)]
-#![feature(fs)]
-#![feature(os)]
+#![feature(collections)]
 #![feature(path)]
 #![feature(core)]
 
