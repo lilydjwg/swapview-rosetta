@@ -75,6 +75,8 @@ cmd = ["./erlswapview"]
 
 [item.Go]
 
+[item.Go_goroutine]
+
 [item.Guile]
 cmd = ["./swapview.scm"]
 
