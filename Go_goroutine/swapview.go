@@ -6,10 +6,12 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"runtime"
 	"sort"
 	"strconv"
-        "strings"
-        // "time"
+	"strings"
+	"sync"
+	// "time"
 )
 
 type Info struct {
@@ -25,10 +27,12 @@ func (p Infos) Less(i, j int) bool { return p[i].Size < p[j].Size }
 func (p Infos) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
 
 func main() {
-        // t0 := time.Now()
-        // defer func() {
-        //         fmt.Printf("%v\n", time.Now().Sub(t0))
-        // }()
+	// t0 := time.Now()
+	// defer func() {
+	//         fmt.Printf("%v\n", time.Now().Sub(t0))
+	// }()
+
+	runtime.GOMAXPROCS(4)
 
 	slist := GetInfos()
 	sort.Sort(Infos(slist))
@@ -49,25 +53,40 @@ func GetInfos() (list []Info) {
 	if err != nil {
 		log.Fatalf("read /proc: %v", err)
 	}
+
+	info_ch := make(chan *Info, 1024)
+	wg := new(sync.WaitGroup)
+
+	go func(info_ch chan *Info, list *[]Info) {
+		for {
+			tmp := <-info_ch
+			if tmp != nil {
+				*list = append(*list, *tmp)
+			}
+		}
+	}(info_ch, &list)
+
 	for _, name := range names {
 		pid, err := strconv.Atoi(name)
 		if err != nil {
 			continue
 		}
-		info, err := GetInfo(pid)
-		if err != nil || info.Size == 0 {
-			continue
-		}
-		list = append(list, info)
+		wg.Add(1)
+		go GetInfo(pid, info_ch, wg)
 	}
+	wg.Wait()
 	return
 }
 
-func GetInfo(pid int) (info Info, err error) {
+func GetInfo(pid int, info_ch chan<- *Info, wg *sync.WaitGroup) {
+	defer wg.Done()
+	info := new(Info)
 	info.Pid = pid
 	var bs []byte
+	var err error
 	bs, err = ioutil.ReadFile(fmt.Sprintf("/proc/%d/cmdline", pid))
 	if err != nil {
+		info_ch <- nil
 		return
 	}
         var comm = string(bs)
@@ -77,6 +96,7 @@ func GetInfo(pid int) (info Info, err error) {
 	info.Comm = strings.Replace(comm, "\x00", " ", -1)
 	bs, err = ioutil.ReadFile(fmt.Sprintf("/proc/%d/smaps", pid))
 	if err != nil {
+		info_ch <- nil
 		return
 	}
 	var total int64
@@ -92,6 +112,11 @@ func GetInfo(pid int) (info Info, err error) {
 		}
 	}
 	info.Size = total
+	if info.Size == 0 {
+		info_ch <- nil
+	} else {
+		info_ch <- info
+	}
 	return
 }
 
