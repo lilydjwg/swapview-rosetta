@@ -9,6 +9,7 @@ import (
 	"runtime"
 	"sort"
 	"strconv"
+	"strings"
 	"sync"
 	// "time"
 )
@@ -88,7 +89,7 @@ func GetInfo(pid int, info_ch chan<- *Info, wg *sync.WaitGroup) {
 		info_ch <- nil
 		return
 	}
-	info.Comm = string(bs)
+	info.Comm = strings.Trim(string(bs), "\x00")
 	bs, err = ioutil.ReadFile(fmt.Sprintf("/proc/%d/smaps", pid))
 	if err != nil {
 		info_ch <- nil
@@ -107,7 +108,11 @@ func GetInfo(pid int, info_ch chan<- *Info, wg *sync.WaitGroup) {
 		}
 	}
 	info.Size = total
-	info_ch <- info
+	if info.Size == 0 {
+		info_ch <- nil
+	} else {
+		info_ch <- info
+	}
 	return
 }
 
