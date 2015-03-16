@@ -1,13 +1,11 @@
 #![feature(str_words)]
-#![feature(io)]
 #![feature(collections)]
 #![feature(os)]
-#![feature(path)]
 #![feature(core)]
 #![feature(std_misc)]
 
 use std::fs::{File,read_dir};
-use std::io::{Read,BufReader,BufReadExt};
+use std::io::{Read,BufReader,BufRead};
 use std::num::SignedInt; // abs method
 use std::sync::TaskPool;
 use std::sync::mpsc::channel;
@@ -48,7 +46,7 @@ fn get_comm_for(pid: usize) -> String {
     Err(_) => return String::new(),
   };
   match file.read_to_string(&mut buf) {
-    Ok(()) => (),
+    Ok(_) => (),
     Err(_) => return String::new(),
   };
   chop_null(buf)
