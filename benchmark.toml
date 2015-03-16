@@ -158,4 +158,7 @@ cmd = ["./swapview.rb"]
 
 [item.Rust_parallel]
 
+[item.Scala]
+cmd = ["scala", "SwapView"]
+
 [item.Vala]
