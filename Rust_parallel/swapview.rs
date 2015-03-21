@@ -1,5 +1,5 @@
 #![feature(str_words)]
-#![feature(collections)]
+#![feature(str_char)]
 #![feature(os)]
 #![feature(core)]
 #![feature(std_misc)]

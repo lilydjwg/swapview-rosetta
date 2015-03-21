@@ -1,5 +1,5 @@
 #![feature(str_words)]
-#![feature(collections)]
+#![feature(str_char)]
 #![feature(core)]
 
 use std::fs::{File,read_dir};
