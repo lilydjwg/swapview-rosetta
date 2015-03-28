@@ -1,8 +1,6 @@
-#![feature(io)]
-#![feature(os)]
 #![feature(core)]
-#![feature(path)]
 #![feature(std_misc)]
+#![feature(convert)]
 
 extern crate toml;
 extern crate time;
@@ -17,6 +15,7 @@ use std::num::Float;
 use std::cmp::Ordering::{Less, Greater};
 use std::ffi::AsOsStr;
 use std::io::{Read,Write};
+use std::error::Error;
 use glob::Pattern;
 
 #[derive(Debug)]
@@ -105,7 +104,7 @@ fn parse_item(name: String, conf: &toml::Value)
   let mut count_limit = None;
   let mut valid_percent = None;
   for (key, value) in item.iter() {
-    match key.as_slice() {
+    match key.as_ref() {
       "dir" => dir = value.as_str().map(|x| x.to_string()),
       "cmd" => cmd = {
         let cmd_arr = try!(value.as_slice().ok_or(
@@ -168,7 +167,7 @@ fn merge_default(item: OptionalBenchmarkItem, default: &Option<OptionalBenchmark
   let valid_percent = try!(maybe_valid_percent.ok_or(
     format!("{} don't have required field valid_percent", item.name)));
 
-  let expanded_dir = dir.replace("$name", item.name.as_slice());
+  let expanded_dir = dir.replace("$name", &item.name);
   Ok(BenchmarkItem{
     name: item.name, dir: expanded_dir, cmd: cmd,
     time_limit: time_limit,
@@ -178,7 +177,7 @@ fn merge_default(item: OptionalBenchmarkItem, default: &Option<OptionalBenchmark
 }
 
 fn parse_config(toml: &str) -> Result<Vec<BenchmarkItem>,String> {
-  let mut parser = toml::Parser::new(toml.as_slice());
+  let mut parser = toml::Parser::new(&toml);
   let config = try!(parser.parse().ok_or(format!("bad TOML data: {:?}", parser.errors)));
 
   let item_v = try!(config.get("item").ok_or("no item definitions".to_string()));
@@ -191,7 +190,7 @@ fn parse_config(toml: &str) -> Result<Vec<BenchmarkItem>,String> {
 
   let mut ret = Vec::with_capacity(items.len());
   for (name, conf) in items.iter() {
-    if name.as_slice() == "default" {
+    if as_str(&name) == "default" {
       continue;
     }
     ret.push(
@@ -208,13 +207,13 @@ fn time_item(item: &BenchmarkItem) -> Result<BenchmarkResult,String> {
   let start = time::precise_time_ns();
   let limit = item.time_limit as u64 * 1_000_000_000u64;
 
-  let _cwd = match AtDir::new(item.dir.as_slice()) {
+  let _cwd = match AtDir::new(&item.dir) {
     Ok(atdir) => atdir,
-    Err(err) => return Err(err.description().to_string()),
+    Err(err) => return Err(Error::description(&err).to_string()),
   };
   let mut result = Vec::new();
 
-  for _ in range(0, item.count_limit) {
+  for _ in 0..item.count_limit {
     let (used, now) = try!(run_once(&item.cmd));
     result.push(used);
     if now - start > limit {
@@ -249,13 +248,13 @@ fn time_item(item: &BenchmarkItem) -> Result<BenchmarkResult,String> {
 
 fn run_once(cmd: &Vec<String>) -> Result<(u64,u64),String> {
   let start = time::precise_time_ns();
-  let status = match Command::new(cmd[0].as_slice()).args(&cmd[1..])
+  let status = match Command::new(as_str(&cmd[0])).args(&cmd[1..])
                      .stdin(Stdio::null())
                      .stdout(Stdio::null())
                      .stderr(Stdio::inherit())
                      .status() {
     Ok(status) => status,
-    Err(err) => return Err(err.description().to_string()),
+    Err(err) => return Err(Error::description(&err).to_string()),
   };
 
   if !status.success() {
@@ -266,6 +265,10 @@ fn run_once(cmd: &Vec<String>) -> Result<(u64,u64),String> {
   Ok((stop - start, stop))
 }
 
+fn as_str(s: &String) -> &str {
+  return &s
+}
+
 #[allow(unused_must_use)]
 fn main() {
   let mut toml = String::new();
@@ -273,13 +276,13 @@ fn main() {
   if let Err(e) = result {
     panic!("can't read input data: {}", e);
   }
-  let items = parse_config(toml.as_slice()).unwrap();
+  let items = parse_config(&toml).unwrap();
 
   let args: Vec<_> = std::env::args().skip(1)
-    .map(|x| Pattern::new(x.as_os_str().to_string_lossy().as_slice()).unwrap()).collect();
+    .map(|x| Pattern::new(&x.as_os_str().to_string_lossy()).unwrap()).collect();
   let items_to_run = if args.len() > 0 {
     items.into_iter().filter(
-      |x| args.iter().any(|p| p.matches(x.name.as_slice()))).collect()
+      |x| args.iter().any(|p| p.matches(&x.name))).collect()
   } else {
     items
   };
@@ -290,7 +293,7 @@ fn main() {
     stderr.flush();
     let r = time_item(x);
     stderr.write_fmt(format_args!("{:?}\n", r));
-    (x.name.as_slice(), r)
+    (&x.name, r)
   }).collect();
   results.sort_by(|&(m, ref a), &(n, ref b)|
     match (a.as_ref(), b.as_ref()) {
