@@ -1,0 +1,11 @@
+[package]
+name = "swapview"
+version = "0.0.1"
+authors = ["lilydjwg <lilydjwg@gmail.com>"]
+
+[dependencies]
+threadpool = "*"
+sys-info = "*"
+
+[profile.release]
+lto = true

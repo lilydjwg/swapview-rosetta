@@ -1,13 +1,12 @@
 #![feature(str_words)]
 #![feature(str_char)]
-#![feature(os)]
-#![feature(core)]
-#![feature(std_misc)]
+
+extern crate threadpool;
+extern crate sys_info;
 
 use std::fs::{File,read_dir};
 use std::io::{Read,BufReader,BufRead};
-use std::num::SignedInt; // abs method
-use std::sync::TaskPool;
+use threadpool::ThreadPool;
 use std::sync::mpsc::channel;
 
 fn filesize(size: isize) -> String {
@@ -67,14 +66,15 @@ fn get_swap_for(pid: usize) -> isize {
       Err(_) => return 0,
     };
     if line.starts_with("Swap:") {
-      s += line.words().nth(1).unwrap().parse().unwrap();
+      let a: isize = line.words().nth(1).unwrap().parse().unwrap();
+      s += a;
     }
   }
   s * 1024
 }
 
 fn get_swap() -> Vec<(usize, isize, String)> {
-  let pool = TaskPool::new(std::os::num_cpus());
+  let pool = ThreadPool::new(sys_info::cpu_num().unwrap() as usize);
   let (tx, rx) = channel();
   let mut count = 0;
   for d in read_dir("/proc").unwrap() {

@@ -1,12 +1,10 @@
-CC=rustc
-
 .PHONY: all clean
 
 %: %.rs
-	$(CC) -O -C lto $<
-	strip $@
+	cd .swapview && cargo build --release
+	strip .swapview/target/release/swapview
 
 all: swapview
 
 clean:
-	-rm -f swapview
+	-rm -rf .swapview/target

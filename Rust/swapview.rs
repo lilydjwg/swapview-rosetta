@@ -1,10 +1,8 @@
 #![feature(str_words)]
 #![feature(str_char)]
-#![feature(core)]
 
 use std::fs::{File,read_dir};
 use std::io::{Read,BufReader,BufRead};
-use std::num::SignedInt; // abs method
 
 fn filesize(size: isize) -> String {
   let units = "KMGT";
@@ -63,7 +61,9 @@ fn get_swap_for(pid: usize) -> isize {
       Err(_) => return 0,
     };
     if line.starts_with("Swap:") {
-      s += line.words().nth(1).unwrap().parse().unwrap();
+      //XXX: why should I do this type indication?
+      let a: isize = line.words().nth(1).unwrap().parse().unwrap();
+      s += a;
     }
   }
   s * 1024
