@@ -61,9 +61,7 @@ fn get_swap_for(pid: usize) -> isize {
       Err(_) => return 0,
     };
     if line.starts_with("Swap:") {
-      //XXX: why should I do this type indication?
-      let a: isize = line.words().nth(1).unwrap().parse().unwrap();
-      s += a;
+      s += line.words().nth(1).unwrap().parse::<isize>().unwrap();
     }
   }
   s * 1024
