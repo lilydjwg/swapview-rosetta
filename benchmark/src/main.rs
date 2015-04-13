@@ -1,6 +1,5 @@
 #![feature(core)]
 #![feature(std_misc)]
-#![feature(convert)]
 
 extern crate toml;
 extern crate time;
@@ -10,8 +9,6 @@ use std::io;
 use std::process::Command;
 use std::path::{Path,PathBuf};
 use std::process::Stdio;
-use std::iter::AdditiveIterator;
-use std::num::Float;
 use std::cmp::Ordering::{Less, Greater};
 use std::ffi::AsOsStr;
 use std::io::{Read,Write};
@@ -228,16 +225,16 @@ fn time_item(item: &BenchmarkItem) -> Result<BenchmarkResult,String> {
   let len = result.len() as u64;
   let min = *result.first().unwrap();
   let max = *result.last().unwrap();
-  let sum = result.iter().map(|&x| x).sum();
-  let sum2 = result.iter().map(|&x| x*x).sum();
+  let sum: u64 = result.iter().map(|&x| x).sum();
+  let sum2: u64 = result.iter().map(|&x| x*x).sum();
   let avg = sum / len;
   let mdev = ((sum2 / len - avg * avg) as f64).sqrt() as u64;
 
   let top_n = ((result.len() * item.valid_percent as usize) as f64 / 100.).round() as usize;
   let tops = &result[..top_n];
-  let topavg = tops.iter().map(|&x| x).sum() / top_n as u64;
+  let topavg = tops.iter().map(|&x| x).sum::<u64>() as f64 / top_n as f64;
   Ok(BenchmarkResult {
-    topavg: topavg,
+    topavg: topavg as u64,
     avg: avg,
     min: min,
     max: max,
