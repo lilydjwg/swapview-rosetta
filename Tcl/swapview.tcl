@@ -1,4 +1,4 @@
-#/usr/bin/tclsh
+#!/usr/bin/env tclsh
 
 proc fileSize {bytes {level 0}} {
 	set units {B KiB MiB GiB}
