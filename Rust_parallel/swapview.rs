@@ -1,4 +1,3 @@
-#![feature(str_words)]
 #![feature(str_char)]
 
 extern crate threadpool;
@@ -66,7 +65,7 @@ fn get_swap_for(pid: usize) -> isize {
       Err(_) => return 0,
     };
     if line.starts_with("Swap:") {
-      s += line.words().nth(1).unwrap().parse::<isize>().unwrap();
+      s += line.split_whitespace().nth(1).unwrap().parse::<isize>().unwrap();
     }
   }
   s * 1024

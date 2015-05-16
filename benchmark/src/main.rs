@@ -1,5 +1,4 @@
 #![feature(core)]
-#![feature(std_misc)]
 
 extern crate toml;
 extern crate time;
@@ -10,7 +9,6 @@ use std::process::Command;
 use std::path::{Path,PathBuf};
 use std::process::Stdio;
 use std::cmp::Ordering::{Less, Greater};
-use std::ffi::AsOsStr;
 use std::io::{Read,Write};
 use std::error::Error;
 use glob::Pattern;
@@ -276,7 +274,7 @@ fn main() {
   let items = parse_config(&toml).unwrap();
 
   let args: Vec<_> = std::env::args().skip(1)
-    .map(|x| Pattern::new(&x.as_os_str().to_string_lossy()).unwrap()).collect();
+    .map(|x| Pattern::new(&x).unwrap()).collect();
   let items_to_run = if args.len() > 0 {
     items.into_iter().filter(
       |x| args.iter().any(|p| p.matches(&x.name))).collect()
