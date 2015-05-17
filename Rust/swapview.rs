@@ -87,7 +87,7 @@ fn main() {
 
   println!("{:>5} {:>9} {}", "PID", "SWAP", "COMMAND");
   let mut total = 0;
-  for &(pid, swap, ref comm) in swapinfo.iter() {
+  for &(pid, swap, ref comm) in &swapinfo {
     total += swap;
     println!("{:>5} {:>9} {}", pid, filesize(swap), comm);
   }

@@ -98,7 +98,7 @@ fn parse_item(name: String, conf: &toml::Value)
   let mut time_limit = None;
   let mut count_limit = None;
   let mut valid_percent = None;
-  for (key, value) in item.iter() {
+  for (key, value) in item {
     match key.as_ref() {
       "dir" => dir = value.as_str().map(|x| x.to_string()),
       "cmd" => cmd = {
@@ -184,7 +184,7 @@ fn parse_config(toml: &str) -> Result<Vec<BenchmarkItem>,String> {
   };
 
   let mut ret = Vec::with_capacity(items.len());
-  for (name, conf) in items.iter() {
+  for (name, conf) in items {
     if as_str(&name) == "default" {
       continue;
     }
@@ -298,7 +298,7 @@ fn main() {
       _ => Greater,
     }
   );
-  for &(name, ref r) in results.iter() {
+  for &(name, ref r) in &results {
     match r.as_ref() {
       Ok(x) => {
         println!("{green}{:>24}{r}: top: {bright}{:>7.2}{r}, min: {:>7.2}, \
