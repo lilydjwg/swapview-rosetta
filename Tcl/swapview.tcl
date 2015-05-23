@@ -18,26 +18,30 @@ proc readFile {path} {
 proc getSwapInfo {pid} {
 	# return {pid swap-use cmdline}
 	if {![string is digit $pid]} {error error}
-	set cmdline [string range [string map {\0 " "} [readFile "/proc/$pid/cmdline"]] 0 end-1]
+	set cmdline [string trim [string map {\0 " "} [readFile "/proc/$pid/cmdline"]]]
 	set fd [open "/proc/$pid/smaps"]
+	set totalswap 0
 	while {1} {
-		if {[scan [gets $fd] "Swap: %lld" swapuse]} break
+		if {[eof $fd]} break
+		if {[scan [gets $fd] "Swap: %lld" swapuse]} {
+			incr totalswap $swapuse
+		}
 	}
 	close $fd
-	return [list $pid [expr $swapuse*1024] $cmdline]
+	return [list $pid [expr $totalswap*1024] $cmdline]
 }
 
 set total 0
 set all {}
-puts [format "%5s %9s %s" PID SWAP COMMAND]
 foreach pid [lmap dir [glob /proc/*] {file tail $dir}] {
 	if {![catch {getSwapInfo $pid} info] && [llength $info] == 3 && [lindex $info 1] != 0} {
 		lappend all $info
 		incr total [lindex $info 1]
 	}
 }
-set all [lsort -index 1 $all]
-foreach i $all {
+puts [format "%5s %9s %s" PID SWAP COMMAND]
+foreach i [lsort -integer -index 1 $all] {
 	puts [format "%5s %9s %s" [lindex $i 0] [fileSize [lindex $i 1]] [lindex $i 2]]
 }
 puts [format "Total: %8s" [fileSize $total]]
+
