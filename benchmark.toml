@@ -95,6 +95,10 @@ cmd = ["lua5.1", "swapview.lua"]
 dir = "Lua"
 
 [item.Lua52]
+cmd = ["lua5.2", "swapview.lua"]
+dir = "Lua"
+
+[item.Lua53]
 cmd = ["lua", "swapview.lua"]
 dir = "Lua"
 
@@ -160,5 +164,8 @@ cmd = ["./swapview.rb"]
 
 [item.Scala]
 cmd = ["scala", "SwapView"]
+
+[item.Tcl]
+cmd = ["./swapview.tcl"]
 
 [item.Vala]
