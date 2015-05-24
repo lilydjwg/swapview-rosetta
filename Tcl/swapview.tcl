@@ -2,7 +2,7 @@
 
 proc fileSize {bytes {level 0}} {
 	set units {B KiB MiB GiB}
-	if {$bytes >= 1024 && $level < 3} {
+	if {$bytes >= 1100 && $level < 3} {
 		return [fileSize [expr $bytes/1024.0] [expr $level+1]]
 	}
 	return [format "%.1lf%s" $bytes [lindex $units $level]]
