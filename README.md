@@ -5,15 +5,15 @@ How to play
 
 Install all the dependencies for your interested versions, then run `make -k`. It will build all that can be built.
 
-To test and see the speed comparison, either use `bench.py` or `runbenchmark`. `bench.py` uses Python 3.4+ and depends on `python-toml`.
+To test and see the speed comparison, either use `bench.py` or `run_benchmark`. `bench.py` uses Python 3.4+ and depends on `python-toml`.
 
-`runbenchmark` is a Rust version. Install latest Rust and Cargo, then change your working directory to `benchmark` and run `cargo build --release`. If the build fails, it's because your Rust is too old or too new....
+`run_benchmark` is a Rust version. Install latest Rust and Cargo, then change your working directory to `benchmark` and run `cargo build --release`. If the build fails, it's because your Rust is too old or too new....
 
-Run `./runbenchmark <benchmark.toml` and wait for it to finish. Failed ones (e.g. because you don't have the dependencies installed) will be marked as failed so you don't need to edit `benchmark.toml` to disable the ones you can't run.
+Run `./run_benchmark <benchmark.toml` and wait for it to finish. Failed ones (e.g. because you don't have the dependencies installed) will be marked as failed so you don't need to edit `benchmark.toml` to disable the ones you can't run.
 
-You can give `./runbenchmark` names to selectively run some versions, e.g.
+You can give `./run_benchmark` names to selectively run some versions, e.g.
 
-    ./runbenchmark C C++14 'Rust*' <benchmark.toml
+    ./run_benchmark C C++14 'Rust*' <benchmark.toml
 
 Implementions and their requirements
 ----
