@@ -1,4 +1,4 @@
-#![feature(core)]
+#![feature(iter_arith)]
 
 extern crate toml;
 extern crate time;
