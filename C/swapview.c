@@ -18,6 +18,16 @@
 
 #define assure(exp) if(!(exp)) error(1, errno, "\"%s\" failed in %d", #exp, __LINE__)
 
+typedef struct {
+  int pid;
+  double size;
+  char *comm;
+} swap_info;
+
+static swap_info **infos;
+static size_t info_length;
+static size_t info_size;
+
 char *filesize(double size){
   char units[] = "KMGT";
   double left = fabs(size);
@@ -38,12 +48,6 @@ char *filesize(double size){
   }
   return buf;
 }
-
-typedef struct {
-  int pid;
-  double size;
-  char *comm;
-} swap_info;
 
 swap_info *getSwapFor(int pid) {
   char filename[BUFSIZE];
@@ -100,54 +104,48 @@ int comp(const void *a, const void *b){
   return (r > 0.0) - (r < 0.0);	// sign of double to int
 }
 
-swap_info **getSwap(){
-  int size = 16;
-  int length = 0;
+void getSwap(){
   DIR *dp;
   struct dirent *dirp;
   assure(dp = opendir("/proc"));
-
-  swap_info **ret;
-  assure(ret = malloc(sizeof(swap_info *) * size));
+  int stdin_fileno = dup(STDIN_FILENO);
   while((dirp = readdir(dp)) != NULL){
     int pid = atoi(dirp->d_name);
     if(pid > 0){
       swap_info *swapfor = getSwapFor(pid);
       if(swapfor->size > 0){
-        if(length == size)
-          assure(ret = realloc(ret, sizeof(swap_info *) * (size <<= 1)));
-        ret[length++] = swapfor;
+        if(info_length == info_size)
+          assure(infos = realloc(infos, sizeof(swap_info *) * (info_size <<= 1)));
+        infos[info_length++] = swapfor;
       }else{
         free(swapfor->comm);
         free(swapfor);
       }
     }
   }
+  dup2(stdin_fileno, STDIN_FILENO); // restore stdin fileno
+  close(stdin_fileno);
   closedir(dp);
 
-  qsort(ret, length, sizeof(swap_info *), comp);
-
-  if(length == size)
-    assure(ret = realloc(ret, sizeof(swap_info *) * (++size)));
-  ret[length] = 0;		// mark for end
-  return ret;
+  qsort(infos, info_length, sizeof(swap_info *), comp);
 }
 
 int main(int argc, char *argv[]){
-  swap_info **infos = getSwap(), **p = infos;
   double total = 0;
-  int stdin_fileno = dup(STDIN_FILENO);
+  info_size = 16;
+  assure(infos = malloc(sizeof(swap_info *) * info_size));
+
+  getSwap();
   printf("%5s %9s %s\n", "PID", "SWAP", "COMMAND");
-  for(; *p; ++p){
-    char *size = filesize((*p)->size);
-    printf(FORMAT, (*p)->pid, size, (*p)->comm);
-    total += (*p)->size;
+  for(int i = 0; i < info_length; ++i) {
+    char *size = filesize(infos[i]->size);
+    printf(FORMAT, infos[i]->pid, size, infos[i]->comm);
+    total += infos[i]->size;
     free(size);
-    free((*p)->comm);
-    free(*p);
+    free(infos[i]->comm);
+    free(infos[i]);
   }
-  dup2(stdin_fileno, STDIN_FILENO); // restore stdin fileno
-  close(stdin_fileno);
+
   free(infos);
   char *stotal = filesize(total);
   printf("Total: %8s\n", stotal);
