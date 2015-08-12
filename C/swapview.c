@@ -3,9 +3,11 @@
 #include<stdlib.h>
 #include<string.h>
 #include<math.h>
-
+#include<ctype.h>
 #include<errno.h>
 #include<error.h>
+#include<fcntl.h>
+#include<unistd.h>
 #include<sys/types.h>
 #include<dirent.h>
 
@@ -13,7 +15,6 @@
 #define BUFSIZE 512
 //#define TARGET "Size:" // For Test
 #define TARGET "Swap:"
-#define TARGETLEN 5
 
 #define assure(exp) if(!(exp)) error(1, errno, "\"%s\" failed in %d", #exp, __LINE__)
 
@@ -21,7 +22,6 @@ char *filesize(double size){
   char units[] = "KMGT";
   double left = fabs(size);
   int unit = -1;
-
   char *buf;
   assure(buf = malloc(BUFSIZE));
 
@@ -45,50 +45,55 @@ typedef struct {
   char *comm;
 } swap_info;
 
-swap_info *getSwapFor(int pid){
+swap_info *getSwapFor(int pid) {
   char filename[BUFSIZE];
-  FILE *fd = 0;
+  int fd;
   size_t size = BUFSIZE;
-  char *comm = malloc(size + 1); // +1 for last \0
+  char *comm = malloc(size + 1); // +1 for last '\0'
   ssize_t len=0;
-  double s = 0.0;
+  double sum = 0;
+  int c = 0;
+  char *p;
+  swap_info *ret;
 
   assure(snprintf(filename, BUFSIZE, "/proc/%d/cmdline", pid) > 0);
-  if(!(fd = fopen(filename, "r")))
+  if ((fd = open(filename, O_RDONLY)) < 0)
     goto err;
-  for(int got;
-      (got = fread(comm + len, 1, size - len, fd)) > 0;
-      len += got){
-    assure(comm = realloc(comm, (size<<=1) + 1)); // +1 for last \0
-  }
-  fclose(fd);
+  len = read(fd, comm, size);
+  close(fd);
 
-  for(char *p = comm; p < comm + len - 1; ++p)
-    *p || (*p = ' '); // comm[len-1] is \0 or non-space
+  for(p = comm; p < comm + len; ++p)
+    *p || (*p = ' '); // comm[len-1] is '\0' or non-space
   comm[len]='\0'; // assure string is terminated
 
   assure(snprintf(filename, BUFSIZE, "/proc/%d/smaps", pid) > 0);
-  if(!(fd = fopen(filename, "r")))
+  if ((fd = open(filename, O_RDONLY)) < 0)
     goto err;
-  char *line;
-  for(line = 0, size = 0;
-      (len = getline(&line, &size, fd)) >= 0;
-      free(line), line = 0, size = 0){
-    if(strncmp(line, TARGET, TARGETLEN) == 0)
-      s += atoi(line + TARGETLEN);
+  dup2(fd, STDIN_FILENO); // redirect fd to stdin
+  close(fd);
+  while (c != EOF) {
+    char buf[20];
+    for (int i = 0; i < strlen(TARGET); i++)
+      buf[i] = getchar();
+    if (!strncmp(buf, TARGET, strlen(TARGET))) {
+      int i = 0;
+      while (isspace(c = getchar()));
+      do {
+        buf[i++] = c;
+      } while (isdigit(c = getchar()));
+      buf[i] = '\0';
+      sum += atoi(buf);
+    }
+    while ((c = getchar()) != '\n' && c != EOF);
   }
-  free(line);			// need to free when getline fail, see getline(3)
+  
 err:
-  if(fd)
-    fclose(fd);
-  swap_info *ret;
   assure(ret = malloc(sizeof(swap_info)));
   ret->pid = pid;
-  ret->size = s * 1024;
+  ret->size = sum * 1024;
   ret->comm = comm;
   return ret;
 }
-
 
 int comp(const void *a, const void *b){
   double r = (*((swap_info **) a))->size - (*((swap_info **) b))->size;
@@ -98,7 +103,6 @@ int comp(const void *a, const void *b){
 swap_info **getSwap(){
   int size = 16;
   int length = 0;
-
   DIR *dp;
   struct dirent *dirp;
   assure(dp = opendir("/proc"));
@@ -132,6 +136,7 @@ swap_info **getSwap(){
 int main(int argc, char *argv[]){
   swap_info **infos = getSwap(), **p = infos;
   double total = 0;
+  int stdin_fileno = dup(STDIN_FILENO);
   printf("%5s %9s %s\n", "PID", "SWAP", "COMMAND");
   for(; *p; ++p){
     char *size = filesize((*p)->size);
@@ -141,6 +146,8 @@ int main(int argc, char *argv[]){
     free((*p)->comm);
     free(*p);
   }
+  dup2(stdin_fileno, STDIN_FILENO); // restore stdin fileno
+  close(stdin_fileno);
   free(infos);
   char *stotal = filesize(total);
   printf("Total: %8s\n", stotal);
