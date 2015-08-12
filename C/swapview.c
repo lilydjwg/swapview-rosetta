@@ -15,6 +15,7 @@
 #define BUFSIZE 512
 //#define TARGET "Size:" // For Test
 #define TARGET "Swap:"
+#define TARGETLEN 5
 
 #define assure(exp) if(!(exp)) error(1, errno, "\"%s\" failed in %d", #exp, __LINE__)
 
@@ -77,9 +78,9 @@ swap_info *getSwapFor(int pid) {
   close(fd);
   while (c != EOF) {
     char buf[20];
-    for (int i = 0; i < strlen(TARGET); i++)
+    for (int i = 0; i < TARGETLEN; i++)
       buf[i] = getchar();
-    if (!strncmp(buf, TARGET, strlen(TARGET))) {
+    if (!strncmp(buf, TARGET, TARGETLEN)) {
       int i = 0;
       while (isspace(c = getchar()));
       do {
