@@ -65,6 +65,12 @@ cmd = ["./swapview.lisp"]
 
 [item.D]
 
+[item.D_parallel]
+
+[item.D_parallel_llvm]
+cmd = ["./swapview-llvm"]
+dir = "D_parallel"
+
 [item.Elixir]
 cmd = ["./swapview.exs"]
 
