@@ -3,11 +3,8 @@
 #include<stdlib.h>
 #include<string.h>
 #include<math.h>
-#include<ctype.h>
 #include<errno.h>
 #include<error.h>
-#include<fcntl.h>
-#include<unistd.h>
 #include<sys/types.h>
 #include<dirent.h>
 
@@ -28,7 +25,6 @@ typedef struct {
 static swap_info **infos;
 static size_t info_length;
 static size_t info_size;
-
 
 char *filesize(double size){
   char units[] = "KMGT";
@@ -57,17 +53,14 @@ swap_info *getSwapFor(int pid){
   FILE *fd = 0;
   size_t size = BUFSIZE;
   char *comm = malloc(size + 1); // +1 for last \0
+  char *line;
   ssize_t len=0;
   double s = 0.0;
 
   assure(snprintf(filename, BUFSIZE, "/proc/%d/cmdline", pid) > 0);
   if(!(fd = fopen(filename, "r")))
     goto err;
-  for(int got;
-      (got = fread(comm + len, 1, size - len, fd)) > 0;
-      len += got){
-    assure(comm = realloc(comm, (size<<=1) + 1)); // +1 for last \0
-  }
+  len = fread(comm, 1, size, fd);
   fclose(fd);
 
   for(char *p = comm; p < comm + len - 1; ++p)
@@ -77,14 +70,13 @@ swap_info *getSwapFor(int pid){
   assure(snprintf(filename, BUFSIZE, "/proc/%d/smaps", pid) > 0);
   if(!(fd = fopen(filename, "r")))
     goto err;
-  char *line;
-  for(line = 0, size = 0;
-      (len = getline(&line, &size, fd)) >= 0;
-      free(line), line = 0, size = 0){
+  assure(line = malloc(size));
+  while ((len = getline(&line, &size, fd)) > 0) {
     if(strncmp(line, TARGET, TARGETLEN) == 0)
       s += atoi(line + TARGETLEN);
   }
-  free(line);			// need to free when getline fail, see getline(3)
+  free(line);
+
 err:
   if(fd)
     fclose(fd);
