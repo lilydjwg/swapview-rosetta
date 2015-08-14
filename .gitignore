@@ -19,6 +19,7 @@ cabal.sandbox.config
 Chicken/format
 CoffeeScript*/*.js
 D/swapview-llvm
+D_parallel/swapview-llvm
 C++98/swapview_omp
 Racket/compiled
 Nim/nimcache/
