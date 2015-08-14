@@ -46,10 +46,6 @@ dir = "C++98"
 [item.CSharp]
 cmd = ["mono-sgen", "--desktop", "SwapView.exe"]
 
-[item.D_llvm]
-cmd = ["./swapview-llvm"]
-dir = "D"
-
 [item.Chicken]
 
 [item.CoffeeScript]
@@ -64,6 +60,10 @@ cmd = ["./swapview.lisp"]
 [item.CommonLisp_opt]
 
 [item.D]
+
+[item.D_llvm]
+cmd = ["./swapview-llvm"]
+dir = "D"
 
 [item.D_parallel]
 
