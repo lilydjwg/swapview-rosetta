@@ -49,20 +49,25 @@ swap_info *getSwapFor(int pid){
   char filename[BUFSIZE];
   FILE *fd = 0;
   size_t size = BUFSIZE;
-  char *comm = malloc(size);
+  char *comm = malloc(size + 1); // +1 for terminated '\0'
   char *line;
-  ssize_t len=0;
+  ssize_t len=0, len1;
   double s = 0.0;
 
   assure(snprintf(filename, BUFSIZE, "/proc/%d/cmdline", pid) > 0);
   if(!(fd = fopen(filename, "r")))
     goto err;
-  len = getline(&comm, &size, fd);
+  // cmdline might be multi-line file that 'getline' is useless
+  while ((len1 = fread(comm + len, 1, size - len, fd)) > 0) {
+    len += len1;
+    if (len == size)
+      assure(comm = realloc(comm, (size<<=1) + 1));
+  }
   fclose(fd);
 
-  for(char *p = comm; p < comm + len - 1; ++p)
-    *p || (*p = ' '); // comm[len-1] is '\n'
-  comm[len - 1]='\0'; // assure string is terminated
+  for(char *p = comm; p < comm + len; ++p)
+    *p || (*p = ' ');
+  comm[len] ='\0'; // comm[len] is just for the terminated '\0'
 
   assure(snprintf(filename, BUFSIZE, "/proc/%d/smaps", pid) > 0);
   if(!(fd = fopen(filename, "r")))
