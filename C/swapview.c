@@ -52,7 +52,7 @@ swap_info *getSwapFor(int pid){
   char filename[BUFSIZE];
   FILE *fd = 0;
   size_t size = BUFSIZE;
-  char *comm = malloc(size + 1); // +1 for last \0
+  char *comm = malloc(size);
   char *line;
   ssize_t len=0;
   double s = 0.0;
@@ -60,7 +60,7 @@ swap_info *getSwapFor(int pid){
   assure(snprintf(filename, BUFSIZE, "/proc/%d/cmdline", pid) > 0);
   if(!(fd = fopen(filename, "r")))
     goto err;
-  len = fread(comm, 1, size, fd);
+  len = getline(&comm, &size, fd);
   fclose(fd);
 
   for(char *p = comm; p < comm + len - 1; ++p)
