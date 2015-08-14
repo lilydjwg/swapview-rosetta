@@ -22,8 +22,6 @@ string filesize(double size){
 }
 
 string getcmdln(string pid){
-    auto size = getSize(pid~"/cmdline");
-    ubyte:
     auto ret = cast(ubyte[]) read(pid~"/cmdline");
     foreach(ref ubyte c; ret){
         if(c=='\0') c=' ';
