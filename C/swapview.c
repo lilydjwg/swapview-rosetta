@@ -61,8 +61,8 @@ swap_info *getSwapFor(int pid){
   fclose(fd);
 
   for(char *p = comm; p < comm + len - 1; ++p)
-    *p || (*p = ' '); // comm[len-1] is \0 or non-space
-  comm[len]='\0'; // assure string is terminated
+    *p || (*p = ' '); // comm[len-1] is '\n'
+  comm[len - 1]='\0'; // assure string is terminated
 
   assure(snprintf(filename, BUFSIZE, "/proc/%d/smaps", pid) > 0);
   if(!(fd = fopen(filename, "r")))
