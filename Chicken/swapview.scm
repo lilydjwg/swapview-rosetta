@@ -15,14 +15,14 @@
             (format #f "~,1f~a" size (car units))))))
 
 (define (get-command-line pid)
-  (let* ((cmdline-file (format #f "/proc/~a/cmdline" pid))
+  (let* ((cmdline-file (sprintf "/proc/~a/cmdline" pid))
          (raw-commandline (with-input-from-file cmdline-file read-all)))
     (string-translate
      (string-chomp raw-commandline "\x00") #\nul #\space)))
 
 (define (get-process-swap-usage pid)
   (condition-case
-      (let ((smaps (open-input-file (format #f "/proc/~a/smaps" pid))))
+      (let ((smaps (open-input-file (sprintf "/proc/~a/smaps" pid))))
         (let lp ((size 0)
                  (line (read-line smaps)))
           (cond ((eof-object? line)
