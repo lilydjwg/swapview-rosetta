@@ -12,19 +12,13 @@
          (loop))))))
 
 (define (filesize size)
-  (let* ((units "KMGT")
-         (left (abs size))
-         (unit -1))
-    (while (and (> left 1100) (< unit 3))
-      (set! left (/ left 1024))
-      (set! unit (+ 1 unit)))
-    (cond ((= unit -1)
-           (format #f "~aB" size))
-          (else
-           (when (< size 0)
-             (set! left (- left)))
-           (format #f "~,1f~aiB" left 
-                   (string-copy units unit (+ 1 unit)))))))
+  (let lp ((units '(B KiB MiB GiB TiB))
+           (size size))
+    (if (and (> size 1100) (not (null? units)))
+        (lp (cdr units) (/ size 1024))
+        (if (eq? (car units) 'B)
+            (conc size "B")
+            (format #f "~,1f~a" size (car units))))))
 
 (define (getSwapFor pid)
   (condition-case
@@ -55,7 +49,7 @@
 (define (main)
   (let* ((results (getSwap))
          (FORMATSTR "~5@a ~9@a ~@a~%")
-         (total 0.0))
+         (total 0))
     (format #t FORMATSTR "PID" "SWAP" "COMMAND")
     (map
      (lambda (item)
