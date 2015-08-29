@@ -1,4 +1,4 @@
-(use srfi-1 srfi-13 extras data-structures utils posix)
+(use srfi-1 extras data-structures utils posix)
 
 (include "format/format.scm")
 (import format)
@@ -14,25 +14,28 @@
             (conc size "B")
             (format #f "~,1f~a" size (car units))))))
 
+(define (get-command-line pid)
+  (let* ((cmdline-file (format #f "/proc/~a/cmdline" pid))
+         (raw-commandline (with-input-from-file cmdline-file read-all)))
+    (string-translate
+     (string-chomp raw-commandline "\x00") #\nul #\space)))
+
 (define (get-process-swap-usage pid)
   (condition-case
-      (let* ((port (open-input-file (format #f "/proc/~a/cmdline" pid)))
-             (rawcomm (string-map (lambda (x) (if (char=? x #\nul) #\space x))
-                                  (read-all port)))
-             (comm (if (> (string-length rawcomm) 0)
-                       (substring rawcomm 0 (- (string-length rawcomm) 1))
-                       ""))
+      (let* ((command-line (get-command-line pid))
              (smaps (open-input-file (format #f "/proc/~a/smaps" pid))))
         (let lp ((size 0)
                  (line (read-line smaps)))
-          (if (eof-object? line)
-              (make-process-info pid (* 1024 size) comm)
-              (lp (if (substring=? "Swap:" line)
-                      (+ size
-                         (string->number
-                          (cadr (reverse (string-split line)))))
-                      size)
-                  (read-line smaps)))))
+          (cond ((eof-object? line)
+                 (close-input-port smaps)
+                 (make-process-info pid (* 1024 size) command-line))
+                (else
+                 (lp (if (substring=? "Swap:" line)
+                         (+ size
+                            (string->number
+                             (cadr (reverse (string-split line)))))
+                         size)
+                     (read-line smaps))))))
     ((exn file) (make-process-info pid 0 ""))))
 
 (define (get-swapped-processes)
