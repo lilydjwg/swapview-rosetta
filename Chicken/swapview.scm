@@ -7,10 +7,9 @@
   (syntax-rules ()
     ((while test body ...)
      (let loop ()
-       (if test
-           (begin
-             body ...
-             (loop)))))))
+       (when test
+         body ...
+         (loop))))))
 
 (define (filesize size)
   (let* ((units "KMGT")
