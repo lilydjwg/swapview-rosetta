@@ -3,6 +3,8 @@
 (include "format/format.scm")
 (import format)
 
+(define-record process-info pid swap-usage command-line)
+
 (define (filesize size)
   (let lp ((units '(B KiB MiB GiB TiB))
            (size size))
@@ -24,38 +26,40 @@
         (let lp ((size 0)
                  (line (read-line smaps)))
           (if (eof-object? line)
-              (list pid (* 1024 size) comm)
+              (make-process-info pid (* 1024 size) comm)
               (lp (if (substring=? "Swap:" line)
                       (+ size
                          (string->number
                           (cadr (reverse (string-split line)))))
                       size)
                   (read-line smaps)))))
-    ((exn file) (list pid 0 ""))))
+    ((exn file) (make-process-info pid 0 ""))))
 
 (define (get-swapped-processes)
   (sort
    (filter-map
     (lambda (file-name)
       (and (string->number file-name)
-           (let ((swap (get-process-swap-usage file-name)))
-             (and (not (zero? (list-ref swap 1))) swap))))
+           (let ((info (get-process-swap-usage file-name)))
+             (and (not (zero? (process-info-swap-usage info))) info))))
     (directory "/proc"))
-   (lambda (a b) (< (list-ref a 1) (list-ref b 1)))))
+   (lambda (a b)
+     (< (process-info-swap-usage a) (process-info-swap-usage b)))))
 
 (define (main)
   (let* ((results (get-swapped-processes))
          (FORMATSTR "~5@a ~9@a ~@a~%")
-         (total 0))
+         (total-swap 0))
     (format #t FORMATSTR "PID" "SWAP" "COMMAND")
     (map
-     (lambda (item)
-       (set! total (+ total (list-ref item 1)))
+     (lambda (swapped-process-info)
+       (set! total-swap
+         (+ total-swap (process-info-swap-usage swapped-process-info)))
        (format #t FORMATSTR
-               (list-ref item 0)
-               (filesize (list-ref item 1))
-               (list-ref item 2)))
+               (process-info-pid swapped-process-info)
+               (filesize (process-info-swap-usage swapped-process-info))
+               (process-info-command-line swapped-process-info)))
      results)
-    (format #t "Total: ~8@a~%" (filesize total))))
+    (format #t "Total: ~8@a~%" (filesize total-swap))))
 
 (main)
