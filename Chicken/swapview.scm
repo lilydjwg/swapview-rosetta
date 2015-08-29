@@ -12,7 +12,7 @@
             (conc size "B")
             (format #f "~,1f~a" size (car units))))))
 
-(define (getSwapFor pid)
+(define (get-process-swap-usage pid)
   (condition-case
       (let* ((port (open-input-file (format #f "/proc/~a/cmdline" pid)))
              (rawcomm (string-map (lambda (x) (if (char=? x #\nul) #\space x))
@@ -33,18 +33,18 @@
                   (read-line smaps)))))
     ((exn file) (list pid 0 ""))))
 
-(define (getSwap)
+(define (get-swapped-processes)
   (sort
    (filter-map
     (lambda (file-name)
       (and (string->number file-name)
-           (let ((swap (getSwapFor file-name)))
+           (let ((swap (get-process-swap-usage file-name)))
              (and (not (zero? (list-ref swap 1))) swap))))
     (directory "/proc"))
    (lambda (a b) (< (list-ref a 1) (list-ref b 1)))))
 
 (define (main)
-  (let* ((results (getSwap))
+  (let* ((results (get-swapped-processes))
          (FORMATSTR "~5@a ~9@a ~@a~%")
          (total 0))
     (format #t FORMATSTR "PID" "SWAP" "COMMAND")
