@@ -3,14 +3,6 @@
 (include "format/format.scm")
 (import format)
 
-(define-syntax while
-  (syntax-rules ()
-    ((while test body ...)
-     (let loop ()
-       (when test
-         body ...
-         (loop))))))
-
 (define (filesize size)
   (let lp ((units '(B KiB MiB GiB TiB))
            (size size))
@@ -30,11 +22,11 @@
                        ""))
              (smaps (open-input-file (format #f "/proc/~a/smaps" pid)))
              (s 0.0))
-        (let ((line (read-line smaps)))
-          (while (not (eof-object? line))
+        (let lp ((line (read-line smaps)))
+          (unless (eof-object? line)
             (if (string=? (substring line 0 5) "Swap:")
                 (set! s (+ s (string->number (cadr (reverse (string-split line )))))))
-            (set! line (read-line smaps))))
+            (lp (read-line smaps))))
         (list pid (* 1024 s) comm))
     ((exn file) (list pid 0 ""))))
 
