@@ -22,13 +22,14 @@
 
 (define (get-process-swap-usage pid)
   (condition-case
-      (let* ((command-line (get-command-line pid))
-             (smaps (open-input-file (format #f "/proc/~a/smaps" pid))))
+      (let ((smaps (open-input-file (format #f "/proc/~a/smaps" pid))))
         (let lp ((size 0)
                  (line (read-line smaps)))
           (cond ((eof-object? line)
                  (close-input-port smaps)
-                 (make-process-info pid (* 1024 size) command-line))
+                 (and (not (zero? size))
+                      (make-process-info
+                       pid (* 1024 size) (get-command-line pid))))
                 (else
                  (lp (if (substring=? "Swap:" line)
                          (+ size
@@ -36,15 +37,14 @@
                              (cadr (reverse (string-split line)))))
                          size)
                      (read-line smaps))))))
-    ((exn file) (make-process-info pid 0 ""))))
+    ((exn file) #f)))
 
 (define (get-swapped-processes)
   (sort
    (filter-map
     (lambda (file-name)
       (and (string->number file-name)
-           (let ((info (get-process-swap-usage file-name)))
-             (and (not (zero? (process-info-swap-usage info))) info))))
+           (get-process-swap-usage file-name)))
     (directory "/proc"))
    (lambda (a b)
      (< (process-info-swap-usage a) (process-info-swap-usage b)))))
