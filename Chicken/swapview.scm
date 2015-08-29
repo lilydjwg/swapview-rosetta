@@ -15,17 +15,16 @@
   (let* ((units "KMGT")
          (left (abs size))
          (unit -1))
-    (begin
-      (while (and (> left 1100) (< unit 3))
-        (set! left (/ left 1024))
-        (set! unit (+ 1 unit)))
-      (if (= unit -1)
-          (format #f "~aB" size)
-          (begin
-            (if (< size 0)
-                (set! left (- left)))
-            (format #f "~,1f~aiB" left 
-                    (string-copy units unit (+ 1 unit))))))))
+    (while (and (> left 1100) (< unit 3))
+      (set! left (/ left 1024))
+      (set! unit (+ 1 unit)))
+    (cond ((= unit -1)
+           (format #f "~aB" size))
+          (else
+           (when (< size 0)
+             (set! left (- left)))
+           (format #f "~,1f~aiB" left 
+                   (string-copy units unit (+ 1 unit)))))))
 
 (define (getSwapFor pid)
   (condition-case
@@ -37,13 +36,12 @@
                        ""))
              (smaps (open-input-file (format #f "/proc/~a/smaps" pid)))
              (s 0.0))
-        (begin
-          (let ((line (read-line smaps)))
-            (while (not (eof-object? line))
-              (if (string=? (substring line 0 5) "Swap:")
-                  (set! s (+ s (string->number (cadr (reverse (string-split line )))))))
-              (set! line (read-line smaps))))
-          (list pid (* 1024 s) comm)))
+        (let ((line (read-line smaps)))
+          (while (not (eof-object? line))
+            (if (string=? (substring line 0 5) "Swap:")
+                (set! s (+ s (string->number (cadr (reverse (string-split line )))))))
+            (set! line (read-line smaps))))
+        (list pid (* 1024 s) comm))
     ((exn file) (list pid 0 ""))))
 
 (define (getSwap)
@@ -58,17 +56,15 @@
   (let* ((results (getSwap))
          (FORMATSTR "~5@a ~9@a ~@a~%")
          (total 0.0))
-    (begin
-      (format #t FORMATSTR "PID" "SWAP" "COMMAND")
-      (map
-       (lambda (item)
-         (begin
-           (set! total (+ total (list-ref item 1)))
-           (format #t FORMATSTR
-                   (list-ref item 0)
-                   (filesize (list-ref item 1))
-                   (list-ref item 2))))
-       results)
-      (format #t "Total: ~8@a~%" (filesize total)))))
+    (format #t FORMATSTR "PID" "SWAP" "COMMAND")
+    (map
+     (lambda (item)
+       (set! total (+ total (list-ref item 1)))
+       (format #t FORMATSTR
+               (list-ref item 0)
+               (filesize (list-ref item 1))
+               (list-ref item 2)))
+     results)
+    (format #t "Total: ~8@a~%" (filesize total))))
 
 (main)
