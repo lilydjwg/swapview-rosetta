@@ -1,4 +1,4 @@
-(use srfi-1 srfi-13 data-structures utils posix)
+(use srfi-1 srfi-13 extras data-structures utils posix)
 
 (include "format/format.scm")
 (import format)
@@ -20,14 +20,17 @@
              (comm (if (> (string-length rawcomm) 0)
                        (substring rawcomm 0 (- (string-length rawcomm) 1))
                        ""))
-             (smaps (open-input-file (format #f "/proc/~a/smaps" pid)))
-             (s 0.0))
-        (let lp ((line (read-line smaps)))
-          (unless (eof-object? line)
-            (if (string=? (substring line 0 5) "Swap:")
-                (set! s (+ s (string->number (cadr (reverse (string-split line )))))))
-            (lp (read-line smaps))))
-        (list pid (* 1024 s) comm))
+             (smaps (open-input-file (format #f "/proc/~a/smaps" pid))))
+        (let lp ((size 0)
+                 (line (read-line smaps)))
+          (if (eof-object? line)
+              (list pid (* 1024 size) comm)
+              (lp (if (substring=? "Swap:" line)
+                      (+ size
+                         (string->number
+                          (cadr (reverse (string-split line)))))
+                      size)
+                  (read-line smaps)))))
     ((exn file) (list pid 0 ""))))
 
 (define (getSwap)
