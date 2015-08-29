@@ -35,10 +35,12 @@
 
 (define (getSwap)
   (sort
-   (filter (lambda (x) (> (list-ref x 1) 0))
-           (map (lambda (x) (getSwapFor (string->number x)))
-                (filter (lambda (x) (string->number x))
-                        (directory "/proc"))))
+   (filter-map
+    (lambda (file-name)
+      (and (string->number file-name)
+           (let ((swap (getSwapFor file-name)))
+             (and (not (zero? (list-ref swap 1))) swap))))
+    (directory "/proc"))
    (lambda (a b) (< (list-ref a 1) (list-ref b 1)))))
 
 (define (main)
