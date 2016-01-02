@@ -1,10 +1,9 @@
-#![feature(str_char)]
-
 use std::fs::{File,read_dir};
 use std::io::{Read,BufReader,BufRead};
 
+const UNITS: [char; 4] = ['K', 'M', 'G', 'T'];
+
 fn filesize(size: isize) -> String {
-  let units = "KMGT";
   let mut left = size.abs() as f64;
   let mut unit = -1;
 
@@ -18,7 +17,7 @@ fn filesize(size: isize) -> String {
     if size < 0 {
       left = -left;
     }
-    format!("{:.1}{}iB", left, units.char_at(unit as usize))
+    format!("{:.1}{}iB", left, UNITS[unit as usize])
   }
 }
 
