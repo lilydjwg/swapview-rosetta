@@ -55,7 +55,7 @@ total = sum . map snd
 
 units = "KMGTP"
 
-liftUnit :: Double -> [Char] -> [Char] -> (Double, [Char])
+liftUnit :: Double -> String -> String -> (Double, String)
 liftUnit n u l =
   if n > 1100 && (not.null) u
      then liftUnit (n/1024) (tail u) (head u :l)

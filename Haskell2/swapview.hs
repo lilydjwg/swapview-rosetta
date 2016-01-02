@@ -25,7 +25,7 @@ filesize n =
   where (m, level) = liftUnit (fromIntegral n) units []
         unit = head level
 
-liftUnit :: Double -> [Char] -> [Char] -> (Double, [Char])
+liftUnit :: Double -> String -> String -> (Double, String)
 liftUnit n u l =
   if n > 1100 && (not.null) u
      then liftUnit (n/1024) (tail u) (head u :l)
@@ -88,6 +88,6 @@ formatResult (pid, size) = do
   return $ format pid size cmd
 
 getCommand :: Pid -> IO T.Text
-getCommand pid = T.init <$> T.map transnul <$> T.readFile (T.unpack $ "/proc/" `T.append` pid `T.append` "/cmdline")
+getCommand pid = T.init . T.map transnul <$> T.readFile (T.unpack $ "/proc/" `T.append` pid `T.append` "/cmdline")
   where transnul ch = if ch == '\0' then ' ' else ch
 
