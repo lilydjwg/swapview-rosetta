@@ -88,6 +88,6 @@ formatResult (pid, size) = do
   return $ format pid size cmd
 
 getCommand :: Pid -> IO T.Text
-getCommand pid = T.init <$> T.map transnul <$> T.readFile (T.unpack $ "/proc/" `T.append` pid `T.append` "/cmdline")
+getCommand pid = T.init . T.map transnul <$> T.readFile (T.unpack $ "/proc/" `T.append` pid `T.append` "/cmdline")
   where transnul ch = if ch == '\0' then ' ' else ch
 
