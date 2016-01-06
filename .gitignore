@@ -16,6 +16,8 @@ cabal.sandbox.config
 
 # swapview specific
 */swapview
+# symlink
+!Rust_parallel/swapview
 Chicken/format
 CoffeeScript*/*.js
 D/swapview-llvm
