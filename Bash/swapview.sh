@@ -12,7 +12,7 @@ filesize(){
     fi
     # See also ``base ** pow`` (bash) and ``base ^ pow`` (bc).
     for ((pos=0, powed=1; size / powed > 1100 && pos < nunit; pos++; powed *= 1024)); do :; done
-    printf '%.2g%siB\n' "$(bc <<< "$size / ($powed)")" "${unit[pos]}"
+    printf '%.1f%siB\n' "$(bc <<< "$size / ($powed)")" "${unit[pos]}"
 }
 
 getSwap(){
