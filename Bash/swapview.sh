@@ -1,10 +1,11 @@
 #!/bin/bash
 
+# globalized consts
+base=1024
+unit=(K M G T) nunit=4 # assert nunit == ${#unit[@]}
 filesize(){
     [[ $1 -eq $1 ]] || return    # msk-num-check
-    declare -i  nunit=4 size="$1" base=1024 pos # uint64
-    declare -a  'unit=(K M G T)' # msk-hint: !mut; assert nunit == ${#unit[@]}
-    declare -ai levels
+    local size="$1" pos # uint64, also declare -i
     if ((size < 1100)); then
         printf '%s\n' "${size}B"
         return
