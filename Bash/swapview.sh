@@ -5,14 +5,14 @@ base=1024
 unit=(K M G T) nunit=4 # assert nunit == ${#unit[@]}
 filesize(){
     [[ $1 -eq $1 ]] || return    # msk-num-check
-    local size="$1" pos # uint64, also declare -i
+    local size="$1" pos powed # uint64, also declare -i
     if ((size < 1100)); then
         printf '%s\n' "${size}B"
         return
     fi
-    # Use k=1 .... k *= 1024 to avoid unnecessary pow-ing.
-    for ((pos=0; size / pos ** base > 1100 && pos < nunit; pos++)); do :; done
-    printf '%.2g%siB\n' "$(bc <<< "$size / ($pos ^ $base)")" "${unit[pos]}"
+    # See also ``base ** pow`` (bash) and ``base ^ pow`` (bc).
+    for ((pos=0, powed=1; size / powed > 1100 && pos < nunit; pos++; powed *= 1024)); do :; done
+    printf '%.2g%siB\n' "$(bc <<< "$size / ($powed)")" "${unit[pos]}"
 }
 
 getSwap(){
