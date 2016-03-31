@@ -35,6 +35,7 @@ You can (edit and then) run `make` to build all that needs to be built.
 * CoffeeScript, requires promise (will be installed by `make`)
 * CoffeeScript_parallel, a parallel version, requires promise (will be installed by `make`)
 * D, `dmd` or `ldmd` (LLVM version)
+* Dart
 * Elixir
 * Erlang
 * Go

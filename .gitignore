@@ -13,6 +13,9 @@ node_modules/
 .cabal-sandbox/
 dist/
 cabal.sandbox.config
+packages/
+.packages
+pubspec.lock
 
 # swapview specific
 */swapview

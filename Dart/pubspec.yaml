@@ -1,0 +1,6 @@
+name: 'swapview'
+version: 0.0.1
+description: View swap usage for each process
+
+dependencies:
+  path: "^1.3.9"
