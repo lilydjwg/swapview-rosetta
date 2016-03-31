@@ -34,10 +34,10 @@ getSwapFor(String pid) {
   var cmdline = '';
   final regex = new RegExp(r"Swap:\s+(\d+)");
   try {
-    cmdline = new File('/proc/${pid}/cmdline')
-        .readAsStringSync()
-        .replaceAll('\x00', ' ')
-        .trim();
+    cmdline = new File('/proc/${pid}/cmdline').readAsStringSync();
+    if (cmdline.endsWith('\x00'))
+      cmdline = cmdline.substring(0, cmdline.length - 1);
+    cmdline = cmdline.replaceAll('\x00', ' ');
     var smaps = new File('/proc/${pid}/smaps').readAsStringSync().split('\n');
     for (String line in smaps.where((l) => l.startsWith('Swap:'))) {
       swap += int.parse(regex.firstMatch(line).group(1));
