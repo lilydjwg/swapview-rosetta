@@ -29,6 +29,7 @@ You can (edit and then) run `make` to build all that needs to be built.
 * C++14
 * C++14_boost, C++ version using the boost library
 * CSharp (mono)
+* ChezScheme
 * Chicken, format (will be installed by `make`)
 * CommonLisp_opt, sbcl
 * CommonLisp_old, sbcl, maynbe others also work
