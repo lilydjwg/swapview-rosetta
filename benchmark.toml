@@ -46,6 +46,9 @@ dir = "C++98"
 [item.CSharp]
 cmd = ["mono-sgen", "--desktop", "SwapView.exe"]
 
+[item.ChezScheme]
+cmd = ["chez-scheme", "--program", "swapview.so"]
+
 [item.Chicken]
 
 [item.CoffeeScript]
