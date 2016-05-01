@@ -20,9 +20,7 @@
         (begin
           (if (< size 0)
             (set! left (- left)))
-          (let ([unitstr (string-copy " ")])
-            (string-copy! units unit unitstr 0 1)
-            (format #f "~,1f~aiB" left unitstr)))))))
+            (format #f "~,1f~aiB" left (substring units unit (+ 1 unit))))))))
 
 (define (string-split str ch)
   (let ((len (string-length str)))
@@ -63,7 +61,7 @@
               (let ((line (get-line smaps)))
                 (if (eof-object? line) (brk)
                   (if (> (string-length line) 5)
-                    (if (string=? (substring line 0 5) "Swap:")
+                    (if (string=? (substring line 0 5) "Size:")
                       (set! s (+ s (string->number (cadr (reverse (string-split line #\space)))))))))))
           ))
           (list pid (* 1024 s) comm))
