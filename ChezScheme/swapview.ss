@@ -61,7 +61,7 @@
               (let ((line (get-line smaps)))
                 (if (eof-object? line) (brk)
                   (if (> (string-length line) 5)
-                    (if (string=? (substring line 0 5) "Size:")
+                    (if (string=? (substring line 0 5) "Swap:")
                       (set! s (+ s (string->number (cadr (reverse (string-split line #\space)))))))))))
           ))
           (list pid (* 1024 s) comm))
