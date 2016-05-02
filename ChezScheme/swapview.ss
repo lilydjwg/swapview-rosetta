@@ -1,39 +1,15 @@
 (import (chezscheme))
 
-(define-syntax while
-  (syntax-rules ()
-    ((_ pred b1 ...)
-     (let loop () (when pred b1 ... (loop))))))
+(define-record process-info (pid swap-usage command-line))
 
 (define (filesize size)
-  (let* ((units "KMGT")
-         (left (abs size))
-         (unit -1))
-    (begin
-      (while
-        (and (> left 1100) (< unit 3))
-        (begin
-          (set! left (/ left 1024))
-          (set! unit (+ 1 unit))))
-      (if (= unit -1)
-        (format #f "~aB" size)
-        (begin
-          (if (< size 0)
-            (set! left (- left)))
-            (format #f "~,1f~aiB" left (substring units unit (+ 1 unit))))))))
-
-(define (string-split str ch)
-  (let ((len (string-length str)))
-    (letrec
-      ((split
-        (lambda (a b)
-          (cond
-            ((>= b len) (if (= a b) '() (cons (substring str a b) '())))
-              ((char=? ch (string-ref str b)) (if (= a b)
-                (split (+ 1 a) (+ 1 b))
-                  (cons (substring str a b) (split b b))))
-                (else (split a (+ 1 b)))))))
-                  (split 0 0))))
+  (let lp ((units '(B KiB MiB GiB TiB))
+           (size size))
+    (if (and (> size 1100) (not (null? units)))
+        (lp (cdr units) (/ size 1024))
+        (if (eq? (car units) 'B)
+            (cons size "B")
+            (format #f "~,1f~a" size (car units))))))
 
 (define-syntax try
   (syntax-rules (catch)
@@ -45,48 +21,57 @@
            (exit catcher))
          (lambda () body)))))))
 
+(define (get-command-line pid)
+  (let* [(port (open-input-file (format #f "/proc/~a/cmdline" pid)))
+         (raw-commandline (get-string-some port))
+         (raw (if (eof-object? raw-commandline) "" raw-commandline))
+         (len (- (string-length raw) 1))
+         (_ (if (char=? (string-ref raw len) #\nul)
+                (string-truncate! raw len)))]
+    (list->string
+      (map (lambda (x) (if (char=? x #\nul) #\space x))
+        (string->list raw)))))
+
+(define (find-number str)
+  (list->string
+    (filter (lambda (x) (and (char>=? x #\0) (char<=? x #\9)))
+      (string->list str))))
+
 (define (getSwapFor pid)
-    (try
-      (let* ((port (open-input-file (format #f "/proc/~a/cmdline" pid)))
-            (rawinput (get-string-some port))
-            (rawcomm (list->string (map (lambda (x) (if (char=? x #\nul) #\space x))
-                     (string->list (if (eof-object? rawinput) "" rawinput)))))
-            (comm (if (> (string-length rawcomm) 0)
-                    (substring rawcomm 0 (- (string-length rawcomm) 1))
-                    ""))
-            (smaps (open-input-file (format #f "/proc/~a/smaps" pid)))
-            (s 0.0))
-          (call/cc (lambda (brk)
-            (while (char-ready? smaps)
-              (let ((line (get-line smaps)))
-                (if (eof-object? line) (brk)
-                  (if (> (string-length line) 5)
-                    (if (string=? (substring line 0 5) "Swap:")
-                      (set! s (+ s (string->number (cadr (reverse (string-split line #\space)))))))))))
-          ))
-          (list pid (* 1024 s) comm))
-      (catch (list pid 0 ""))))
+  (try
+      (let ((smaps (open-input-file (format #f "/proc/~a/smaps" pid))))
+        (let lp ((size 0)
+                 (line (get-line smaps)))
+          (cond ((eof-object? line)
+                 (close-input-port smaps)
+                 (and (not (zero? size))
+                      (make-process-info
+                       pid (* 1024 size) (get-command-line pid))))
+                (else
+                 (lp (if (string=? (substring line 0 5) "Swap:")
+                         (+ size (string->number (find-number line)))
+                         size)
+                     (get-line smaps))))))
+      (catch #f)))
 
 (define (getSwap)
-  (sort (lambda (a b) (< (list-ref a 1) (list-ref b 1)))
-    (filter (lambda (x) (> (list-ref x 1) 0))
-      (map (lambda (x) (getSwapFor x))
-        (filter (lambda (x) (number? x))
-          (map (lambda (x) (string->number x))
-            (directory-list "/proc")))))))
+  (sort (lambda (a b) (< (process-info-swap-usage a) (process-info-swap-usage b)))
+    (filter (lambda (x) (and x (> (process-info-swap-usage x) 0)))
+      (map (lambda (x) (and (string->number x) (getSwapFor x)))
+            (directory-list "/proc")))))
 
 (define (main)
   (let ([FORMATSTR "~5@a ~9@a ~@a~%"]
         [total 0.0])
-    (display (format #f FORMATSTR "PID" "SWAP" "COMMAND"))
-    (for-each (lambda (item) 
-              (begin
-                (set! total (+ total (list-ref item 1)))
-                (format #t FORMATSTR
-                    (list-ref item 0)
-                    (filesize (list-ref item 1))
-                    (list-ref item 2))
-                ))
+    (format #t FORMATSTR "PID" "SWAP" "COMMAND")
+    (for-each
+      (lambda (item)
+          (begin
+            (set! total (+ total (process-info-swap-usage item)))
+            (format #t FORMATSTR
+              (process-info-pid item)
+              (filesize (process-info-swap-usage item))
+              (process-info-command-line item))))
         (getSwap))
     (format #t "Total: ~8@a~%" (filesize total))))
 
