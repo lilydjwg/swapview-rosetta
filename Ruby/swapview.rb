@@ -1,4 +1,6 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
+# for Ruby 2.3+
 
 FORMAT = "%5s %9s %s"
 TOTALFMT = "Total: %8s"
@@ -22,7 +24,7 @@ SWAP = 'Swap: '
 # a new string instance if we put literal to map!{}
 def get_swap_for pid
   comm = File.read("/proc/#{pid}/cmdline")
-  comm.chop! if comm[-1].ord.zero?
+  comm.chop! if comm[-1] == "\0"
   comm.tr!("\0", ' ')
   result = File.read("/proc/#{pid}/smaps").split("\n")
   result.map! { |l| l[6..-1].to_i if l.start_with? SWAP }
