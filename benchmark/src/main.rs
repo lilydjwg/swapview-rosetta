@@ -122,7 +122,7 @@ fn parse_item(name: String, conf: &toml::Value)
       //TODO: use log
       _ => {
         io::stderr().write_fmt(
-        format_args!("warning: unknown field: {}", key)).unwrap();
+        format_args!("warning: unknown field: {}\n", key)).unwrap();
       },
     };
   }
