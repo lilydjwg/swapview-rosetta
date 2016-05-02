@@ -1,4 +1,6 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
+# for Ruby 2.3+
 
 FORMAT = "%5s %9s %s"
 TOTALFMT = "Total: %8s"
@@ -17,40 +19,38 @@ def filesize size
   end
 end
 
+SWAP = 'Swap: '
+# since strings (created from literal) are mutable, each iteration will create
+# a new string instance if we put literal to map!{}
 def get_swap_for pid
   comm = File.read("/proc/#{pid}/cmdline")
   comm.chop! if comm[-1] == "\0"
   comm.tr!("\0", ' ')
-  s = open("/proc/#{pid}/smaps") do |f|
-    f.each_line.map { |l| $1.to_i if l =~ /^Swap: +([0-9]+)/}
-     .compact
-     .reduce :+
-  end
+  result = File.read("/proc/#{pid}/smaps").split("\n")
+  result.map! { |l| l[6..-1].to_i if l.start_with? SWAP }
+  result.compact!
+  s = result.reduce(:+).to_i
   [pid, s * 1024, comm]
 rescue
-  [pid, 0, '']
+  [pid, 0, nil]
 end
 
 def get_swap
-  Dir.foreach('/proc')
-     .select {|dir| dir =~ /^[0-9]+$/ }
-     .map    {|pid| get_swap_for pid }
-     .select {|s| s[1] > 0 }
-     .sort_by{|x| x[1] }
+  result = Dir.entries('/proc')
+  result.map!     {|dir| get_swap_for dir unless dir.to_i.zero? }
+  result.select!  {|s| s && s[1] > 0 }
+  result.sort_by! {|x| x[1] }
+  result
 end
 
 def main
   results = get_swap
   puts FORMAT % %w(PID SWAP COMMAND)
-  results.each do |psc|
-    pid, swap, comm = *psc
+  results.each do |(pid, swap, comm)|
     puts FORMAT % [pid, filesize(swap), comm]
   end
   t = results.map {|x| x[1] }.reduce(:+).to_i
   puts TOTALFMT % filesize(t)
 end
 
-if $0 == __FILE__
-  main
-end
-
+main
