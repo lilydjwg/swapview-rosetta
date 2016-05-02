@@ -170,6 +170,10 @@ cmd = ["racket", "compiled/swapview_rkt.zo"]
 [item.Ruby]
 cmd = ["./swapview.rb"]
 
+[item.Ruby_rubinius]
+dir = "Ruby"
+cmd = ["rbx", "swapview.rb"]
+
 [item.Rust]
 
 [item.Rust_parallel]

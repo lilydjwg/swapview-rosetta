@@ -54,7 +54,7 @@ You can (edit and then) run `make` to build all that needs to be built.
 * Python3_bytes
 * R
 * Racket
-* Ruby
+* Ruby and Rubinius
 * Rust, use git version please
 * Scala 2.11.6
 * Vala, requires `glib2` (`libglib-2.0` and `libgio-2.0`)
