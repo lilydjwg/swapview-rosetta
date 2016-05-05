@@ -33,9 +33,7 @@ string filesize(double size) {
 }
 
 bool starts_with (string const& s1, string const& s2) {
-    if(s1.size() < s2.size()) return false;
-    auto r = mismatch(s2.begin(), s2.end(), s1.begin());
-    return (r.first == s2.end());
+    return mismatch(s1.begin(), s1.end(), s2.begin(), s2.end()).second == s2.end();
 }
 
 swap_info getSwapFor(int pid){
