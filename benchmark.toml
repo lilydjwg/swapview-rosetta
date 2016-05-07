@@ -126,6 +126,9 @@ cmd = ["./swapview.js"]
 [item.NodeJS_async]
 cmd = ["./swapview.js"]
 
+[item.NodeJS_cluster]
+cmd = ["node", "swapview.js"]
+
 [item.NodeJS_parallel]
 cmd = ["node", "swapview.js"]
 
