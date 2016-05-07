@@ -47,6 +47,7 @@ You can (edit and then) run `make` to build all that needs to be built.
 * Lua, requires lua-filesystem, works with 5.1, 5.2 and LuaJIT
 * NodeJS, requires sprintf (will be installed by `make`)
 * NodeJS_async, another NodeJS version which use async I/O, requires sprintf and async (will be installed by `make`)
+* NodeJS_parallel, uses multiple parallely worker process
 * OCaml
 * FreePascal
 * Perl
