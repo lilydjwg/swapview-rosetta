@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const coreCount = 4;
+const coreCount = require('os').cpus().length;
 const fs = require('fs');
 const sprintf = require('sprintf');
 const Parallel = require('paralleljs');
