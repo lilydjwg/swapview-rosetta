@@ -108,7 +108,7 @@ fn parse_item(name: String, conf: &toml::Value)
         if maybe_arr_str.iter().any(|x| x.is_none()) {
             return Err(format!("cmd must be an array of strings, but got {:?}", cmd_arr));
         }
-        if maybe_arr_str.len() == 0 {
+        if maybe_arr_str.is_empty() {
           return Err("cmd must be an non-empty array of strings".to_string());
         }
         Some(maybe_arr_str.iter().map(|x| x.unwrap().to_string()).collect())
@@ -147,9 +147,9 @@ fn merge_default(item: OptionalBenchmarkItem, default: &Option<OptionalBenchmark
     let d = default.as_ref().unwrap();
     maybe_dir = maybe_dir.or(d.dir.clone());
     maybe_cmd = maybe_cmd.or(d.cmd.clone());
-    maybe_time_limit = maybe_time_limit.or(d.time_limit.clone());
-    maybe_count_limit = maybe_count_limit.or(d.count_limit.clone());
-    maybe_valid_percent = maybe_valid_percent.or(d.valid_percent.clone());
+    maybe_time_limit = maybe_time_limit.or(d.time_limit);
+    maybe_count_limit = maybe_count_limit.or(d.count_limit);
+    maybe_valid_percent = maybe_valid_percent.or(d.valid_percent);
   }
   let dir = try!(maybe_dir.ok_or(
     format!("{} don't have required field dir", item.name)));
@@ -172,7 +172,7 @@ fn merge_default(item: OptionalBenchmarkItem, default: &Option<OptionalBenchmark
 }
 
 fn parse_config(toml: &str) -> Result<Vec<BenchmarkItem>,String> {
-  let mut parser = toml::Parser::new(&toml);
+  let mut parser = toml::Parser::new(toml);
   let config = try!(parser.parse().ok_or(format!("bad TOML data: {:?}", parser.errors)));
 
   let item_v = try!(config.get("item").ok_or("no item definitions".to_string()));
@@ -185,7 +185,7 @@ fn parse_config(toml: &str) -> Result<Vec<BenchmarkItem>,String> {
 
   let mut ret = Vec::with_capacity(items.len());
   for (name, conf) in items {
-    if as_str(&name) == "default" {
+    if name == "default" {
       continue;
     }
     ret.push(
@@ -216,21 +216,21 @@ fn time_item(item: &BenchmarkItem) -> Result<BenchmarkResult,String> {
     }
   }
 
-  if result.len() == 0 {
+  if result.is_empty() {
     return Err("no result???".to_string());
   }
   result.sort();
   let len = result.len() as u64;
   let min = *result.first().unwrap();
   let max = *result.last().unwrap();
-  let sum: u64 = result.iter().map(|&x| x).sum();
+  let sum: u64 = result.iter().sum();
   let sum2: u64 = result.iter().map(|&x| x*x).sum();
   let avg = sum / len;
   let mdev = ((sum2 / len - avg * avg) as f64).sqrt() as u64;
 
   let top_n = ((result.len() * item.valid_percent as usize) as f64 / 100.).round() as usize;
   let tops = &result[..top_n];
-  let topavg = tops.iter().map(|&x| x).sum::<u64>() as f64 / top_n as f64;
+  let topavg = tops.iter().sum::<u64>() as f64 / top_n as f64;
   Ok(BenchmarkResult {
     topavg: topavg as u64,
     avg: avg,
@@ -241,9 +241,9 @@ fn time_item(item: &BenchmarkItem) -> Result<BenchmarkResult,String> {
   })
 }
 
-fn run_once(cmd: &Vec<String>) -> Result<(u64,u64),String> {
+fn run_once(cmd: &[String]) -> Result<(u64,u64),String> {
   let start = time::precise_time_ns();
-  let status = match Command::new(as_str(&cmd[0])).args(&cmd[1..])
+  let status = match Command::new(&cmd[0]).args(&cmd[1..])
                      .stdin(Stdio::null())
                      .stdout(Stdio::null())
                      .stderr(Stdio::inherit())
@@ -260,10 +260,6 @@ fn run_once(cmd: &Vec<String>) -> Result<(u64,u64),String> {
   Ok((stop - start, stop))
 }
 
-fn as_str(s: &String) -> &str {
-  return &s
-}
-
 #[allow(unused_must_use)]
 fn main() {
   let mut toml = String::new();
@@ -275,7 +271,7 @@ fn main() {
 
   let args: Vec<_> = std::env::args().skip(1)
     .map(|x| Pattern::new(&x).unwrap()).collect();
-  let items_to_run = if args.len() > 0 {
+  let items_to_run = if !args.is_empty() {
     items.into_iter().filter(
       |x| args.iter().any(|p| p.matches(&x.name))).collect()
   } else {
