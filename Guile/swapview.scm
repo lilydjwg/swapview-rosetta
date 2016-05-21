@@ -1,70 +1,65 @@
 #!/usr/bin/env guile
 !#
-(use-modules (ice-9 format))
-(use-modules (ice-9 rdelim))
-(use-modules (ice-9 ftw))
+(use-modules (ice-9 rdelim)
+             (ice-9 ftw)
+             (ice-9 futures)
+             (srfi srfi-1))
+(define get-string-all (@ (rnrs io ports) get-string-all))
 
+(define G (ash 1 30))
+(define M (ash 1 20))
+(define K (ash 1 10))
 (define (filesize size)
-  (let* ((units "KMGT")
-         (left (abs size))
-         (unit -1))
-    (begin
-      (while
-        (and (> left 1100) (< unit 3))
-        (begin
-          (set! left (/ left 1024))
-          (set! unit (+ 1 unit))))
-      (if (= unit -1)
-        (format #f "~aB" size)
-        (begin
-          (if (< size 0)
-            (set! left (- left)))
-          (format #f "~,1f~aiB" left (string-copy units unit (+ 1 unit))))))))
+  (cond
+   ((>= size G)
+    (format #f "~,1fGiB" (/ size G)))
+   ((>= size M)
+    (format #f "~,1fMiB" (/ size M)))
+   ((>= size K)
+    (format #f "~,1fKiB" (/ size K)))
+   (else (format #f "~a Bytes" size))))
 
 (define (getSwapFor pid)
+  (define (getswapsize)
+    (define smaps (format #f "/proc/~a/smaps" pid))
+    (define (getsize l)
+      (and (string= (substring/shared l 0 5) "Swap:")
+           (list->string (string-fold-right (lambda (x p) (if (char-numeric? x) (cons x p) p)) '() l))))
+    (when (not (file-exists? smaps)) (error "File doesn't exist!" smaps))
+    (call-with-input-file smaps
+      (lambda (port)
+        (let lp((line (read-line port)) (total 0))
+          (cond
+           ((eof-object? line) total)
+           ((getsize line)
+            => (lambda (n)
+                 (lp (read-line port) (+ total (string->number n)))))
+           (else (lp (read-line port) total)))))))
   (catch #t
-    (lambda ()
-      (let* ((port (open-input-file (format #f "/proc/~a/cmdline" pid)))
-             (rawcomm (string-map (lambda (x) (if (char=? x #\nul) #\sp x))
-                        (read-string port)))
-             (comm (if (> (string-length rawcomm) 0)
-                     (substring rawcomm 0 (- (string-length rawcomm) 1))
-                     ""))
-             (smaps (open-input-file (format #f "/proc/~a/smaps" pid)))
-             (s 0.0))
-        (begin
-          (while (char-ready? smaps)
-            (let ((line (read-line smaps)))
-              (if (eof-object? line) (break)
-                (if (> (string-length line) 5)
-                  (if (string=? (substring line 0 5) "Swap:")
-                    (set! s (+ s (string->number (cadr (reverse (string-split line #\sp)))))))))))
-          (list pid (* 1024 s) comm))))
-    (lambda (key . value) (list pid 0 ""))))
+         (lambda ()
+           (let ((c (call-with-input-file (format #f "/proc/~a/cmdline" pid) get-string-all))
+                 (s (getswapsize)))
+             (and s (> s 0) (list pid (ash s 10) c))))
+         (lambda (key . value) #f)))
 
 (define (getSwap)
-  (sort
-    (filter (lambda (x) (> (list-ref x 1) 0))
-      (map (lambda (x) (getSwapFor (string->number x)))
-        (scandir "/proc" (lambda (x) (string->number x))))
-    )
-    (lambda (a b) (< (list-ref a 1) (list-ref b 1)))))
+  (sort!
+   (filter-map touch (map! (lambda (x) (future (and=> (string->number x) getSwapFor))) (scandir "/proc")))
+   (lambda (a b) (< (cadr a) (cadr b)))))
 
-(define (main)
-  (let* ((results (getSwap))
-         (FORMATSTR "~5@a ~9@a ~@a~%")
-         (total 0.0))
-    (begin
-      (format #t FORMATSTR "PID" "SWAP" "COMMAND")
-      (map
-        (lambda (item)
-          (begin
-            (set! total (+ total (list-ref item 1)))
-            (format #t FORMATSTR
-              (list-ref item 0)
-              (filesize (list-ref item 1))
-              (list-ref item 2))))
-        results)
-      (format #t "Total: ~8@a~%" (filesize total)))))
+(define (main . args)
+  (let ((results (getSwap))
+        (FORMATSTR "~5@a ~9@a ~@a~%"))
+    (format #t FORMATSTR "PID" "SWAP" "COMMAND")
+    (let lp((next results) (total 0))
+      (cond
+       ((null? next) (format #t "Total: ~8@a~%" (filesize total)))
+       (else
+        (let ((item (car next)))
+          (format #t FORMATSTR
+                  (car item)
+                  (filesize (cadr item))
+                  (caddr item))
+          (lp (cdr next) (+ total (cadr item)))))))))
 
 (main)
