@@ -21,7 +21,7 @@ EOF
                 [ -r "$smaps_file" ] && \
                 ( [ "$CURRENT_USER_ID" -eq 0 ] || [ -O "$smaps_file" ] )
             then
-                swap_size="$(grep -F 'Swap' "$smaps_file" | \
+                swap_size="$(grep -F 'Swap:' "$smaps_file" | \
                             awk 'BEGIN{ sum = 0 }
                                  { sum += $2 }
                                  END{ print sum }')"

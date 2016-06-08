@@ -34,9 +34,9 @@ function getSwapFor(){
 
     swap=$(
         awk '
-            BEGIN  { total = 0 }
-            /Swap/ { total += $2 }
-            END    { print total }
+            BEGIN   { total = 0 }
+            /Swap:/ { total += $2 }
+            END     { print total }
         ' /proc/$pid/smaps 2>/dev/null
     )
     [[ $? -ne 0 ]] && return

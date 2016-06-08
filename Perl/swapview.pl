@@ -20,7 +20,7 @@ sub get_swap_info_from {
         ) {
             open my $smaps_file_fh, '<', $smaps_file;
             while (my $line = <$smaps_file_fh>) {
-                if ( $line =~ /Swap/ ) {
+                if ( $line =~ /Swap:/ ) {
                     $swap_size += ( split( /[[:space:]]+/, $line ) )[1];
                 }
             }
