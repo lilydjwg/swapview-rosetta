@@ -1,5 +1,3 @@
-#![feature(iter_arith)]
-
 extern crate toml;
 extern crate time;
 extern crate glob;
@@ -223,14 +221,14 @@ fn time_item(item: &BenchmarkItem) -> Result<BenchmarkResult,String> {
   let len = result.len() as u64;
   let min = *result.first().unwrap();
   let max = *result.last().unwrap();
-  let sum: u64 = result.iter().sum();
-  let sum2: u64 = result.iter().map(|&x| x*x).sum();
+  let sum: u64 = result.iter().fold(0, |acc, x| acc + x);
+  let sum2: u64 = result.iter().map(|&x| x*x).fold(0, |acc, x| acc + x);
   let avg = sum / len;
   let mdev = ((sum2 / len - avg * avg) as f64).sqrt() as u64;
 
   let top_n = ((result.len() * item.valid_percent as usize) as f64 / 100.).round() as usize;
   let tops = &result[..top_n];
-  let topavg = tops.iter().sum::<u64>() as f64 / top_n as f64;
+  let topavg = tops.iter().fold(0, |acc, x| acc + x) as f64 / top_n as f64;
   Ok(BenchmarkResult {
     topavg: topavg as u64,
     avg: avg,

@@ -4,7 +4,7 @@ version = "0.0.1"
 dependencies = [
  "glob 0.2.11 (registry+git://crates.mirrors.ustc.edu.cn/index)",
  "time 0.1.35 (registry+git://crates.mirrors.ustc.edu.cn/index)",
- "toml 0.1.28 (registry+git://crates.mirrors.ustc.edu.cn/index)",
+ "toml 0.1.30 (registry+git://crates.mirrors.ustc.edu.cn/index)",
 ]
 
 [[package]]
@@ -17,13 +17,13 @@ name = "kernel32-sys"
 version = "0.2.2"
 source = "registry+git://crates.mirrors.ustc.edu.cn/index"
 dependencies = [
- "winapi 0.2.6 (registry+git://crates.mirrors.ustc.edu.cn/index)",
+ "winapi 0.2.7 (registry+git://crates.mirrors.ustc.edu.cn/index)",
  "winapi-build 0.1.1 (registry+git://crates.mirrors.ustc.edu.cn/index)",
 ]
 
 [[package]]
 name = "libc"
-version = "0.2.10"
+version = "0.2.11"
 source = "registry+git://crates.mirrors.ustc.edu.cn/index"
 
 [[package]]
@@ -37,13 +37,13 @@ version = "0.1.35"
 source = "registry+git://crates.mirrors.ustc.edu.cn/index"
 dependencies = [
  "kernel32-sys 0.2.2 (registry+git://crates.mirrors.ustc.edu.cn/index)",
- "libc 0.2.10 (registry+git://crates.mirrors.ustc.edu.cn/index)",
- "winapi 0.2.6 (registry+git://crates.mirrors.ustc.edu.cn/index)",
+ "libc 0.2.11 (registry+git://crates.mirrors.ustc.edu.cn/index)",
+ "winapi 0.2.7 (registry+git://crates.mirrors.ustc.edu.cn/index)",
 ]
 
 [[package]]
 name = "toml"
-version = "0.1.28"
+version = "0.1.30"
 source = "registry+git://crates.mirrors.ustc.edu.cn/index"
 dependencies = [
  "rustc-serialize 0.3.19 (registry+git://crates.mirrors.ustc.edu.cn/index)",
@@ -51,7 +51,7 @@ dependencies = [
 
 [[package]]
 name = "winapi"
-version = "0.2.6"
+version = "0.2.7"
 source = "registry+git://crates.mirrors.ustc.edu.cn/index"
 
 [[package]]
