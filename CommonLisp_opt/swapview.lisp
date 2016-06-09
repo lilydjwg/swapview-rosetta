@@ -18,7 +18,7 @@
           (if stream
             (loop for line = (read-line stream nil nil)
                   while line
-                  when (search "Swap" line)
+                  when (search "Swap:" line)
                   summing (parse-integer (subseq line (1+ (position #\: line))) :junk-allowed t))
             0)))
       0))
