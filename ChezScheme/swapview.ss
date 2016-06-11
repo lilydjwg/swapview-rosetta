@@ -23,7 +23,7 @@
 
 (define (get-command-line pid)
   (let* [(port (open-input-file (format #f "/proc/~a/cmdline" pid)))
-         (raw-commandline (get-string-some port))
+         (raw-commandline (get-string-all port))
          (raw (if (eof-object? raw-commandline) "" raw-commandline))
          (len (- (string-length raw) 1))
          (_ (if (char=? (string-ref raw len) #\nul)
