@@ -1,5 +1,35 @@
+let inline (|>) x f = f x
+
 let format = "%5s %9s %s" ^^ "\n"
 let totalFmt = "Total: %8s" ^^ "\n"
+
+let is_digit str =
+  let rec is_digit' i =
+    if i < 0
+    then true
+    else
+      let code = Char.code str.[i] in
+      if code < 48 || code > 57
+      then false
+      else is_digit' (i - 1) in
+  is_digit' ((String.length str) - 1)
+
+let starts_with str target =
+  let rec starts_with' i =
+    if i < 0
+    then true
+    else
+      if str.[i] != target.[i]
+      then false
+      else starts_with' (i - 1) in
+  starts_with' ((String.length target) - 1)
+
+let parse_swap_line line =
+  try
+    let pos = String.index line ' ' in
+    String.sub line 0 pos
+  with Not_found ->
+    "0"
 
 (* from http://stackoverflow.com/a/5775024/296473 *)
 let readfile filename =
@@ -12,7 +42,7 @@ let readfile filename =
   with End_of_file ->
     (* FIXME: other exceptions lead to fd leakage here *)
     close_in chan;
-  List.rev !lines
+  !lines
 
 let filesize n =
   let units = "KMGTP" in
@@ -29,32 +59,39 @@ let filesize n =
   else (string_of_int n) ^ "B"
 
 let swapused pid =
-  let lines = readfile ("/proc/" ^ pid ^ "/smaps") in
   let swap_amount cur line =
-    if Str.string_partial_match (Str.regexp "^Swap:[^0-9]+\\([0-9]+\\)") line 0
-    then cur + int_of_string (Str.matched_group 1 line)
+    if starts_with line "Swap:"
+    then
+      let size = String.sub line 5 ((String.length line) - 5)
+                 |> String.trim
+                 |> parse_swap_line
+                 |> int_of_string in
+      cur + size
     else cur in
-  let inkB = List.fold_left swap_amount 0 lines in
+  let inkB = readfile ("/proc/" ^ pid ^ "/smaps")
+             |> List.fold_left swap_amount 0 in
   inkB * 1024
 
 let get_cmd pid =
   let f = "/proc/" ^ pid ^ "/cmdline" in
   try
-    Str.global_replace (Str.regexp "\000") " " (List.hd (readfile f))
+    String.map (fun x -> if x == '\000' then ' ' else x) (List.hd (readfile f))
   with Sys_error _ ->
     ""
 
 let _ =
-  let fs = Array.to_list (Sys.readdir "/proc") in
-  let pids =
-    List.filter (fun x -> Str.string_match (Str.regexp "[0-9]+") x 0) fs in
   let swapused_or_0 pid =
     try
       swapused pid
     with Sys_error _ ->
       0 in
-  let data = List.map (fun pid -> (pid, swapused_or_0 pid)) pids in
-  let sorted = List.sort (fun (_,a) (_,b) -> compare a b) data in
+  let sorted = Sys.readdir "/proc"
+               |> Array.fold_left (fun acc x ->
+                   if is_digit x
+                   then (x, swapused_or_0 x) :: acc
+                   else acc
+                 ) []
+               |> List.sort (fun (_, a) (_, b) -> compare a b) in
   let total = ref 0 in
   Printf.printf format "PID" "SWAP" "COMMAND";
   List.iter (fun (a, b) ->

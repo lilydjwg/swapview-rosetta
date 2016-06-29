@@ -1,7 +1,7 @@
 .PHONY: all clean
 
 %: %.ml
-	ocamlopt str.cmxa $< -o $@
+	ocamlopt -ccopt -O3 -noassert -unsafe $< -o $@
 	strip $@
 
 
