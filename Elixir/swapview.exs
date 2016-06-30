@@ -3,8 +3,8 @@
 defmodule SwapView do
   defp filesize(size)         when size < 1100, do: "#{size}B"
   defp filesize(size),        do: filesize(size / 1024, ~w(KiB MiB GiB TiB))
-  defp filesize(size, [h]),   do: "#{size |> Float.round 1}#{h}"
-  defp filesize(size, [h|_])  when size < 1100, do: "#{size |> Float.round 1}#{h}"
+  defp filesize(size, [h]),   do: "#{size |> Float.round(1)}#{h}"
+  defp filesize(size, [h|_])  when size < 1100, do: "#{size |> Float.round(1)}#{h}"
   defp filesize(size, [_|t]), do: filesize(size / 1024, t)
 
   defp get_swap_for(pid) do
@@ -33,17 +33,17 @@ defmodule SwapView do
   end
 
   defp format({pid, size, comm}) do
-    IO.puts "#{pid |> String.rjust 5} #{size |> String.rjust 9} #{comm}"
+    IO.puts "#{pid |> String.rjust(5)} #{size |> String.rjust(9)} #{comm}"
   end
 
   def main do
     result = get_swap
     format {"PID", "SWAP", "COMMAND"}
-    result |> Enum.each fn {pid, size, comm} ->
+    result |> Enum.each(fn {pid, size, comm} ->
       format {pid, size |> filesize, comm}
-    end
+    end)
     total = result |> Enum.map(fn {_, size, _} -> size end) |> Enum.sum |> filesize
-    IO.puts "Total: #{total |> String.rjust 8}"
+    IO.puts "Total: #{total |> String.rjust(8)}"
   end
 end
 
