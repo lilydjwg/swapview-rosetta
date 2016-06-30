@@ -11,6 +11,7 @@
 #include <memory>
 #include <stdio.h>
 #include <iomanip>
+#include <cmath>
 
 
 //#define TARGET "Size" // for test
