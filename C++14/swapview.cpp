@@ -9,7 +9,6 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include <error.h>
-#include <vector>
 
 using namespace std;
 
@@ -41,11 +40,7 @@ bool starts_with (string const& s1, string const& s2) {
 
 swap_info getSwapFor(int pid){
     ifstream cmd_inf("/proc/" + to_string(pid) + "/cmdline");
-    cmd_inf.seekg(0, std::ios::end);
-    size_t size = cmd_inf.tellg();
-    string comm(size, ' ');
-    cmd_inf.seekg(0);
-    cmd_inf.read(&comm[0], size);
+    string comm((istreambuf_iterator<char>(cmd_inf)), istreambuf_iterator<char>());
     if(!comm.empty()) {
         if(comm.back() == 0) comm.pop_back();
         replace(comm.begin(), comm.end(), '\0' , ' ');
