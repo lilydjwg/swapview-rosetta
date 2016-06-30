@@ -59,8 +59,8 @@ proc get_swap(): seq[swap_info] =
 proc `$` (x: swap_info): string =
     var pidstr = $x.pid
     var swapstr = filesize(x.swap)
-    repeatChar(max(0, 5 - pidstr.len)) & pidstr & " " &
-        repeatChar(max(0, 9 - swapstr.len)) & swapstr & " " & x.cmd
+    spaces(max(0, 5 - pidstr.len)) & pidstr & " " &
+        spaces(max(0, 9 - swapstr.len)) & swapstr & " " & x.cmd
 
 # main
 echo "  PID      SWAP COMMAND"
@@ -70,4 +70,4 @@ for i in infos:
     echo i
     t += i.swap
 var total = filesize(t)
-echo "Total: " & repeatChar(max(0, 8 - total.len)) & total
+echo "Total: " & spaces(max(0, 8 - total.len)) & total
