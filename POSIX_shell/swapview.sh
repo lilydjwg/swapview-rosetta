@@ -5,7 +5,7 @@ readonly PRINTF_FORMAT='%5s %9s %s\n'
 
 main() {
     printf "$PRINTF_FORMAT" 'PID' 'SWAP' 'COMMAND'
-    find '/proc' -maxdepth 2 -regextype posix-basic -regex '^/proc/[[:digit:]]\+$' -type d -print | \
+    find '/proc' -maxdepth 2 -regextype posix-basic -regex '^/proc/[[:digit:]]\+$' -type d -print 2>/dev/null | \
         while read dir_path || [ -n "$dir_path" ]
         do
             # Dash doesn't support here-string, so I use here-document instead.
