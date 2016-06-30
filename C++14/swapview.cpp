@@ -9,6 +9,7 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include <error.h>
+#include <vector>
 
 using namespace std;
 
