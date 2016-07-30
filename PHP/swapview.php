@@ -29,9 +29,7 @@ function getSwapFor($pid)
     $fallback = array($pid, 0, '');
 
     $commFile = "/proc/$pid/cmdline";
-    if (!is_readable($commFile) ||
-        false === ($comm = file_get_contents($commFile, 'r'))
-    ) {
+    if (($comm = @file_get_contents($commFile, 'r')) === false) {
         return $fallback;
     }
     if ("\0" == substr($comm, -1)) {
@@ -41,14 +39,12 @@ function getSwapFor($pid)
 
     $s = 0;
     $smapsFile = "/proc/$pid/smaps";
-    if (!is_readable($smapsFile) ||
-        false === ($smaps = file_get_contents($smapsFile, 'r'))
-    ) {
+    if (($smaps = @file_get_contents($smapsFile, 'r')) === false) {
         return $fallback;
     }
     $matchCount = preg_match_all('/\nSwap:\s+(\d+)/', $smaps, $matches);
 
-    if (false === $matchCount) {
+    if ($matchCount === false) {
         return $fallback;
 
     } else {
@@ -66,7 +62,7 @@ function getSwap()
     $ret = array();
 
     $dir = dir('/proc');
-    while (false !== ($file = $dir->read())) {
+    while (($file = $dir->read()) !== false) {
         $pid = intval($file);
         if (0 < $pid) {
             $swap = getSwapFor($pid);
