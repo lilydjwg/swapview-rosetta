@@ -22,7 +22,7 @@ def filesize(size):
 def getSwapFor(pid):
   try:
     comm = open('/proc/%s/cmdline' % pid, 'rb').read()
-    if comm and comm[-1] == b'\x00':
+    if comm.endswith(b'\x00'):
       comm = comm[:-1]
     comm = comm.replace(b'\x00', b' ')
     with open('/proc/%s/smaps' % pid, 'rb') as f:
