@@ -5,11 +5,9 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
+#include <iterator>
 #include <algorithm>
 #include <sstream>
-#include <cstdio>
-#include <memory>
-#include <stdio.h>
 #include <iomanip>
 #include <cmath>
 
@@ -17,113 +15,92 @@
 //#define TARGET "Size" // for test
 #define TARGET "Swap"
 
+using namespace std;
 
-std::vector<std::string> read_dir(std::string path){
-    std::unique_ptr<DIR, int (*)(DIR*)> dp(opendir(path.c_str()), closedir);
-    struct dirent *dirp = nullptr;
-    auto rv = std::vector<std::string>{};
-    while((dirp = readdir(dp.get())) != nullptr){
+
+vector<string> read_dir(const string & path){
+    unique_ptr<DIR, decltype(closedir)*> dp(opendir(path.c_str()), closedir);
+    vector<string> rv;
+    while (auto dirp = readdir(dp.get()))
         rv.push_back(dirp->d_name);
-    }
     return rv;
 }
 
-std::string read_file(std::string const & fn){
-    try{
-        std::ifstream in(fn);
-        return std::string(std::istreambuf_iterator<char>(in),
-                           std::istreambuf_iterator<char>());
-    }
-    catch(const std::ios_base::failure &){
-        return "";
-    }
-}
-
-struct SwapInfo{
-    int pid {};
-    long long int size{};
-    std::string comm;
+struct SwapInfo {
+    int pid;
+    long long int size;
+    string comm;
 };
-std::string output_size(long long int size){
-    std::ostringstream out;
+
+string file_size(long long int size) {
     static const char units [] = "KMGT";
     double left = fabs(size);
     int unit = -1;
-    while( left > 1100 && unit < 3 ){
+    while (left > 1100 && unit < 3) {
         left /= 1024;
         unit++;
     }
-    if(unit == -1){
-       out << static_cast<int>(size) << 'B';
-    }else{
-        if(size<0){
+    ostringstream out;
+    if (unit == -1) {
+        out << size << 'B';
+    } else {
+        if (size < 0)
             left = -left;
-        }
-        out << std::fixed << std::setprecision(1) << left << units[unit] << "iB";
+        out << fixed << setprecision(1) << left << units[unit] << "iB";
     }
     return out.str();
 }
 
-std::ostream & operator<<(std::ostream & out, SwapInfo const & si){
-    auto size = output_size(si.size);
-    out << std::setw(5) << si.pid;
-    out << " " << std::setw(9) << size;
-    out << " " << si.comm;
-    return out;
+bool starts_with(const string & a, const string & b) {
+    return a.compare(0, b.length(), b) == 0;
 }
 
-SwapInfo get_swap_info(std::string const & pid){
-    auto rv = SwapInfo{};
-    rv.pid = std::atoi(pid.c_str());
-    if(rv.pid == 0)
+SwapInfo get_swap_info(const string & pid) {
+    auto rv = SwapInfo{stoi(pid), 0};
+    if (rv.pid == 0)
         return rv;
-    auto cmdline = read_file(std::string("/proc/") + pid + "/cmdline");
-    if(cmdline.length() == 0)
+
+    string cmdline;
+    try {
+        ifstream cmds(string("/proc/") + pid + "/cmdline");
+        cmdline = string(istreambuf_iterator<char>(cmds), {});
+    } catch (const ios_base::failure &) {}
+    if (cmdline.length() == 0)
         return rv;
-    if(cmdline[cmdline.length() - 1] == '\0')
+    if (cmdline[cmdline.length()-1] == '\0')
         cmdline.pop_back();
-    std::replace(cmdline.begin(), cmdline.end(), '\0', ' ');
-    rv.comm = std::move(cmdline);
-    std::unique_ptr<FILE,int (*)(FILE *)> fp(fopen((std::string("/proc/") + pid + "/smaps").c_str(), "r"), fclose);
-    if(fp.get() == nullptr)
-        return rv;
-    char * line_tmp = nullptr;
-    size_t size = 0;
-    auto deleter = [](char ** ptr){std::free(*ptr);};
-    std::unique_ptr<char *, decltype(deleter)> line(&line_tmp, deleter);
-    while(true){
-        auto len = getline(&line_tmp, &size, fp.get());
-        if(len <= 0)
-            break;
-        long long int size;
-        if(sscanf(line_tmp, TARGET ": %lld", &size)){
-            rv.size += size * 1024;
-        }
-    }
+    replace(cmdline.begin(), cmdline.end(), '\0', ' ');
+    rv.comm = move(cmdline);
+
+    ifstream inf(string("/proc/") + pid + "/smaps");
+    string l;
+    while (getline(inf, l))
+        if (starts_with(l, TARGET))
+            rv.size += strtoll(l.c_str()+sizeof(TARGET), nullptr, 10);
+
+    rv.size *= 1024;
     return rv;
 }
 
-int main(){
-    std::vector<SwapInfo> all_swap_info;
-    for(auto const & n : read_dir("/proc/")){
-        if(n[0] == '.')
+int main() {
+    vector<SwapInfo> all_swap_info;
+    for (auto const & n : read_dir("/proc/")) {
+        if (!all_of(n.begin(), n.end(), ::isdigit))  // "::" make gcc happy
             continue;
         auto tmp = get_swap_info(n);
-        if(tmp.size > 0){
-            all_swap_info.push_back(std::move(tmp));
-        }
+        if (tmp.size > 0)
+            all_swap_info.push_back(move(tmp));
     }
-    auto sorter = [](SwapInfo const & a,SwapInfo const &b){
-        return a.size < b.size;
-    };
-    std::sort(all_swap_info.begin(), all_swap_info.end(), sorter);
+    sort(all_swap_info.begin(), all_swap_info.end(),
+            [](SwapInfo const & a, SwapInfo const & b) { return a.size < b.size; });
+
+    cout << setw(5) << "PID" << ' ' << setw(9) << "SWAP" << ' ' << "COMMAND" << endl;
     long long int total = 0;
-    printf("%5s %9s %s\n", "PID", "SWAP", "COMMAND");
-    for(auto const & x : all_swap_info){
-        std::cout << x << "\n";
+    for (auto const & x : all_swap_info) {
+        cout << setw(5) << x.pid << ' ' << setw(9) << file_size(x.size) << 
+            ' ' << x.comm << endl;
         total += x.size;
     }
-    auto size = output_size(total);
-    std::printf("Total: %8s\n", size.c_str());
+    cout << "Total: " << setw(8) << file_size(total) << endl;
     return 0;
 }
