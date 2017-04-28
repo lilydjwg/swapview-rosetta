@@ -40,7 +40,7 @@ You can (edit and then) run `make` to build all that needs to be built.
 * Elixir
 * Erlang
 * Go
-* Guile, tested with 2.0.11
+* Guile >= 2.1
 * Haskell, requires `haskell-strict`
 * Haskell2, another better Haskell version using more dependencies
 * Java, >= Java 8
