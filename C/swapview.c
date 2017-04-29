@@ -5,7 +5,6 @@
 #include<math.h>
 
 #include<errno.h>
-#include<error.h>
 #include<sys/types.h>
 #include<dirent.h>
 
@@ -15,7 +14,15 @@
 #define TARGET "Swap:"
 #define TARGETLEN 5
 
-#define assure(exp) if(!(exp)) error(1, errno, "\"%s\" failed in %d", #exp, __LINE__)
+#ifdef __GLIBC__
+# include<error.h>
+# define assure(exp) if(!(exp)) error(1, errno, "\"%s\" failed in %d", #exp, __LINE__)
+#else
+# define assure(exp) if(!(exp)) {\
+  fprintf(stderr, "\"%s\" failed in %d (%s)", #exp, __LINE__, strerror(errno)); \
+  exit(1); \
+}
+#endif
 
 char *filesize(double size){
   char units[] = "KMGT";

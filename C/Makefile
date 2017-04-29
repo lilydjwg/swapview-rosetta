@@ -1,9 +1,13 @@
-CFLAGS=-O4 -Wall -std=c11 
-CC=gcc
+CFLAGS:=-O4 -Wall -std=c11 
+CC:=gcc
+EXT:=
+STRIP:=strip
 
-swapview: swapview.c
-	$(CC) swapview.c -o swapview $(CFLAGS)
-	strip swapview
+BIN=swapview$(EXT)
+
+$(BIN): swapview.c
+	$(CC) swapview.c -o $(BIN) $(CFLAGS)
+	$(STRIP) $(BIN)
 
 clean:
-	-rm -f swapview
+	-rm -f $(BIN)
