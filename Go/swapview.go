@@ -3,13 +3,13 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
+	"reflect"
 	"sort"
 	"strconv"
-        "strings"
-        // "time"
+	"unsafe"
 )
 
 type Info struct {
@@ -25,11 +25,6 @@ func (p Infos) Less(i, j int) bool { return p[i].Size < p[j].Size }
 func (p Infos) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
 
 func main() {
-        // t0 := time.Now()
-        // defer func() {
-        //         fmt.Printf("%v\n", time.Now().Sub(t0))
-        // }()
-
 	slist := GetInfos()
 	sort.Sort(Infos(slist))
 
@@ -49,12 +44,13 @@ func GetInfos() (list []Info) {
 	if err != nil {
 		log.Fatalf("read /proc: %v", err)
 	}
+	var buf bytes.Buffer
 	for _, name := range names {
 		pid, err := strconv.Atoi(name)
 		if err != nil {
 			continue
 		}
-		info, err := GetInfo(pid)
+		info, err := GetInfo(pid, &buf)
 		if err != nil || info.Size == 0 {
 			continue
 		}
@@ -63,28 +59,34 @@ func GetInfos() (list []Info) {
 	return
 }
 
-func GetInfo(pid int) (info Info, err error) {
+func GetInfo(pid int, buf *bytes.Buffer) (info Info, err error) {
 	info.Pid = pid
-	var bs []byte
-	bs, err = ioutil.ReadFile(fmt.Sprintf("/proc/%d/cmdline", pid))
-	if err != nil {
+
+	buf.Reset()
+	if err = ReadFile(fmt.Sprintf("/proc/%d/cmdline", pid), buf); err != nil {
 		return
 	}
-        var comm = string(bs)
-        if strings.HasSuffix(comm, "\x00") {
-            comm = comm[:len(comm)-1]
-        }
-	info.Comm = strings.Replace(comm, "\x00", " ", -1)
-	bs, err = ioutil.ReadFile(fmt.Sprintf("/proc/%d/smaps", pid))
-	if err != nil {
+	comm := buf.Bytes()
+	if len(comm) > 0 && comm[len(comm)-1] == 0 {
+		comm = comm[:len(comm)-1]
+	}
+	for i := 0; i < len(comm); i++ {
+		if comm[i] == 0 {
+			comm[i] = ' '
+		}
+	}
+	info.Comm = string(comm)
+
+	buf.Reset()
+	if err = ReadFile(fmt.Sprintf("/proc/%d/smaps", pid), buf); err != nil {
 		return
 	}
 	var total int64
-	for _, line := range bytes.Split(bs, []byte("\n")) {
+	for _, line := range bytes.Split(buf.Bytes(), []byte("\n")) {
 		if bytes.HasPrefix(line, []byte("Swap:")) {
-			start := bytes.IndexAny(line, "0123456789")
-			end := bytes.Index(line[start:], []byte(" "))
-			size, err := strconv.ParseInt(string(line[start:start+end]), 10, 0)
+			start := bytes.IndexAny(line[5:], "0123456789")
+			end := bytes.Index(line[start:], []byte{' '})
+			size, err := strconv.ParseInt(Hack(line[start:start+end]), 10, 0)
 			if err != nil {
 				continue
 			}
@@ -93,6 +95,16 @@ func GetInfo(pid int) (info Info, err error) {
 	}
 	info.Size = total
 	return
+}
+
+func ReadFile(fileName string, buf *bytes.Buffer) error {
+	f, err := os.Open(fileName)
+	if err != nil {
+		return err
+	}
+	_, err = io.Copy(buf, f)
+	f.Close()
+	return err
 }
 
 var units = []string{"K", "M", "G", "T"}
@@ -105,4 +117,15 @@ func FormatSize(s int64) string {
 		unit++
 	}
 	return fmt.Sprintf("%.1f%siB", f, units[unit])
+}
+
+func Hack(b []byte) (s string) {
+	if len(b) == 0 {
+		return ""
+	}
+	pbytes := (*reflect.SliceHeader)(unsafe.Pointer(&b))
+	pstring := (*reflect.StringHeader)(unsafe.Pointer(&s))
+	pstring.Data = pbytes.Data
+	pstring.Len = pbytes.Len
+	return
 }
