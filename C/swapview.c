@@ -56,35 +56,36 @@ swap_info *getSwapFor(int pid){
   char filename[BUFSIZE];
   FILE *fd = 0;
   size_t size = BUFSIZE;
-  char *comm = malloc(size + 1); // +1 for last \0
-  ssize_t len=0;
+  char *comm = malloc(size + 1); // +1 for terminated '\0'
+  char *line;
+  ssize_t len=0, len1;
   double s = 0.0;
 
   assure(snprintf(filename, BUFSIZE, "/proc/%d/cmdline", pid) > 0);
   if(!(fd = fopen(filename, "r")))
     goto err;
-  for(int got;
-      (got = fread(comm + len, 1, size - len, fd)) > 0;
-      len += got){
-    assure(comm = realloc(comm, (size<<=1) + 1)); // +1 for last \0
+  // cmdline might be multi-line file that 'getline' is useless
+  while ((len1 = fread(comm + len, 1, size - len, fd)) > 0) {
+    len += len1;
+    if (len == size)
+      assure(comm = realloc(comm, (size<<=1) + 1));
   }
   fclose(fd);
 
-  for(char *p = comm; p < comm + len - 1; ++p)
-    *p || (*p = ' '); // comm[len-1] is \0 or non-space
-  comm[len]='\0'; // assure string is terminated
+  for(char *p = comm; p < comm + len; ++p)
+    *p || (*p = ' ');
+  comm[len] ='\0'; // comm[len] is just for the terminated '\0'
 
   assure(snprintf(filename, BUFSIZE, "/proc/%d/smaps", pid) > 0);
   if(!(fd = fopen(filename, "r")))
     goto err;
-  char *line;
-  for(line = 0, size = 0;
-      (len = getline(&line, &size, fd)) >= 0;
-      free(line), line = 0, size = 0){
+  assure(line = malloc(size));
+  while ((len = getline(&line, &size, fd)) > 0) {
     if(strncmp(line, TARGET, TARGETLEN) == 0)
       s += atoi(line + TARGETLEN);
   }
-  free(line);			// need to free when getline fail, see getline(3)
+  free(line);
+
 err:
   if(fd)
     fclose(fd);
@@ -95,7 +96,6 @@ err:
   ret->comm = comm;
   return ret;
 }
-
 
 int comp(const void *a, const void *b){
   double r = (*((swap_info **) a))->size - (*((swap_info **) b))->size;
