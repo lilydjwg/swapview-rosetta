@@ -1,23 +1,32 @@
 #!/usr/bin/env guile
 !#
+(gc-disable)
 (use-modules (ice-9 rdelim)
              (ice-9 ftw)
              (ice-9 futures)
              (srfi srfi-1))
 (define get-string-all (@ (rnrs io ports) get-string-all))
 
-(define G (ash 1 30))
-(define M (ash 1 20))
-(define K (ash 1 10))
+(define G 1073741824.0)
+(define M 1048576.0)
+(define K 1024.0)
 (define (filesize size)
-  (cond
-   ((>= size G)
-    (format #f "~,1fGiB" (/ size G)))
-   ((>= size M)
-    (format #f "~,1fMiB" (/ size M)))
-   ((>= size K)
-    (format #f "~,1fKiB" (/ size K)))
-   (else (format #f "~a Bytes" size))))
+  (call-with-output-string
+   (lambda (port)
+     (cond
+      ((>= size G)
+       (display (/ size G) port)
+       (display " GiB" port))
+      ((>= size M)
+       (display (/ size M) port)
+       (display  " MiB" port))
+      ((>= size K)
+       (display (/ size K) port)
+       (display " KiB" port))
+      (else
+       (display size port)
+       (display " Bytes" port))))))
+
 
 (define (getSwapFor pid)
   (define (getswapsize)
