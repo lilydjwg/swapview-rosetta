@@ -8,7 +8,7 @@
   },
   "author": "",
   "license": "ISC",
-  "dependencies":{
-  	"sprintf": ""
+  "dependencies": {
+    "sprintf": ""
   }
 }
