@@ -1,10 +1,9 @@
-extern crate threadpool;
-extern crate num_cpus;
+extern crate rayon;
 
 use std::fs::{File,read_dir};
 use std::io::{Read,BufReader,BufRead};
-use threadpool::ThreadPool;
 use std::sync::mpsc::channel;
+use rayon::prelude::*;
 
 const UNITS: [char; 4] = ['K', 'M', 'G', 'T'];
 
@@ -71,30 +70,31 @@ fn get_swap_for(pid: usize) -> isize {
 }
 
 fn get_swap() -> Vec<(usize, isize, String)> {
-  let pool = ThreadPool::new(num_cpus::get());
-  let (tx, rx) = channel();
-  let mut count = 0;
-  for d in read_dir("/proc").unwrap() {
-    let path = d.unwrap().path();
-    if let Ok(pid) = path.file_name().unwrap().to_str().unwrap().parse() {
-      let tx = tx.clone();
-      pool.execute(move || {
-        tx.send(match get_swap_for(pid) {
-          0 => None,
-          swap => Some((pid, swap, get_comm_for(pid))),
-        }).unwrap();
-      });
-      count += 1;
+  rayon::scope(|pool| {
+    let (tx, rx) = channel();
+    let mut count = 0;
+    for d in read_dir("/proc").unwrap() {
+      let path = d.unwrap().path();
+      if let Ok(pid) = path.file_name().unwrap().to_str().unwrap().parse() {
+        let tx = tx.clone();
+        pool.spawn(move |_| {
+          tx.send(match get_swap_for(pid) {
+            0 => None,
+            swap => Some((pid, swap, get_comm_for(pid))),
+          }).unwrap();
+        });
+        count += 1;
+      }
     }
-  };
-  rx.iter().take(count).filter_map(|x| x).collect()
+    rx.iter().take(count).filter_map(|x| x).collect()
+  })
 }
 
 fn main() {
   // let format = "{:>5} {:>9} {}";
   // let totalFmt = "Total: {:8}";
   let mut swapinfo = get_swap();
-  swapinfo.sort_by(|&(_, a, _), &(_, b, _)| { a.cmp(&b) });
+  swapinfo.par_sort_unstable_by_key(|&(_, size, _)| size);
 
   println!("{:>5} {:>9} {}", "PID", "SWAP", "COMMAND");
   let mut total = 0;

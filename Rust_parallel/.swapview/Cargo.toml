@@ -4,8 +4,7 @@ version = "0.0.1"
 authors = ["lilydjwg <lilydjwg@gmail.com>"]
 
 [dependencies]
-threadpool = "*"
-num_cpus = "*"
+rayon = "0.8"
 
 [profile.release]
 lto = true
