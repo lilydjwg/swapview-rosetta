@@ -72,21 +72,22 @@ fn get_swap_for(pid: usize) -> isize {
 fn get_swap() -> Vec<(usize, isize, String)> {
   rayon::scope(|pool| {
     let (tx, rx) = channel();
-    let mut count = 0;
     for d in read_dir("/proc").unwrap() {
-      let path = d.unwrap().path();
-      if let Ok(pid) = path.file_name().unwrap().to_str().unwrap().parse() {
-        let tx = tx.clone();
-        pool.spawn(move |_| {
+      let tx = tx.clone();
+      pool.spawn(move |_| {
+        let path = d.unwrap().path();
+        if let Ok(pid) = path.file_name().unwrap().to_str().unwrap().parse() {
           tx.send(match get_swap_for(pid) {
             0 => None,
             swap => Some((pid, swap, get_comm_for(pid))),
           }).unwrap();
-        });
-        count += 1;
-      }
+        } else {
+          tx.send(None).unwrap();
+        }
+      });
     }
-    rx.iter().take(count).filter_map(|x| x).collect()
+    drop(tx);
+    rx.iter().filter_map(|x| x).collect()
   })
 }
 
