@@ -2,25 +2,29 @@
 name = "swapview"
 version = "0.0.1"
 dependencies = [
- "sys-info 0.4.1 (registry+git://crates.mirrors.ustc.edu.cn/index)",
- "threadpool 1.0.0 (registry+git://crates.mirrors.ustc.edu.cn/index)",
+ "num_cpus 1.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "threadpool 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
-name = "gcc"
-version = "0.3.28"
-source = "registry+git://crates.mirrors.ustc.edu.cn/index"
+name = "libc"
+version = "0.2.26"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
-name = "sys-info"
-version = "0.4.1"
-source = "registry+git://crates.mirrors.ustc.edu.cn/index"
+name = "num_cpus"
+version = "1.6.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "gcc 0.3.28 (registry+git://crates.mirrors.ustc.edu.cn/index)",
+ "libc 0.2.26 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "threadpool"
-version = "1.0.0"
-source = "registry+git://crates.mirrors.ustc.edu.cn/index"
+version = "1.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 
+[metadata]
+"checksum libc 0.2.26 (registry+https://github.com/rust-lang/crates.io-index)" = "30885bcb161cf67054244d10d4a7f4835ffd58773bc72e07d35fecf472295503"
+"checksum num_cpus 1.6.2 (registry+https://github.com/rust-lang/crates.io-index)" = "aec53c34f2d0247c5ca5d32cca1478762f301740468ee9ee6dcb7a0dd7a0c584"
+"checksum threadpool 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "2f95666101aad0c8f42d0533b696aee6de31d2ee6fc5081aa839b9b3b8440c3a"
