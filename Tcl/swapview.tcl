@@ -5,7 +5,11 @@ proc fileSize {bytes {level 0}} {
 	if {$bytes >= 1100 && $level < 3} {
 		return [fileSize [expr $bytes/1024.0] [expr $level+1]]
 	}
-	return [format "%.1lf%s" $bytes [lindex $units $level]]
+        if {$level == 0} {
+        	return [format "%dB" $bytes]
+        } else {
+        	return [format "%.1lf%s" $bytes [lindex $units $level]]
+        }
 }
 
 proc readFile {path} {
