@@ -83,7 +83,6 @@ cmd = ["dart", "swapview.dart"]
 cmd = ["./swapview.exs"]
 
 [item.Erlang]
-cmd = ["./erlswapview"]
 
 [item.FreePascal]
 

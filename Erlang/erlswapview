@@ -1,4 +1,0 @@
-#!/bin/sh
-
-cd "$(dirname "$0")"
-exec /usr/bin/env erl +K true +A 0 -mode minimal -noinput -noshell -s swapview swap_print -s erlang halt

@@ -5,7 +5,7 @@ swapview.beam: swapview.erl
 	erlc $^
 
 test:: all
-	./erlswapview
+	./swapview
 
 clean::
 	-rm -f $(TARGET) erl_crash.dump
