@@ -10,7 +10,7 @@ from string import Template
 from subprocess import Popen, PIPE
 from statistics import (mean, stdev)
 
-import toml
+import pytoml
 
 rusage_names = """ru_utime
 ru_stime
@@ -82,7 +82,7 @@ def bench_profile(profile, ref_result_out, verbose,
 def load_config():
     filename = sys.argv[1] if len(sys.argv) > 1 else 'benchmark.toml'
     with open(filename) as configfile:
-        config = toml.loads(configfile.read())
+        config = pytoml.loads(configfile.read())
     items = config['item']
     default = items['default']
     if 'options' in config:
