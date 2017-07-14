@@ -3,7 +3,7 @@ all: swapview
 .PHONY: all clean deps cleandeps
 
 swapview: .cabal-sandbox/.timestamp swapview.hs
-	cabal install --reinstall
+	cabal install --reinstall --ghc-options -dynamic
 	strip .cabal-sandbox/bin/swapview
 	ln -sf .cabal-sandbox/bin/swapview swapview
 
