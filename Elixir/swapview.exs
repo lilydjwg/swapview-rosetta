@@ -37,7 +37,7 @@ defmodule SwapView do
   end
 
   def main do
-    result = get_swap
+    result = get_swap()
     format {"PID", "SWAP", "COMMAND"}
     result |> Enum.each(fn {pid, size, comm} ->
       format {pid, size |> filesize, comm}
