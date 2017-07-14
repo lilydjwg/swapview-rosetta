@@ -17,7 +17,7 @@
     (format #f "~,1fMiB" (/ size M)))
    ((>= size K)
     (format #f "~,1fKiB" (/ size K)))
-   (else (format #f "~a Bytes" size))))
+   (else (format #f "~aB" size))))
 
 (define (getSwapFor pid)
   (define (getswapsize)
