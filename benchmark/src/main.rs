@@ -1,8 +1,8 @@
 extern crate toml;
-extern crate time;
 extern crate glob;
 
 use std::io;
+use std::time;
 use std::process::Command;
 use std::path::{Path,PathBuf};
 use std::process::Stdio;
@@ -53,9 +53,9 @@ struct AtDir {
 
 impl AtDir {
   fn new(dir: &str) -> io::Result<AtDir> {
-    let oldpwd = try!(std::env::current_dir());
-    try!(std::env::set_current_dir(&Path::new(dir)));
-    Ok(AtDir { oldpwd: oldpwd })
+    let oldpwd = std::env::current_dir()?;
+    std::env::set_current_dir(&Path::new(dir))?;
+    Ok(AtDir { oldpwd })
   }
 }
 
@@ -100,7 +100,7 @@ fn parse_item(name: String, conf: &toml::Value)
     match key.as_ref() {
       "dir" => dir = value.as_str().map(|x| x.to_string()),
       "cmd" => cmd = {
-        let cmd_arr = try!(value.as_slice().ok_or(
+        let cmd_arr = try!(value.as_array().ok_or(
                 format!("cmd must be an array of strings, but got {}", value)));
         let maybe_arr_str: Vec<_> = cmd_arr.iter().map(|ref x| x.as_str()).collect();
         if maybe_arr_str.iter().any(|x| x.is_none()) {
@@ -170,14 +170,13 @@ fn merge_default(item: OptionalBenchmarkItem, default: &Option<OptionalBenchmark
 }
 
 fn parse_config(toml: &str) -> Result<Vec<BenchmarkItem>,String> {
-  let mut parser = toml::Parser::new(toml);
-  let config = try!(parser.parse().ok_or(format!("bad TOML data: {:?}", parser.errors)));
+  let config: toml::Value  = toml.parse().map_err(|x: toml::de::Error| x.to_string())?;
 
   let item_v = try!(config.get("item").ok_or("no item definitions".to_string()));
   let items = try!(item_v.as_table().ok_or("item definitions should be in a table".to_string()));
 
   let default_item = match items.get("default") {
-    Some(x) => Some(try!(parse_item("default".to_string(), x))),
+    Some(x) => Some(parse_item("default".to_string(), x)?),
     None => None,
   };
 
@@ -186,28 +185,24 @@ fn parse_config(toml: &str) -> Result<Vec<BenchmarkItem>,String> {
     if name == "default" {
       continue;
     }
-    ret.push(
-      try!(merge_default(
-          try!(parse_item(name.to_string(), conf)), &default_item
-        )
-      )
-    );
+    let item = parse_item(name.to_string(), conf)?;
+    ret.push(merge_default(item, &default_item)?);
   }
   Ok(ret)
 }
 
 fn time_item(item: &BenchmarkItem) -> Result<BenchmarkResult,String> {
-  let start = time::precise_time_ns();
-  let limit = item.time_limit as u64 * 1_000_000_000u64;
+  let start = time::Instant::now();
+  let limit = time::Duration::from_secs(item.time_limit as u64);
 
   let _cwd = match AtDir::new(&item.dir) {
     Ok(atdir) => atdir,
     Err(err) => return Err(Error::description(&err).to_string()),
   };
-  let mut result = Vec::new();
+  let mut result = vec![];
 
   for _ in 0..item.count_limit {
-    let (used, now) = try!(run_once(&item.cmd));
+    let (used, now) = run_once(&item.cmd)?;
     result.push(used);
     if now - start > limit {
       break;
@@ -239,8 +234,8 @@ fn time_item(item: &BenchmarkItem) -> Result<BenchmarkResult,String> {
   })
 }
 
-fn run_once(cmd: &[String]) -> Result<(u64,u64),String> {
-  let start = time::precise_time_ns();
+fn run_once(cmd: &[String]) -> Result<(u64,time::Instant),String> {
+  let start = time::Instant::now();
   let status = match Command::new(&cmd[0]).args(&cmd[1..])
                      .stdin(Stdio::null())
                      .stdout(Stdio::null())
@@ -254,11 +249,11 @@ fn run_once(cmd: &[String]) -> Result<(u64,u64),String> {
     return Err(format!("command {:?} exited with {}", cmd, status));
   }
 
-  let stop = time::precise_time_ns();
-  Ok((stop - start, stop))
+  let stop = time::Instant::now();
+  let used = stop - start;
+  Ok((used.as_secs() * 1_000_000_000 + used.subsec_nanos() as u64, stop))
 }
 
-#[allow(unused_must_use)]
 fn main() {
   let mut toml = String::new();
   let result = io::stdin().read_to_string(&mut toml);
@@ -278,10 +273,10 @@ fn main() {
 
   let mut stderr = io::stderr();
   let mut results: Vec<_> = items_to_run.iter().map(|x| {
-    stderr.write_fmt(format_args!("Running {}...", x.name));
-    stderr.flush();
+    write!(stderr, "Running {}...", x.name).unwrap();
+    stderr.flush().unwrap();
     let r = time_item(x);
-    stderr.write_fmt(format_args!("{:?}\n", r));
+    write!(stderr, "{:?}\n", r).unwrap();
     (&x.name, r)
   }).collect();
   results.sort_by(|&(m, ref a), &(n, ref b)|
