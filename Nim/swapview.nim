@@ -1,4 +1,4 @@
-import os, strutils, algorithm
+import os, strutils, pegs, algorithm
 
 type
     swap_info = tuple[pid: int, swap: float, cmd: string]
@@ -37,22 +37,23 @@ proc get_swap_for(pid: int): swap_info =
     var smapsfs: File
     if open(smapsfs, "/proc/" & $pid & "/smaps"):
         while readLine(smapsfs, str):
+            # it'll be too slow with pegs
             if startsWith(str, TARGET):
-                var seq_str = split(str)
-                result.swap += parseFloat(seq_str[1])
+              var r = @[""]
+              if match(str, peg"@' '+ {[0-9]+}", r):
+                result.swap += parseFloat(r[0])
         close(smapsfs)
     result.swap *= 1024.0
 
 proc get_swap(): seq[swap_info] =
     result = @[]
-    for s in walkFiles("/proc/*"):
-      if existsDir(s):
-        var tail = splitPath(s).tail
-        if allCharsInSet(tail, Digits):
-          var pid = parseInt(tail)
-          var si = get_swap_for(pid)
-          if si.swap > 0:
-            result.add(si)
+    for s in walkDirs("/proc/*"):
+      var tail = splitPath(s).tail
+      if allCharsInSet(tail, Digits):
+        var pid = parseInt(tail)
+        var si = get_swap_for(pid)
+        if si.swap > 0:
+          result.add(si)
 
     result.sort(proc (x, y: swap_info): int = cmp(x.swap, y.swap))
 

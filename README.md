@@ -45,6 +45,7 @@ You can (edit and then) run `make` to build all that needs to be built.
 * Haskell2, another better Haskell version using more dependencies
 * Java, >= Java 8
 * Lua, requires lua-filesystem, works with 5.1, 5.2, 5.3 and LuaJIT
+* Nim (tested with 0.17.0)
 * NodeJS, requires sprintf (will be installed by `make`)
 * NodeJS_async, another NodeJS version which use async I/O, requires sprintf and async (will be installed by `make`)
 * NodeJS_parallel, uses multiple worker processes
