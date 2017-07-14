@@ -1,102 +1,80 @@
-let inline (|>) x f = f x
+type swap_t = (string * int * string) (*pid, size, comm*)
 
-let format = "%5s %9s %s" ^^ "\n"
-let totalFmt = "Total: %8s" ^^ "\n"
 
-let is_digit str =
-  let rec is_digit' i =
-    if i < 0
-    then true
-    else
-      let code = Char.code str.[i] in
-      if code < 48 || code > 57
-      then false
-      else is_digit' (i - 1) in
-  is_digit' ((String.length str) - 1)
+let is_pid (file:string) : bool =
+    try ignore (int_of_string file); true
+    with _ -> false
 
-let starts_with str target =
-  let rec starts_with' i =
-    if i < 0
-    then true
-    else
-      if str.[i] != target.[i]
-      then false
-      else starts_with' (i - 1) in
-  starts_with' ((String.length target) - 1)
 
-let parse_swap_line line =
-  try
-    let pos = String.index line ' ' in
-    String.sub line 0 pos
-  with Not_found ->
-    "0"
+let filesize (size:int) : string =
+    let rec aux = function
+        | (size, []) when size < 1100. ->
+            string_of_float size ^ "B"
+        | (size, []) ->
+            aux (size /. 1024., ["KiB"; "MiB"; "GiB"; "TiB"])
+        | (size, h :: []) | (size, h :: _) when size < 1100. ->
+            Printf.sprintf "%.1f%s" size h
+        | (size, _ :: t) ->
+            aux (size /. 1024., t)
+    in
+    aux (float_of_int size, [])
 
-(* from http://stackoverflow.com/a/5775024/296473 *)
-let readfile filename =
-  let lines = ref [] in
-  let chan = open_in filename in
-  try
-    while true; do
-      lines := input_line chan :: !lines
-    done; []
-  with End_of_file ->
-    (* FIXME: other exceptions lead to fd leakage here *)
-    close_in chan;
-  !lines
 
-let filesize n =
-  let units = "KMGTP" in
-  let rec liftUnit n u =
-    let maxLevel = String.length units in
-    if n > 1100. && u < maxLevel
-    then liftUnit (n /. 1024.) (u+1)
-    else (n, u) in
-  let (m, level) = liftUnit (float n) 0 in
-  if level <> 0
-  then
-    let u = units.[level-1] in
-    Printf.sprintf "%.1f%ciB" m u
-  else (string_of_int n) ^ "B"
+let read_dir (dir:string) : string list =
+    Array.to_list (Sys.readdir dir)
 
-let swapused pid =
-  let swap_amount cur line =
-    if starts_with line "Swap:"
-    then
-      let size = String.sub line 5 ((String.length line) - 5)
-                 |> String.trim
-                 |> parse_swap_line
-                 |> int_of_string in
-      cur + size
-    else cur in
-  let inkB = readfile ("/proc/" ^ pid ^ "/smaps")
-             |> List.fold_left swap_amount 0 in
-  inkB * 1024
 
-let get_cmd pid =
-  let f = "/proc/" ^ pid ^ "/cmdline" in
-  try
-    String.map (fun x -> if x == '\000' then ' ' else x) (List.hd (readfile f))
-  with Sys_error _ ->
-    ""
-
-let _ =
-  let swapused_or_0 pid =
+let read_file (filename:string) : string list =
     try
-      swapused pid
-    with Sys_error _ ->
-      0 in
-  let sorted = Sys.readdir "/proc"
-               |> Array.fold_left (fun acc x ->
-                   if is_digit x
-                   then (x, swapused_or_0 x) :: acc
-                   else acc
-                 ) []
-               |> List.sort (fun (_, a) (_, b) -> compare a b) in
-  let total = ref 0 in
-  Printf.printf format "PID" "SWAP" "COMMAND";
-  List.iter (fun (a, b) ->
-    if b <> 0 then
-      Printf.printf format a (filesize b) (get_cmd a);
-      total := b + !total
-  ) sorted;
-  Printf.printf totalFmt (filesize !total)
+        let ic = open_in filename in
+        let rec loop acc =
+            try
+                let line = input_line ic in
+                loop (line :: acc)
+            with _ -> close_in ic; acc
+        in
+        List.rev (loop [])
+    with _ -> []
+
+
+let get_comm_for (pid:string) : string =
+    match read_file ("/proc/" ^ pid ^ "/cmdline") with
+        | h :: _ ->
+            String.map (function '\000' -> ' ' | x -> x) h
+            |> String.trim
+        | _ -> ""
+
+
+let get_swap_for (pid:string) : swap_t =
+    match read_file ("/proc/" ^ pid ^ "/smaps") with
+        | [] -> (pid, 0, "")
+        | lines ->
+            List.filter (fun line -> String.sub line 0 5 = "Swap:") lines
+            |> List.map (fun line ->
+                let len = (String.rindex line ' ') - 5 in
+                String.sub line 5 len
+                |> String.trim
+                |> int_of_string)
+            |> List.fold_left (fun acc x -> acc + x) 0
+            |> fun swap -> (pid, swap * 1024, get_comm_for pid)
+
+
+let get_swaps () : swap_t list =
+    read_dir "/proc"
+    |> List.filter is_pid
+    |> List.map get_swap_for
+    |> List.filter (fun (_, s, _) -> s <> 0)
+    |> List.sort (fun (_,a,_) (_,b,_) -> compare a b)
+
+
+let main =
+    let print' = Printf.printf "%5s %9s %s\n" in
+    let print_swap (pid, swap, comm) = print' pid (filesize swap) comm in
+    let print_total total = Printf.printf "Total: %8s\n" (filesize total) in
+
+    let swaps = get_swaps () in
+    let total = List.fold_left (fun acc (_, x, _) -> acc + x) 0 swaps in
+
+    print' "PID" "SWAP" "COMMAND";
+    List.iter print_swap swaps;
+    print_total total

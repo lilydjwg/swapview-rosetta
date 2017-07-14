@@ -4,8 +4,7 @@
 	ocamlopt -ccopt -O3 -noassert -unsafe $< -o $@
 	strip $@
 
-
 all: swapview
 
 clean:
-	-rm -f *.cm* swapview
+	-rm -f *.cm* swapview{,.o}
