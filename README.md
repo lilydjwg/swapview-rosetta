@@ -78,7 +78,7 @@ sure your implementations meet the following requirements:
 My Result
 ----
 
-This is tested on Arch Linux, with latest versions of compilers and interpreters available there at testing time.
+This is tested on Arch Linux, with latest versions of compilers and interpreters available there at testing time. CPU is Intel(R) Core(TM) i7-7700HQ.
 
 Updated at 2017-07-14:
 
