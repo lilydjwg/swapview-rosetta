@@ -111,7 +111,7 @@ func GetInfo(pid int, info_ch chan<- *Info, wg *sync.WaitGroup) {
 			total += size
 		}
 	}
-	info.Size = total
+	info.Size = total * 1024
 	if info.Size == 0 {
 		info_ch <- nil
 	} else {
@@ -120,7 +120,7 @@ func GetInfo(pid int, info_ch chan<- *Info, wg *sync.WaitGroup) {
 	return
 }
 
-var units = []string{"K", "M", "G", "T"}
+var units = []string{"", "K", "M", "G", "T"}
 
 func FormatSize(s int64) string {
 	unit := 0
@@ -129,5 +129,9 @@ func FormatSize(s int64) string {
 		f /= 1024.0
 		unit++
 	}
-	return fmt.Sprintf("%.1f%siB", f, units[unit])
+	if unit == 0 {
+		return fmt.Sprintf("%dB", int64(f))
+	} else {
+		return fmt.Sprintf("%.1f%siB", f, units[unit])
+	}
 }
