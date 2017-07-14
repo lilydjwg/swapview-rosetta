@@ -80,66 +80,67 @@ My Result
 
 This is tested on Arch Linux, with latest versions of compilers and interpreters available there at testing time.
 
-Updated at 2016-06-30:
+Updated at 2017-07-14:
 
 <pre>
-<span style="color:green;font-weight:bold;">               C++98_omp</span>: top: <span style="color:gray;font-weight:bold;">  74.73</span>, min:   66.75, avg:   80.83, max:   98.24, mdev:    7.60, cnt:  20
-<span style="color:green;font-weight:bold;">                       C</span>: top: <span style="color:gray;font-weight:bold;"> 127.29</span>, min:  126.11, avg:  129.39, max:  135.80, mdev:    2.52, cnt:  20
-<span style="color:green;font-weight:bold;">                   C++98</span>: top: <span style="color:gray;font-weight:bold;"> 130.31</span>, min:  129.05, avg:  132.34, max:  139.47, mdev:    2.64, cnt:  20
-<span style="color:green;font-weight:bold;">                     Nim</span>: top: <span style="color:gray;font-weight:bold;"> 130.38</span>, min:  128.58, avg:  137.71, max:  175.65, mdev:   13.85, cnt:  20
-<span style="color:green;font-weight:bold;">                   C++14</span>: top: <span style="color:gray;font-weight:bold;"> 130.71</span>, min:  129.39, avg:  136.72, max:  160.87, mdev:    9.22, cnt:  20
-<span style="color:green;font-weight:bold;">             C++14_boost</span>: top: <span style="color:gray;font-weight:bold;"> 131.28</span>, min:  130.52, avg:  133.39, max:  141.74, mdev:    2.85, cnt:  20
-<span style="color:green;font-weight:bold;">           Rust_parallel</span>: top: <span style="color:gray;font-weight:bold;"> 140.81</span>, min:  112.09, avg:  152.31, max:  181.36, mdev:   15.86, cnt:  20
-<span style="color:green;font-weight:bold;">            Go_goroutine</span>: top: <span style="color:gray;font-weight:bold;"> 144.36</span>, min:  120.02, avg:  162.45, max:  236.54, mdev:   25.14, cnt:  20
-<span style="color:green;font-weight:bold;">         D_parallel_llvm</span>: top: <span style="color:gray;font-weight:bold;"> 156.60</span>, min:  147.47, avg:  181.32, max:  241.03, mdev:   30.52, cnt:  20
-<span style="color:green;font-weight:bold;">              D_parallel</span>: top: <span style="color:gray;font-weight:bold;"> 157.24</span>, min:  150.02, avg:  172.33, max:  221.68, mdev:   19.69, cnt:  20
-<span style="color:green;font-weight:bold;">                    Rust</span>: top: <span style="color:gray;font-weight:bold;"> 163.32</span>, min:  141.11, avg:  180.63, max:  254.20, mdev:   26.55, cnt:  20
-<span style="color:green;font-weight:bold;">                   OCaml</span>: top: <span style="color:gray;font-weight:bold;"> 174.59</span>, min:  167.63, avg:  184.09, max:  209.87, mdev:   12.69, cnt:  20
-<span style="color:green;font-weight:bold;">                     PHP</span>: top: <span style="color:gray;font-weight:bold;"> 185.03</span>, min:  176.63, avg:  193.54, max:  228.99, mdev:   12.23, cnt:  20
-<span style="color:green;font-weight:bold;">                  LuaJIT</span>: top: <span style="color:gray;font-weight:bold;"> 185.23</span>, min:  183.01, avg:  189.70, max:  208.75, mdev:    6.57, cnt:  20
-<span style="color:green;font-weight:bold;">                  D_llvm</span>: top: <span style="color:gray;font-weight:bold;"> 188.85</span>, min:  185.56, avg:  194.24, max:  226.12, mdev:    9.13, cnt:  20
-<span style="color:green;font-weight:bold;">                      Go</span>: top: <span style="color:gray;font-weight:bold;"> 188.96</span>, min:  185.57, avg:  195.25, max:  218.36, mdev:    8.92, cnt:  20
-<span style="color:green;font-weight:bold;">                Haskell2</span>: top: <span style="color:gray;font-weight:bold;"> 200.23</span>, min:  196.68, avg:  210.17, max:  303.74, mdev:   24.02, cnt:  20
-<span style="color:green;font-weight:bold;">                       D</span>: top: <span style="color:gray;font-weight:bold;"> 206.18</span>, min:  202.35, avg:  212.35, max:  240.61, mdev:   10.08, cnt:  20
-<span style="color:green;font-weight:bold;">                   Lua51</span>: top: <span style="color:gray;font-weight:bold;"> 219.65</span>, min:  217.46, avg:  227.44, max:  282.32, mdev:   15.12, cnt:  20
-<span style="color:green;font-weight:bold;">                 Python2</span>: top: <span style="color:gray;font-weight:bold;"> 221.80</span>, min:  216.60, avg:  231.70, max:  292.08, mdev:   16.51, cnt:  20
-<span style="color:green;font-weight:bold;">                   Lua52</span>: top: <span style="color:gray;font-weight:bold;"> 225.89</span>, min:  220.27, avg:  230.43, max:  252.03, mdev:    6.89, cnt:  20
-<span style="color:green;font-weight:bold;">                  NodeJS</span>: top: <span style="color:gray;font-weight:bold;"> 231.00</span>, min:  227.71, avg:  234.71, max:  242.62, mdev:    4.22, cnt:  20
-<span style="color:green;font-weight:bold;">                   Lua53</span>: top: <span style="color:gray;font-weight:bold;"> 235.73</span>, min:  232.38, avg:  242.27, max:  278.49, mdev:   10.49, cnt:  20
-<span style="color:green;font-weight:bold;">                    Vala</span>: top: <span style="color:gray;font-weight:bold;"> 238.68</span>, min:  235.69, avg:  248.14, max:  296.29, mdev:   14.87, cnt:  20
-<span style="color:green;font-weight:bold;">              FreePascal</span>: top: <span style="color:gray;font-weight:bold;"> 239.32</span>, min:  236.86, avg:  251.10, max:  288.25, mdev:   15.65, cnt:  20
-<span style="color:green;font-weight:bold;">                    Perl</span>: top: <span style="color:gray;font-weight:bold;"> 261.46</span>, min:  257.73, avg:  278.10, max:  340.33, mdev:   25.94, cnt:  20
-<span style="color:green;font-weight:bold;">           Python3_bytes</span>: top: <span style="color:gray;font-weight:bold;"> 261.76</span>, min:  259.26, avg:  269.99, max:  299.11, mdev:   11.54, cnt:  20
-<span style="color:green;font-weight:bold;">             PyPy3_bytes</span>: top: <span style="color:gray;font-weight:bold;"> 277.98</span>, min:  273.41, avg:  297.01, max:  410.77, mdev:   38.60, cnt:  20
-<span style="color:green;font-weight:bold;">                    PyPy</span>: top: <span style="color:gray;font-weight:bold;"> 290.85</span>, min:  284.78, avg:  317.91, max:  434.03, mdev:   39.05, cnt:  20
-<span style="color:green;font-weight:bold;">                 Python3</span>: top: <span style="color:gray;font-weight:bold;"> 305.46</span>, min:  301.06, avg:  315.28, max:  357.00, mdev:   14.32, cnt:  20
-<span style="color:green;font-weight:bold;">                    Ruby</span>: top: <span style="color:gray;font-weight:bold;"> 309.99</span>, min:  304.72, avg:  327.48, max:  372.77, mdev:   21.87, cnt:  20
-<span style="color:green;font-weight:bold;">         NodeJS_parallel</span>: top: <span style="color:gray;font-weight:bold;"> 326.85</span>, min:  316.24, avg:  347.25, max:  451.25, mdev:   34.91, cnt:  20
-<span style="color:green;font-weight:bold;">                 Chicken</span>: top: <span style="color:gray;font-weight:bold;"> 329.45</span>, min:  322.71, avg:  353.39, max:  513.69, mdev:   42.01, cnt:  20
-<span style="color:green;font-weight:bold;">                  Erlang</span>: top: <span style="color:gray;font-weight:bold;"> 366.50</span>, min:  339.11, avg:  390.16, max:  476.80, mdev:   31.00, cnt:  20
-<span style="color:green;font-weight:bold;">              ChezScheme</span>: top: <span style="color:gray;font-weight:bold;"> 406.35</span>, min:  399.14, avg:  429.98, max:  528.54, mdev:   33.57, cnt:  20
-<span style="color:green;font-weight:bold;">                   PyPy3</span>: top: <span style="color:gray;font-weight:bold;"> 422.61</span>, min:  418.73, avg:  427.92, max:  450.91, mdev:    7.45, cnt:  20
-<span style="color:green;font-weight:bold;">                     Tcl</span>: top: <span style="color:gray;font-weight:bold;"> 466.96</span>, min:  459.65, avg:  475.79, max:  522.68, mdev:   14.41, cnt:  20
-<span style="color:green;font-weight:bold;">                  CSharp</span>: top: <span style="color:gray;font-weight:bold;"> 468.89</span>, min:  396.01, avg:  500.82, max:  631.11, mdev:   47.88, cnt:  20
-<span style="color:green;font-weight:bold;">   CoffeeScript_parallel</span>: top: <span style="color:gray;font-weight:bold;"> 564.80</span>, min:  351.00, avg:  613.40, max:  752.75, mdev:   77.55, cnt:  20
-<span style="color:green;font-weight:bold;">            CoffeeScript</span>: top: <span style="color:gray;font-weight:bold;"> 567.97</span>, min:  471.83, avg:  601.48, max:  661.47, mdev:   43.20, cnt:  20
-<span style="color:green;font-weight:bold;">            NodeJS_async</span>: top: <span style="color:gray;font-weight:bold;"> 660.61</span>, min:  633.43, avg:  687.55, max:  796.57, mdev:   36.33, cnt:  20
-<span style="color:green;font-weight:bold;">                    Java</span>: top: <span style="color:gray;font-weight:bold;"> 853.59</span>, min:  824.68, avg:  887.36, max: 1016.02, mdev:   45.10, cnt:  20
-<span style="color:green;font-weight:bold;">                    Dart</span>: top: <span style="color:gray;font-weight:bold;"> 918.39</span>, min:  705.92, avg:  987.41, max: 1084.45, mdev: 4187.41, cnt:  20
-<span style="color:green;font-weight:bold;">                  Racket</span>: top: <span style="color:gray;font-weight:bold;">1022.06</span>, min:  755.98, avg: 1068.39, max: 1166.63, mdev: 4187.11, cnt:  20
-<span style="color:green;font-weight:bold;">          CommonLisp_old</span>: top: <span style="color:gray;font-weight:bold;">1070.15</span>, min:  896.43, avg: 1113.44, max: 1243.69, mdev: 4186.87, cnt:  20
-<span style="color:green;font-weight:bold;">          CommonLisp_opt</span>: top: <span style="color:gray;font-weight:bold;">1086.13</span>, min: 1067.23, avg: 1107.29, max: 1199.43, mdev: 4186.33, cnt:  20
-<span style="color:green;font-weight:bold;">         Racket_compiled</span>: top: <span style="color:gray;font-weight:bold;">1088.63</span>, min: 1059.70, avg: 1118.23, max: 1239.85, mdev: 4186.42, cnt:  20
-<span style="color:green;font-weight:bold;">                   Scala</span>: top: <span style="color:gray;font-weight:bold;">1139.17</span>, min:  929.79, avg: 1192.92, max: 1406.76, mdev: 4187.09, cnt:  20
-<span style="color:green;font-weight:bold;">                   Guile</span>: top: <span style="color:gray;font-weight:bold;">1188.32</span>, min: 1167.39, avg: 1225.72, max: 1393.59, mdev: 4186.66, cnt:  20
-<span style="color:green;font-weight:bold;">                 Haskell</span>: top: <span style="color:gray;font-weight:bold;">1192.15</span>, min: 1013.50, avg: 1227.01, max: 1314.85, mdev: 4186.65, cnt:  20
-<span style="color:green;font-weight:bold;">                  Elixir</span>: top: <span style="color:gray;font-weight:bold;">1247.25</span>, min: 1212.52, avg: 1322.45, max: 1615.08, mdev: 4187.53, cnt:  20
-<span style="color:green;font-weight:bold;">                   Julia</span>: top: <span style="color:gray;font-weight:bold;">1270.19</span>, min:  984.37, avg: 1342.39, max: 1462.14, mdev: 4187.93, cnt:  20
-<span style="color:green;font-weight:bold;">                    Bash</span>: top: <span style="color:gray;font-weight:bold;">1783.38</span>, min: 1769.13, avg: 1811.78, max: 1913.25, mdev: 3897.83, cnt:  17
-<span style="color:green;font-weight:bold;">           Ruby_rubinius</span>: top: <span style="color:gray;font-weight:bold;">1968.79</span>, min: 1864.61, avg: 2019.64, max: 2141.07, mdev: 3842.18, cnt:  15
-<span style="color:green;font-weight:bold;">              POSIX_dash</span>: top: <span style="color:gray;font-weight:bold;">2011.66</span>, min: 1955.63, avg: 2145.52, max: 2454.85, mdev: 3810.43, cnt:  14
-<span style="color:green;font-weight:bold;">                       R</span>: top: <span style="color:gray;font-weight:bold;">2063.77</span>, min: 2047.02, avg: 2127.87, max: 2529.48, mdev: 3843.32, cnt:  15
-<span style="color:green;font-weight:bold;">               POSIX_zsh</span>: top: <span style="color:gray;font-weight:bold;">2197.11</span>, min: 2161.49, avg: 2271.15, max: 2425.82, mdev: 3808.04, cnt:  14
-<span style="color:green;font-weight:bold;">           Bash_parallel</span>: top: <span style="color:gray;font-weight:bold;">2242.45</span>, min: 2204.63, avg: 2357.10, max: 2647.63, mdev: 3770.02, cnt:  13
-<span style="color:green;font-weight:bold;">              POSIX_bash</span>: top: <span style="color:gray;font-weight:bold;">2427.49</span>, min: 2370.05, avg: 2506.06, max: 2835.54, mdev: 3508.84, cnt:  12
+<span style="color:green;font-weight:bold;">           Rust_parallel</span>: top: <span style="color:gray;font-weight:bold;">  30.48</span>, min:   27.76, avg:   32.48, max:   37.80, mdev:    2.78, cnt:  20
+<span style="color:green;font-weight:bold;">               C++98_omp</span>: top: <span style="color:gray;font-weight:bold;">  31.24</span>, min:   29.04, avg:   34.42, max:   49.48, mdev:    4.52, cnt:  20
+<span style="color:green;font-weight:bold;">            Go_goroutine</span>: top: <span style="color:gray;font-weight:bold;">  68.30</span>, min:   61.87, avg:   75.89, max:  142.91, mdev:   16.39, cnt:  20
+<span style="color:green;font-weight:bold;">                   C++14</span>: top: <span style="color:gray;font-weight:bold;">  83.17</span>, min:   82.23, avg:   84.71, max:   92.58, mdev:    2.76, cnt:  20
+<span style="color:green;font-weight:bold;">             C++14_boost</span>: top: <span style="color:gray;font-weight:bold;">  83.58</span>, min:   83.20, avg:   84.58, max:   91.00, mdev:    1.72, cnt:  20
+<span style="color:green;font-weight:bold;">                   C++98</span>: top: <span style="color:gray;font-weight:bold;">  83.71</span>, min:   83.09, avg:   85.19, max:   91.48, mdev:    2.44, cnt:  20
+<span style="color:green;font-weight:bold;">                    Rust</span>: top: <span style="color:gray;font-weight:bold;">  91.45</span>, min:   90.81, avg:   93.08, max:   99.38, mdev:    2.07, cnt:  20
+<span style="color:green;font-weight:bold;">                       C</span>: top: <span style="color:gray;font-weight:bold;">  91.49</span>, min:   90.49, avg:   93.41, max:   99.44, mdev:    2.53, cnt:  20
+<span style="color:green;font-weight:bold;">                   C++11</span>: top: <span style="color:gray;font-weight:bold;">  91.81</span>, min:   91.33, avg:   93.52, max:  102.80, mdev:    3.04, cnt:  20
+<span style="color:green;font-weight:bold;">                     PHP</span>: top: <span style="color:gray;font-weight:bold;">  93.91</span>, min:   93.37, avg:   94.98, max:   99.42, mdev:    1.47, cnt:  20
+<span style="color:green;font-weight:bold;">                   OCaml</span>: top: <span style="color:gray;font-weight:bold;"> 106.85</span>, min:  105.75, avg:  109.34, max:  118.03, mdev:    3.37, cnt:  20
+<span style="color:green;font-weight:bold;">                     Nim</span>: top: <span style="color:gray;font-weight:bold;"> 109.28</span>, min:  108.44, avg:  110.75, max:  117.43, mdev:    2.13, cnt:  20
+<span style="color:green;font-weight:bold;">         D_parallel_llvm</span>: top: <span style="color:gray;font-weight:bold;"> 111.25</span>, min:  109.43, avg:  113.21, max:  117.26, mdev:    2.33, cnt:  20
+<span style="color:green;font-weight:bold;">              D_parallel</span>: top: <span style="color:gray;font-weight:bold;"> 116.77</span>, min:  114.69, avg:  118.95, max:  125.45, mdev:    2.87, cnt:  20
+<span style="color:green;font-weight:bold;">                    PyPy</span>: top: <span style="color:gray;font-weight:bold;"> 126.23</span>, min:  124.29, avg:  128.34, max:  134.07, mdev:    2.79, cnt:  20
+<span style="color:green;font-weight:bold;">                  D_llvm</span>: top: <span style="color:gray;font-weight:bold;"> 129.63</span>, min:  128.52, avg:  131.32, max:  137.65, mdev:    2.41, cnt:  20
+<span style="color:green;font-weight:bold;">                  LuaJIT</span>: top: <span style="color:gray;font-weight:bold;"> 132.68</span>, min:  131.31, avg:  134.36, max:  143.07, mdev:    2.57, cnt:  20
+<span style="color:green;font-weight:bold;">                      Go</span>: top: <span style="color:gray;font-weight:bold;"> 135.57</span>, min:  132.37, avg:  139.25, max:  148.37, mdev:    4.50, cnt:  20
+<span style="color:green;font-weight:bold;">                       D</span>: top: <span style="color:gray;font-weight:bold;"> 146.30</span>, min:  145.00, avg:  149.14, max:  159.02, mdev:    3.85, cnt:  20
+<span style="color:green;font-weight:bold;">                Haskell2</span>: top: <span style="color:gray;font-weight:bold;"> 150.92</span>, min:  149.41, avg:  153.25, max:  164.60, mdev:    3.53, cnt:  20
+<span style="color:green;font-weight:bold;">                 Python2</span>: top: <span style="color:gray;font-weight:bold;"> 155.36</span>, min:  152.26, avg:  158.55, max:  170.20, mdev:    4.60, cnt:  20
+<span style="color:green;font-weight:bold;">                    Vala</span>: top: <span style="color:gray;font-weight:bold;"> 159.55</span>, min:  157.87, avg:  161.40, max:  166.52, mdev:    2.26, cnt:  20
+<span style="color:green;font-weight:bold;">                  Erlang</span>: top: <span style="color:gray;font-weight:bold;"> 163.00</span>, min:  158.63, avg:  168.76, max:  181.77, mdev:    7.09, cnt:  20
+<span style="color:green;font-weight:bold;">                   Lua51</span>: top: <span style="color:gray;font-weight:bold;"> 166.58</span>, min:  164.58, avg:  168.89, max:  181.71, mdev:    3.69, cnt:  20
+<span style="color:green;font-weight:bold;">                   Lua52</span>: top: <span style="color:gray;font-weight:bold;"> 168.48</span>, min:  167.40, avg:  170.82, max:  178.11, mdev:    3.36, cnt:  20
+<span style="color:green;font-weight:bold;">           Python3_bytes</span>: top: <span style="color:gray;font-weight:bold;"> 174.30</span>, min:  172.65, avg:  176.83, max:  181.64, mdev:    2.91, cnt:  20
+<span style="color:green;font-weight:bold;">                   Lua53</span>: top: <span style="color:gray;font-weight:bold;"> 180.20</span>, min:  177.79, avg:  185.01, max:  199.41, mdev:    6.07, cnt:  20
+<span style="color:green;font-weight:bold;">                    Perl</span>: top: <span style="color:gray;font-weight:bold;"> 180.22</span>, min:  177.30, avg:  182.21, max:  186.09, mdev:    2.44, cnt:  20
+<span style="color:green;font-weight:bold;">              FreePascal</span>: top: <span style="color:gray;font-weight:bold;"> 180.85</span>, min:  179.35, avg:  184.23, max:  197.83, mdev:    4.84, cnt:  20
+<span style="color:green;font-weight:bold;">                 Python3</span>: top: <span style="color:gray;font-weight:bold;"> 181.72</span>, min:  178.47, avg:  184.09, max:  189.67, mdev:    2.99, cnt:  20
+<span style="color:green;font-weight:bold;">                    Ruby</span>: top: <span style="color:gray;font-weight:bold;"> 199.82</span>, min:  197.16, avg:  203.62, max:  218.32, mdev:    4.92, cnt:  20
+<span style="color:green;font-weight:bold;">                 Chicken</span>: top: <span style="color:gray;font-weight:bold;"> 234.69</span>, min:  232.11, avg:  239.61, max:  248.39, mdev:    5.63, cnt:  20
+<span style="color:green;font-weight:bold;">             PyPy3_bytes</span>: top: <span style="color:gray;font-weight:bold;"> 238.55</span>, min:  237.18, avg:  242.08, max:  253.68, mdev:    4.53, cnt:  20
+<span style="color:green;font-weight:bold;">                   Guile</span>: top: <span style="color:gray;font-weight:bold;"> 254.49</span>, min:  249.14, avg:  260.40, max:  275.83, mdev:    7.12, cnt:  20
+<span style="color:green;font-weight:bold;">              ChezScheme</span>: top: <span style="color:gray;font-weight:bold;"> 265.63</span>, min:  262.52, avg:  268.56, max:  278.53, mdev:    3.94, cnt:  20
+<span style="color:green;font-weight:bold;">                    Java</span>: top: <span style="color:gray;font-weight:bold;"> 291.35</span>, min:  283.94, avg:  302.36, max:  324.82, mdev:   12.38, cnt:  20
+<span style="color:green;font-weight:bold;">                  NodeJS</span>: top: <span style="color:gray;font-weight:bold;"> 317.01</span>, min:  314.61, avg:  321.04, max:  332.05, mdev:    4.71, cnt:  20
+<span style="color:green;font-weight:bold;">                    Dart</span>: top: <span style="color:gray;font-weight:bold;"> 329.39</span>, min:  325.63, avg:  334.57, max:  351.19, mdev:    6.92, cnt:  20
+<span style="color:green;font-weight:bold;">           Ruby_rubinius</span>: top: <span style="color:gray;font-weight:bold;"> 359.76</span>, min:  357.74, avg:  363.13, max:  373.02, mdev:    4.45, cnt:  20
+<span style="color:green;font-weight:bold;">          CommonLisp_opt</span>: top: <span style="color:gray;font-weight:bold;"> 360.57</span>, min:  358.41, avg:  365.15, max:  378.44, mdev:    5.76, cnt:  20
+<span style="color:green;font-weight:bold;">                     Tcl</span>: top: <span style="color:gray;font-weight:bold;"> 367.38</span>, min:  363.28, avg:  372.89, max:  388.57, mdev:    6.65, cnt:  20
+<span style="color:green;font-weight:bold;">          CommonLisp_old</span>: top: <span style="color:gray;font-weight:bold;"> 376.27</span>, min:  371.99, avg:  379.66, max:  390.55, mdev:    4.33, cnt:  20
+<span style="color:green;font-weight:bold;">                   PyPy3</span>: top: <span style="color:gray;font-weight:bold;"> 384.12</span>, min:  376.60, avg:  390.16, max:  401.39, mdev:    7.32, cnt:  20
+<span style="color:green;font-weight:bold;">            CoffeeScript</span>: top: <span style="color:gray;font-weight:bold;"> 414.40</span>, min:  393.13, avg:  432.25, max:  466.42, mdev:   20.64, cnt:  20
+<span style="color:green;font-weight:bold;">   CoffeeScript_parallel</span>: top: <span style="color:gray;font-weight:bold;"> 451.12</span>, min:  425.11, avg:  464.92, max:  491.52, mdev:   17.05, cnt:  20
+<span style="color:green;font-weight:bold;">            NodeJS_async</span>: top: <span style="color:gray;font-weight:bold;"> 454.78</span>, min:  437.13, avg:  465.18, max:  489.06, mdev:   13.02, cnt:  20
+<span style="color:green;font-weight:bold;">         Racket_compiled</span>: top: <span style="color:gray;font-weight:bold;"> 510.97</span>, min:  505.22, avg:  516.20, max:  527.69, mdev:    6.23, cnt:  20
+<span style="color:green;font-weight:bold;">                  Racket</span>: top: <span style="color:gray;font-weight:bold;"> 520.70</span>, min:  515.11, avg:  525.28, max:  533.79, mdev:    5.87, cnt:  20
+<span style="color:green;font-weight:bold;">         NodeJS_parallel</span>: top: <span style="color:gray;font-weight:bold;"> 673.38</span>, min:  664.38, avg:  687.60, max:  724.04, mdev:   16.32, cnt:  20
+<span style="color:green;font-weight:bold;">                   Scala</span>: top: <span style="color:gray;font-weight:bold;"> 719.27</span>, min:  698.23, avg:  740.32, max:  815.95, mdev:   27.27, cnt:  20
+<span style="color:green;font-weight:bold;">           Bash_parallel</span>: top: <span style="color:gray;font-weight:bold;"> 769.14</span>, min:  751.56, avg:  775.91, max:  791.40, mdev:    8.82, cnt:  20
+<span style="color:green;font-weight:bold;">                 Haskell</span>: top: <span style="color:gray;font-weight:bold;">1036.33</span>, min: 1013.27, avg: 1048.70, max: 1090.21, mdev: 4186.25, cnt:  20
+<span style="color:green;font-weight:bold;">                  Elixir</span>: top: <span style="color:gray;font-weight:bold;">1097.32</span>, min: 1075.24, avg: 1113.36, max: 1144.80, mdev: 4186.26, cnt:  20
+<span style="color:green;font-weight:bold;">                       R</span>: top: <span style="color:gray;font-weight:bold;">1141.37</span>, min: 1120.69, avg: 1156.42, max: 1177.79, mdev: 4186.26, cnt:  20
+<span style="color:green;font-weight:bold;">                    Bash</span>: top: <span style="color:gray;font-weight:bold;">1368.00</span>, min: 1323.22, avg: 1479.66, max: 1994.19, mdev: 4077.71, cnt:  20
+<span style="color:green;font-weight:bold;">              POSIX_dash</span>: top: <span style="color:gray;font-weight:bold;">1841.09</span>, min: 1833.25, avg: 1851.09, max: 1881.68, mdev: 3897.64, cnt:  17
+<span style="color:green;font-weight:bold;">               POSIX_zsh</span>: top: <span style="color:gray;font-weight:bold;">2124.79</span>, min: 2110.81, avg: 2134.32, max: 2156.40, mdev: 3841.56, cnt:  15
+<span style="color:green;font-weight:bold;">              POSIX_bash</span>: top: <span style="color:gray;font-weight:bold;">2200.64</span>, min: 2195.09, avg: 2206.75, max: 2221.41, mdev: 3807.09, cnt:  14
+<span style="color:red;font-weight:bold;">                  CSharp</span>: FAILED with entity not found
+<span style="color:red;font-weight:bold;">                   Julia</span>: FAILED with entity not found
 </pre>
