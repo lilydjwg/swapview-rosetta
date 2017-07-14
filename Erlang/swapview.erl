@@ -13,7 +13,7 @@ filesize(Size) ->
     Units = "KMGT",
     case filesize(Size, 0) of
         {Fixsize, 0} ->
-            io_lib:format("~.0fB", [Fixsize]);
+            io_lib:format("~BB", [Fixsize]);
         {Fixsize, Unit} when Unit > 0 ->
             io_lib:format("~.1f~ciB", [Fixsize, lists:nth(Unit, Units)])
     end.
