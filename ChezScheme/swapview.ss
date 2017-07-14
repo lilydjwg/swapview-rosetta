@@ -8,7 +8,7 @@
     (if (and (> size 1100) (not (null? units)))
         (lp (cdr units) (/ size 1024))
         (if (eq? (car units) 'B)
-            (cons size "B")
+            (format #f "~dB" (inexact->exact size))
             (format #f "~,1f~a" size (car units))))))
 
 (define-syntax try
