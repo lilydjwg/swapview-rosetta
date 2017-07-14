@@ -1,0 +1,58 @@
+                Rust_parallel:  ↑ 6 
+                    C++98_omp:  *   
+                 Go_goroutine:  ↑ 5 
+                        C++14:  ↑ 1 
+                  C++14_boost:  ↑ 1 
+                        C++98:  ↓ 3 
+                         Rust:  ↑ 4 
+                            C:  ↓ 6 
+                        C++11:  *   
+                          PHP:  ↑ 3 
+                        OCaml:  ↑ 1 
+                          Nim:  ↓ 8 
+              D_parallel_llvm:  ↓ 4 
+                   D_parallel:  ↓ 4 
+                         PyPy:  ↑ 14
+                       D_llvm:  ↓ 1 
+                       LuaJIT:  ↓ 3 
+                           Go:  ↓ 2 
+                            D:  ↓ 1 
+                     Haskell2:  ↓ 3 
+                      Python2:  ↓ 1 
+                         Vala:  ↑ 2 
+                       Erlang:  ↑ 11
+                        Lua51:  ↓ 5 
+                        Lua52:  ↓ 4 
+                Python3_bytes:  ↑ 1 
+                        Lua53:  ↓ 4 
+                         Perl:  ↓ 2 
+                   FreePascal:  ↓ 4 
+                      Python3:  =   
+                         Ruby:  =   
+                      Chicken:  ↑ 1 
+                  PyPy3_bytes:  ↓ 5 
+                        Guile:  ↑ 15
+                   ChezScheme:  =   
+                         Java:  ↑ 6 
+                       NodeJS:  ↓ 15
+                         Dart:  ↑ 5 
+                Ruby_rubinius:  ↑ 15
+               CommonLisp_opt:  ↑ 6 
+                          Tcl:  ↓ 4 
+               CommonLisp_old:  ↑ 3 
+                        PyPy3:  ↓ 7 
+                 CoffeeScript:  ↓ 4 
+        CoffeeScript_parallel:  ↓ 6 
+                 NodeJS_async:  ↓ 5 
+              Racket_compiled:  =   
+                       Racket:  ↓ 4 
+              NodeJS_parallel:  ↓ 17
+                        Scala:  ↓ 2 
+                Bash_parallel:  ↑ 7 
+                      Haskell:  ↓ 2 
+                       Elixir:  ↓ 2 
+                            R:  ↑ 2 
+                         Bash:  ↓ 2 
+                   POSIX_dash:  ↓ 1 
+                    POSIX_zsh:  =   
+                   POSIX_bash:  ↑ 1 

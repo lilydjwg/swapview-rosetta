@@ -1,0 +1,36 @@
+#!/usr/bin/env python3
+
+import re
+import sys
+
+color_esc_re = re.compile(r'\x1b[\[0-9;]*[mK]')
+
+def get_rank(path):
+  ret = {}
+  with open(path) as f:
+    for i, l in enumerate(f):
+      l = color_esc_re.sub('', l)
+      lang = l.split(None, 1)[0].strip()
+      ret[lang] = i
+  return ret
+
+def show_changes(a, b):
+  for lang, cur_rank in b.items():
+    old_rank = a.get(lang)
+    if not old_rank:
+      change = '*'
+    elif cur_rank < old_rank:
+      change = f'↑ {old_rank - cur_rank}'
+    elif cur_rank > old_rank:
+      change = f'↓ {cur_rank - old_rank}'
+    else:
+      change = '='
+    print('%30s  %-4s' % (lang, change))
+
+def main(filea, fileb):
+  a = get_rank(filea)
+  b = get_rank(fileb)
+  show_changes(a, b)
+
+if __name__ == '__main__':
+  main(sys.argv[1], sys.argv[2])

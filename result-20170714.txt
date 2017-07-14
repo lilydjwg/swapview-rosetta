@@ -1,0 +1,60 @@
+[1;32m           Rust_parallel[m: top: [1;37m  30.48[m, min:   27.76, avg:   32.48, max:   37.80, mdev:    2.78, cnt:  20
+[1;32m               C++98_omp[m: top: [1;37m  31.24[m, min:   29.04, avg:   34.42, max:   49.48, mdev:    4.52, cnt:  20
+[1;32m            Go_goroutine[m: top: [1;37m  68.30[m, min:   61.87, avg:   75.89, max:  142.91, mdev:   16.39, cnt:  20
+[1;32m                   C++14[m: top: [1;37m  83.17[m, min:   82.23, avg:   84.71, max:   92.58, mdev:    2.76, cnt:  20
+[1;32m             C++14_boost[m: top: [1;37m  83.58[m, min:   83.20, avg:   84.58, max:   91.00, mdev:    1.72, cnt:  20
+[1;32m                   C++98[m: top: [1;37m  83.71[m, min:   83.09, avg:   85.19, max:   91.48, mdev:    2.44, cnt:  20
+[1;32m                    Rust[m: top: [1;37m  91.45[m, min:   90.81, avg:   93.08, max:   99.38, mdev:    2.07, cnt:  20
+[1;32m                       C[m: top: [1;37m  91.49[m, min:   90.49, avg:   93.41, max:   99.44, mdev:    2.53, cnt:  20
+[1;32m                   C++11[m: top: [1;37m  91.81[m, min:   91.33, avg:   93.52, max:  102.80, mdev:    3.04, cnt:  20
+[1;32m                     PHP[m: top: [1;37m  93.91[m, min:   93.37, avg:   94.98, max:   99.42, mdev:    1.47, cnt:  20
+[1;32m                   OCaml[m: top: [1;37m 106.85[m, min:  105.75, avg:  109.34, max:  118.03, mdev:    3.37, cnt:  20
+[1;32m                     Nim[m: top: [1;37m 109.28[m, min:  108.44, avg:  110.75, max:  117.43, mdev:    2.13, cnt:  20
+[1;32m         D_parallel_llvm[m: top: [1;37m 111.25[m, min:  109.43, avg:  113.21, max:  117.26, mdev:    2.33, cnt:  20
+[1;32m              D_parallel[m: top: [1;37m 116.77[m, min:  114.69, avg:  118.95, max:  125.45, mdev:    2.87, cnt:  20
+[1;32m                    PyPy[m: top: [1;37m 126.23[m, min:  124.29, avg:  128.34, max:  134.07, mdev:    2.79, cnt:  20
+[1;32m                  D_llvm[m: top: [1;37m 129.63[m, min:  128.52, avg:  131.32, max:  137.65, mdev:    2.41, cnt:  20
+[1;32m                  LuaJIT[m: top: [1;37m 132.68[m, min:  131.31, avg:  134.36, max:  143.07, mdev:    2.57, cnt:  20
+[1;32m                      Go[m: top: [1;37m 135.57[m, min:  132.37, avg:  139.25, max:  148.37, mdev:    4.50, cnt:  20
+[1;32m                       D[m: top: [1;37m 146.30[m, min:  145.00, avg:  149.14, max:  159.02, mdev:    3.85, cnt:  20
+[1;32m                Haskell2[m: top: [1;37m 150.92[m, min:  149.41, avg:  153.25, max:  164.60, mdev:    3.53, cnt:  20
+[1;32m                 Python2[m: top: [1;37m 155.36[m, min:  152.26, avg:  158.55, max:  170.20, mdev:    4.60, cnt:  20
+[1;32m                    Vala[m: top: [1;37m 159.55[m, min:  157.87, avg:  161.40, max:  166.52, mdev:    2.26, cnt:  20
+[1;32m                  Erlang[m: top: [1;37m 163.00[m, min:  158.63, avg:  168.76, max:  181.77, mdev:    7.09, cnt:  20
+[1;32m                   Lua51[m: top: [1;37m 166.58[m, min:  164.58, avg:  168.89, max:  181.71, mdev:    3.69, cnt:  20
+[1;32m                   Lua52[m: top: [1;37m 168.48[m, min:  167.40, avg:  170.82, max:  178.11, mdev:    3.36, cnt:  20
+[1;32m           Python3_bytes[m: top: [1;37m 174.30[m, min:  172.65, avg:  176.83, max:  181.64, mdev:    2.91, cnt:  20
+[1;32m                   Lua53[m: top: [1;37m 180.20[m, min:  177.79, avg:  185.01, max:  199.41, mdev:    6.07, cnt:  20
+[1;32m                    Perl[m: top: [1;37m 180.22[m, min:  177.30, avg:  182.21, max:  186.09, mdev:    2.44, cnt:  20
+[1;32m              FreePascal[m: top: [1;37m 180.85[m, min:  179.35, avg:  184.23, max:  197.83, mdev:    4.84, cnt:  20
+[1;32m                 Python3[m: top: [1;37m 181.72[m, min:  178.47, avg:  184.09, max:  189.67, mdev:    2.99, cnt:  20
+[1;32m                    Ruby[m: top: [1;37m 199.82[m, min:  197.16, avg:  203.62, max:  218.32, mdev:    4.92, cnt:  20
+[1;32m                 Chicken[m: top: [1;37m 234.69[m, min:  232.11, avg:  239.61, max:  248.39, mdev:    5.63, cnt:  20
+[1;32m             PyPy3_bytes[m: top: [1;37m 238.55[m, min:  237.18, avg:  242.08, max:  253.68, mdev:    4.53, cnt:  20
+[1;32m                   Guile[m: top: [1;37m 254.49[m, min:  249.14, avg:  260.40, max:  275.83, mdev:    7.12, cnt:  20
+[1;32m              ChezScheme[m: top: [1;37m 265.63[m, min:  262.52, avg:  268.56, max:  278.53, mdev:    3.94, cnt:  20
+[1;32m                    Java[m: top: [1;37m 291.35[m, min:  283.94, avg:  302.36, max:  324.82, mdev:   12.38, cnt:  20
+[1;32m                  NodeJS[m: top: [1;37m 317.01[m, min:  314.61, avg:  321.04, max:  332.05, mdev:    4.71, cnt:  20
+[1;32m                    Dart[m: top: [1;37m 329.39[m, min:  325.63, avg:  334.57, max:  351.19, mdev:    6.92, cnt:  20
+[1;32m           Ruby_rubinius[m: top: [1;37m 359.76[m, min:  357.74, avg:  363.13, max:  373.02, mdev:    4.45, cnt:  20
+[1;32m          CommonLisp_opt[m: top: [1;37m 360.57[m, min:  358.41, avg:  365.15, max:  378.44, mdev:    5.76, cnt:  20
+[1;32m                     Tcl[m: top: [1;37m 367.38[m, min:  363.28, avg:  372.89, max:  388.57, mdev:    6.65, cnt:  20
+[1;32m          CommonLisp_old[m: top: [1;37m 376.27[m, min:  371.99, avg:  379.66, max:  390.55, mdev:    4.33, cnt:  20
+[1;32m                   PyPy3[m: top: [1;37m 384.12[m, min:  376.60, avg:  390.16, max:  401.39, mdev:    7.32, cnt:  20
+[1;32m            CoffeeScript[m: top: [1;37m 414.40[m, min:  393.13, avg:  432.25, max:  466.42, mdev:   20.64, cnt:  20
+[1;32m   CoffeeScript_parallel[m: top: [1;37m 451.12[m, min:  425.11, avg:  464.92, max:  491.52, mdev:   17.05, cnt:  20
+[1;32m            NodeJS_async[m: top: [1;37m 454.78[m, min:  437.13, avg:  465.18, max:  489.06, mdev:   13.02, cnt:  20
+[1;32m         Racket_compiled[m: top: [1;37m 510.97[m, min:  505.22, avg:  516.20, max:  527.69, mdev:    6.23, cnt:  20
+[1;32m                  Racket[m: top: [1;37m 520.70[m, min:  515.11, avg:  525.28, max:  533.79, mdev:    5.87, cnt:  20
+[1;32m         NodeJS_parallel[m: top: [1;37m 673.38[m, min:  664.38, avg:  687.60, max:  724.04, mdev:   16.32, cnt:  20
+[1;32m                   Scala[m: top: [1;37m 719.27[m, min:  698.23, avg:  740.32, max:  815.95, mdev:   27.27, cnt:  20
+[1;32m           Bash_parallel[m: top: [1;37m 769.14[m, min:  751.56, avg:  775.91, max:  791.40, mdev:    8.82, cnt:  20
+[1;32m                 Haskell[m: top: [1;37m1036.33[m, min: 1013.27, avg: 1048.70, max: 1090.21, mdev: 4186.25, cnt:  20
+[1;32m                  Elixir[m: top: [1;37m1097.32[m, min: 1075.24, avg: 1113.36, max: 1144.80, mdev: 4186.26, cnt:  20
+[1;32m                       R[m: top: [1;37m1141.37[m, min: 1120.69, avg: 1156.42, max: 1177.79, mdev: 4186.26, cnt:  20
+[1;32m                    Bash[m: top: [1;37m1368.00[m, min: 1323.22, avg: 1479.66, max: 1994.19, mdev: 4077.71, cnt:  20
+[1;32m              POSIX_dash[m: top: [1;37m1841.09[m, min: 1833.25, avg: 1851.09, max: 1881.68, mdev: 3897.64, cnt:  17
+[1;32m               POSIX_zsh[m: top: [1;37m2124.79[m, min: 2110.81, avg: 2134.32, max: 2156.40, mdev: 3841.56, cnt:  15
+[1;32m              POSIX_bash[m: top: [1;37m2200.64[m, min: 2195.09, avg: 2206.75, max: 2221.41, mdev: 3807.09, cnt:  14
+[1;31m                  CSharp[m: FAILED with entity not found
+[1;31m                   Julia[m: FAILED with entity not found
