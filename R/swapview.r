@@ -55,7 +55,7 @@ getSwap <- function(){
 }
 
 result = getSwap()
-write(sprintf("%5s %9s %s", "PID", "SIZE", "COMMAND"), stdout())
+write(sprintf("%5s %9s %s", "PID", "SWAP", "COMMAND"), stdout())
 t = 0
 for(i in 1:nrow(result)){
   size = as.numeric(result[i,2])
