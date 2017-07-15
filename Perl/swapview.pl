@@ -74,7 +74,7 @@ sub main {
         $total_swap_size += $result->{'swap'};
         printf $printf_format, $result->{'pid'}, convert_file_size_from_kB( $result->{'swap'} ), $result->{'cmd'};
     }
-    printf qq{Total: %s\n}, convert_file_size_from_kB( $total_swap_size );
+    printf qq{Total: %8s\n}, convert_file_size_from_kB( $total_swap_size );
 }
 
 main
