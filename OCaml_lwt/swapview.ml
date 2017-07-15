@@ -1,12 +1,8 @@
-let (|>>=) f g = let%lwt x = f in g x
-
 type swap_t = (string * int * string) (*pid, size, comm*)
 
-let is_pid (file:string) : bool Lwt.t =
-    Lwt.return (
-        try ignore (int_of_string file); true
-        with _ -> false
-    )
+let is_pid (file:string) : bool =
+    try ignore (int_of_string file); true
+    with _ -> false
 
 let filesize (size:int) : string =
     let rec aux = function
@@ -58,14 +54,14 @@ let get_swap_for (pid:string) : swap_t Lwt.t =
                 Lwt.return (pid, swap * 1024, comm))
 
 let get_swaps () : swap_t list Lwt.t =
+    let open Lwt.Infix in
     read_dir "/proc"
-    |>>= Lwt_list.filter_p is_pid
-    |>>= Lwt_list.map_p get_swap_for
-    |>>= Lwt_list.filter_p (fun (_, s, _) -> Lwt.return (s <> 0))
-    |>>= fun swaps -> Lwt.return
-        (List.sort (fun (_,a,_) (_,b,_) -> compare a b) swaps)
+    >|= List.filter is_pid
+    >>= fun pids -> Lwt_list.map_p get_swap_for pids
+    >|= List.filter (fun (_, s, _) -> (s <> 0))
+    >|= List.sort (fun (_,a,_) (_,b,_) -> compare a b)
 
-let main = (
+let%lwt main =
     let print' = Lwt_io.printf "%5s %9s %s\n" in
     let print_swap (pid, swap, comm) = print' pid (filesize swap) comm in
     let print_total total = Lwt_io.printf "Total: %8s\n" (filesize total) in
@@ -78,4 +74,3 @@ let main = (
     let%lwt _ = print_total total in
 
     Lwt.return_unit
-) |> Lwt_main.run
