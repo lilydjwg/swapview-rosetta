@@ -132,6 +132,8 @@ cmd = ["node", "swapview.js"]
 
 [item.OCaml]
 
+[item.OCaml_lwt]
+
 [item.Perl]
 cmd = ["./swapview.pl"]
 
