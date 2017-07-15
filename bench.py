@@ -52,6 +52,17 @@ def run_profile(cmd, dir, time_limit, **kwargs):
     return out, err, returncode, usage
 
 
+def _key(l):
+    pid, data, cmd = l.split(None, 2)
+    return data, cmd, pid
+
+
+def stable_sort(lines):
+    if len(lines) < 2:
+        return
+    lines[1:-2] = sorted(lines[1:-2], key=_key)
+
+
 def bench_profile(profile, ref_result_out, verbose,
                   time_field, show_diff_below, **kwargs):
     try:
@@ -61,9 +72,11 @@ def bench_profile(profile, ref_result_out, verbose,
     except:
         out, err, ret, usage = (
             "", ('Error cmd: %s\n' % " ".join(profile['cmd'])), 1, dict(elapsed=0))
-    ratio = SequenceMatcher(None,
-                            out.split('\n'),
-                            ref_result_out.split('\n')).ratio()
+    outlines = out.split('\n')
+    stable_sort(outlines)
+    ref_outlines = ref_result_out.split('\n')
+    stable_sort(ref_outlines)
+    ratio = SequenceMatcher(None, outlines, ref_outlines).ratio()
     profile['ratio'] = ratio
     if verbose:
         print('\033[1;%dm%-24s\033[m(%3d%%): %8.2f %s' %
@@ -71,11 +84,11 @@ def bench_profile(profile, ref_result_out, verbose,
                profile['name'], int(ratio * 100),
                usage[time_field] * 1000, err[: -1]))
         if ret == 0 and ratio < show_diff_below:
-            print('\n'.join(unified_diff(ref_result_out.split('\n'),
-                                         out.split('\n'),
-                                         fromfile='reference result',
-                                         tofile=profile['name'],
-                                         n=0, lineterm='')))
+            print('$\n'.join(unified_diff(
+                ref_outlines, outlines, fromfile='reference result',
+                tofile=profile['name'], n=0, lineterm='')),
+                end = '$\n',
+            )
     return out, err[:-1], ret, usage
 
 
