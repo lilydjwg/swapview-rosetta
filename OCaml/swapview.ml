@@ -1,10 +1,8 @@
 type swap_t = (string * int * string) (*pid, size, comm*)
 
-
 let is_pid (file:string) : bool =
     try ignore (int_of_string file); true
     with _ -> false
-
 
 let filesize (size:int) : string =
     let rec aux = function
@@ -19,10 +17,8 @@ let filesize (size:int) : string =
     in
     aux (float_of_int size, [])
 
-
 let read_dir (dir:string) : string list =
     Array.to_list (Sys.readdir dir)
-
 
 let read_file (filename:string) : string list =
     try
@@ -36,14 +32,18 @@ let read_file (filename:string) : string list =
         List.rev (loop [])
     with _ -> []
 
+let chop_null (s:string) : string =
+    let len = String.length s in
+    let ss = if (len <> 0) && (s.[len - 1] = '\000')
+        then String.sub s 0 (len - 1)
+        else s
+    in
+    String.map (function '\000' -> ' ' | x -> x) ss
 
 let get_comm_for (pid:string) : string =
     match read_file ("/proc/" ^ pid ^ "/cmdline") with
-        | h :: _ ->
-            String.map (function '\000' -> ' ' | x -> x) h
-            |> String.trim
+        | h :: _ -> chop_null h
         | _ -> ""
-
 
 let get_swap_for (pid:string) : swap_t =
     match read_file ("/proc/" ^ pid ^ "/smaps") with
@@ -58,14 +58,12 @@ let get_swap_for (pid:string) : swap_t =
             |> List.fold_left (fun acc x -> acc + x) 0
             |> fun swap -> (pid, swap * 1024, get_comm_for pid)
 
-
 let get_swaps () : swap_t list =
     read_dir "/proc"
     |> List.filter is_pid
     |> List.map get_swap_for
     |> List.filter (fun (_, s, _) -> s <> 0)
     |> List.sort (fun (_,a,_) (_,b,_) -> compare a b)
-
 
 let main =
     let print' = Printf.printf "%5s %9s %s\n" in

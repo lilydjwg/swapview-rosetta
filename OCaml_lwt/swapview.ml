@@ -2,13 +2,11 @@ let (|>>=) f g = let%lwt x = f in g x
 
 type swap_t = (string * int * string) (*pid, size, comm*)
 
-
 let is_pid (file:string) : bool Lwt.t =
     Lwt.return (
         try ignore (int_of_string file); true
         with _ -> false
     )
-
 
 let filesize (size:int) : string =
     let rec aux = function
@@ -22,11 +20,9 @@ let filesize (size:int) : string =
             aux (size /. 1024., t)
     in aux (float_of_int size, [])
 
-
 let read_dir (dir:string) : string list Lwt.t =
     Lwt_unix.files_of_directory dir
     |> Lwt_stream.to_list
-
 
 let read_file (filename:string) : string list Lwt.t =
     try%lwt
@@ -36,15 +32,18 @@ let read_file (filename:string) : string list Lwt.t =
         in Lwt_io.with_file Lwt_io.Input filename read
     with _ -> Lwt.return []
 
+let chop_null (s:string) : string =
+    let len = String.length s in
+    let ss = if (len <> 0) && (s.[len - 1] = '\000')
+        then String.sub s 0 (len - 1)
+        else s
+    in
+    String.map (function '\000' -> ' ' | x -> x) ss
 
 let get_comm_for (pid:string) : string Lwt.t =
     match%lwt read_file ("/proc/" ^ pid ^ "/cmdline") with
-        | h :: _ ->
-            String.map (function '\000' -> ' ' | x -> x) h
-            |> String.trim
-            |> Lwt.return
+        | h :: _ -> Lwt.return (chop_null h)
         | _ -> Lwt.return ""
-
 
 let get_swap_for (pid:string) : swap_t Lwt.t =
     match%lwt read_file ("/proc/" ^ pid ^ "/smaps") with
@@ -61,7 +60,6 @@ let get_swap_for (pid:string) : swap_t Lwt.t =
                 let%lwt comm = get_comm_for pid in
                 Lwt.return (pid, swap * 1024, comm))
 
-
 let get_swaps () : swap_t list Lwt.t =
     read_dir "/proc"
     |>>= Lwt_list.filter_p is_pid
@@ -69,7 +67,6 @@ let get_swaps () : swap_t list Lwt.t =
     |>>= Lwt_list.filter_p (fun (_, s, _) -> Lwt.return (s <> 0))
     |>>= fun swaps -> Lwt.return
         (List.sort (fun (_,a,_) (_,b,_) -> compare a b) swaps)
-
 
 let main = (
     let print' = Lwt_io.printf "%5s %9s %s\n" in
