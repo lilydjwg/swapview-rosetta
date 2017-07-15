@@ -54,7 +54,7 @@ function getSwapFor(pid)
 
   local cmd = cmdfile:read('*a')
   cmdfile:close()
-  if cmd and cmd[#cmd] == '\0' then
+  if cmd and cmd:byte(#cmd) == 0 then
     cmd = cmd:sub(1, #cmd-1)
   end
   cmd = cmd:gsub(nullstr, ' ')
