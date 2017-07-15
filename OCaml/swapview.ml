@@ -6,16 +6,12 @@ let is_pid (file:string) : bool =
 
 let filesize (size:int) : string =
     let rec aux = function
-        | (size, []) when size < 1100. ->
-            string_of_float size ^ "B"
-        | (size, []) ->
-            aux (size /. 1024., ["KiB"; "MiB"; "GiB"; "TiB"])
-        | (size, h :: []) | (size, h :: _) when size < 1100. ->
-            Printf.sprintf "%.1f%s" size h
-        | (size, _ :: t) ->
-            aux (size /. 1024., t)
-    in
-    aux (float_of_int size, [])
+        | (size, []) when size < 1100. -> Printf.sprintf "%.0fB" size
+        | (size, []) -> aux (size /. 1024., ["KiB"; "MiB"; "GiB"; "TiB"])
+        | (size, h :: []) -> Printf.sprintf "%.1f%s" size h
+        | (size, h :: _) when size < 1100. -> Printf.sprintf "%.1f%s" size h
+        | (size, _ :: t) -> aux (size /. 1024., t)
+    in aux (float_of_int size, [])
 
 let read_dir (dir:string) : string list =
     Array.to_list (Sys.readdir dir)
