@@ -56,10 +56,12 @@ func GetInfos() (list []Info) {
 
 	info_ch := make(chan *Info, 1024)
 	wg := new(sync.WaitGroup)
+	wg2 := new(sync.WaitGroup)
 
+	wg2.Add(1)
 	go func(info_ch chan *Info, list *[]Info) {
-		for {
-			tmp := <-info_ch
+		defer wg2.Done()
+		for tmp := range info_ch {
 			if tmp != nil {
 				*list = append(*list, *tmp)
 			}
@@ -75,6 +77,8 @@ func GetInfos() (list []Info) {
 		go GetInfo(pid, info_ch, wg)
 	}
 	wg.Wait()
+	close(info_ch)
+	wg2.Wait()
 	return
 }
 
@@ -89,10 +93,10 @@ func GetInfo(pid int, info_ch chan<- *Info, wg *sync.WaitGroup) {
 		info_ch <- nil
 		return
 	}
-        var comm = string(bs)
-        if strings.HasSuffix(comm, "\x00") {
-            comm = comm[:len(comm)-1]
-        }
+	var comm = string(bs)
+	if strings.HasSuffix(comm, "\x00") {
+		comm = comm[:len(comm)-1]
+	}
 	info.Comm = strings.Replace(comm, "\x00", " ", -1)
 	bs, err = ioutil.ReadFile(fmt.Sprintf("/proc/%d/smaps", pid))
 	if err != nil {
