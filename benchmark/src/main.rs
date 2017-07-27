@@ -100,11 +100,11 @@ fn parse_item(name: String, conf: &toml::Value)
     match key.as_ref() {
       "dir" => dir = value.as_str().map(|x| x.to_string()),
       "cmd" => cmd = {
-        let cmd_arr = try!(value.as_array().ok_or(
-                format!("cmd must be an array of strings, but got {}", value)));
-        let maybe_arr_str: Vec<_> = cmd_arr.iter().map(|ref x| x.as_str()).collect();
+        let cmd_arr = value.as_array().ok_or_else(||
+          format!("cmd must be an array of strings, but got {}", value))?;
+        let maybe_arr_str: Vec<_> = cmd_arr.iter().map(|x| x.as_str()).collect();
         if maybe_arr_str.iter().any(|x| x.is_none()) {
-            return Err(format!("cmd must be an array of strings, but got {:?}", cmd_arr));
+          return Err(format!("cmd must be an array of strings, but got {:?}", cmd_arr));
         }
         if maybe_arr_str.is_empty() {
           return Err("cmd must be an non-empty array of strings".to_string());
@@ -117,10 +117,8 @@ fn parse_item(name: String, conf: &toml::Value)
                                  (Some(0), None::<i32>)),
       "valid_percent" => valid_int!(value as valid_percent for name,
                                     (Some(-1), Some(101))),
-      //TODO: use log
       _ => {
-        io::stderr().write_fmt(
-        format_args!("warning: unknown field: {}\n", key)).unwrap();
+        eprintln!("warning: unknown field: {}", key);
       },
     };
   }
@@ -141,24 +139,32 @@ fn merge_default(item: OptionalBenchmarkItem, default: &Option<OptionalBenchmark
   let mut maybe_count_limit = item.count_limit;
   let mut maybe_valid_percent = item.valid_percent;
 
-  if default.is_some() {
-    let d = default.as_ref().unwrap();
-    maybe_dir = maybe_dir.or(d.dir.clone());
-    maybe_cmd = maybe_cmd.or(d.cmd.clone());
-    maybe_time_limit = maybe_time_limit.or(d.time_limit);
-    maybe_count_limit = maybe_count_limit.or(d.count_limit);
-    maybe_valid_percent = maybe_valid_percent.or(d.valid_percent);
+  if let Some(ref d) = *default {
+    maybe_dir = maybe_dir.or_else(|| d.dir.clone());
+    maybe_cmd = maybe_cmd.or_else(|| d.cmd.clone());
+    maybe_time_limit = maybe_time_limit.or_else(|| d.time_limit);
+    maybe_count_limit = maybe_count_limit.or_else(|| d.count_limit);
+    maybe_valid_percent = maybe_valid_percent.or_else(|| d.valid_percent);
   }
-  let dir = try!(maybe_dir.ok_or(
-    format!("{} don't have required field dir", item.name)));
-  let cmd = try!(maybe_cmd.ok_or(
-    format!("{} don't have required field cmd", item.name)));
-  let time_limit = try!(maybe_time_limit.ok_or(
-    format!("{} don't have required field time_limit", item.name)));
-  let count_limit = try!(maybe_count_limit.ok_or(
-    format!("{} don't have required field count_limit", item.name)));
-  let valid_percent = try!(maybe_valid_percent.ok_or(
-    format!("{} don't have required field valid_percent", item.name)));
+
+  let dir;
+  let cmd;
+  let time_limit;
+  let count_limit;
+  let valid_percent;
+  {
+    let name = &item.name;
+    dir = maybe_dir.ok_or_else(||
+      format!("{} doesn't have required field dir", name))?;
+    cmd = maybe_cmd.ok_or_else(||
+      format!("{} doesn't have required field cmd", name))?;
+    time_limit = maybe_time_limit.ok_or_else(||
+      format!("{} doesn't have required field time_limit", name))?;
+    count_limit = maybe_count_limit.ok_or_else(||
+      format!("{} doesn't have required field count_limit", name))?;
+    valid_percent = maybe_valid_percent.ok_or_else(||
+      format!("{} doesn't have required field valid_percent", name))?;
+  }
 
   let expanded_dir = dir.replace("$name", &item.name);
   Ok(BenchmarkItem{
@@ -172,8 +178,8 @@ fn merge_default(item: OptionalBenchmarkItem, default: &Option<OptionalBenchmark
 fn parse_config(toml: &str) -> Result<Vec<BenchmarkItem>,String> {
   let config: toml::Value  = toml.parse().map_err(|x: toml::de::Error| x.to_string())?;
 
-  let item_v = try!(config.get("item").ok_or("no item definitions".to_string()));
-  let items = try!(item_v.as_table().ok_or("item definitions should be in a table".to_string()));
+  let item_v = config.get("item").ok_or_else(|| "no item definitions".to_string())?;
+  let items = item_v.as_table().ok_or_else(|| "item definitions should be in a table".to_string())?;
 
   let default_item = match items.get("default") {
     Some(x) => Some(parse_item("default".to_string(), x)?),
