@@ -1,41 +1,37 @@
-#!/bin/sh -
-
-readonly CURRENT_USER_ID="$(id -u)"
+#!/bin/sh
 readonly PRINTF_FORMAT='%5s %9s %s\n'
+
+third_slash() {
+    # let argv[1...] = argv[1].split(/\//g); puts argv[3].
+    local IFS=/
+    set -- $1
+    printf %s "$3"
+}
 
 main() {
     printf "$PRINTF_FORMAT" 'PID' 'SWAP' 'COMMAND'
     find '/proc' -maxdepth 2 -regextype posix-basic -regex '^/proc/[[:digit:]]\+$' -type d -print 2>/dev/null | \
         while read dir_path || [ -n "$dir_path" ]
         do
-            # Dash doesn't support here-string, so I use here-document instead.
-            local pid="$(grep -o '[[:digit:]]\+$' <<EOF
-$dir_path
-EOF
-            )"
+            # We had `find` check over the filename already.
+            # So just chop it.
+            local pid=$(third_slash "$dir_path")
             local smaps_file="${dir_path}/smaps"
             local cmdline_file="${dir_path}/cmdline"
             local swap_size=0
             local cmd=''
-            if [ -f "$smaps_file" ] && \
-                [ -r "$smaps_file" ] && \
-                ( [ "$CURRENT_USER_ID" -eq 0 ] || [ -O "$smaps_file" ] )
-            then
-                swap_size="$(grep -F 'Swap:' "$smaps_file" | \
+
+            swap_size="$(grep -F 'Swap:' "$smaps_file" | \
                             awk 'BEGIN{ sum = 0 }
                                  { sum += $2 }
-                                 END{ print sum }')"
-            fi
-            if [ "$(printf '%s\n' "${swap_size} == 0" | bc)" -eq 1 ]
+                                 END{ print sum }')" || continue
+
+            if [ $((swap_size == 0)) -eq 1 ]
             then
                 continue
             fi
-            if [ -f "$cmdline_file" ] && \
-                [ -r "$cmdline_file" ] && \
-                ( [ "$CURRENT_USER_ID" -eq 0 ] || [ -O "$cmdline_file" ] )
-            then
-                cmd="$(tr '\0' ' ' < "$cmdline_file")"
-            fi
+
+            cmd="$(tr '\0' ' ' < "$cmdline_file")" || continue
             printf "$PRINTF_FORMAT" "$pid" "$swap_size" "$cmd"
         done | sort -k2n | \
         awk -v "printf_format=${PRINTF_FORMAT}" \
@@ -67,4 +63,4 @@ EOF
             }'
 }
 
-main "$@"
+main "$@" 2>/dev/null
