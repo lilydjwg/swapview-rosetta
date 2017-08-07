@@ -21,7 +21,7 @@ main() {
             local swap_size=0
             local cmd=''
 
-            swap_size="$(grep -F 'Swap:' "$smaps_file" | \
+            swap_size="$(grep -F 'Swap:' "$smaps_file" 2>/dev/null | \
                             awk 'BEGIN{ sum = 0 }
                                  { sum += $2 }
                                  END{ print sum }')" || continue
@@ -63,4 +63,4 @@ main() {
             }'
 }
 
-main "$@" 2>/dev/null
+main "$@"
