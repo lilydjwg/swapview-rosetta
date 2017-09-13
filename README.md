@@ -49,7 +49,6 @@ You can (edit and then) run `make` to build all that needs to be built.
 * NodeJS, requires sprintf (will be installed by `make`)
 * NodeJS_async, another NodeJS version which use async I/O, requires sprintf and async (will be installed by `make`)
 * NodeJS_cluster, uses multiple forked worker process via Node Cluster API
-* NodeJS_parallel, uses multiple spawnd worker process via Parallel.js
 * OCaml
 * FreePascal
 * Perl

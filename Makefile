@@ -2,7 +2,7 @@
 
 languages = Haskell Haskell2 OCaml Rust Rust_parallel \
 	    C++98 C++11 C++14 C++14_boost C CSharp D D_parallel Go Go_goroutine Vala \
-	    Nim NodeJS NodeJS_async NodeJS_cluster NodeJS_parallel CoffeeScript CoffeeScript_parallel \
+	    Nim NodeJS NodeJS_async NodeJS_cluster CoffeeScript CoffeeScript_parallel \
 	    Java Chicken Racket FreePascal Erlang CommonLisp_opt \
 	    Dart ChezScheme Scala
 
