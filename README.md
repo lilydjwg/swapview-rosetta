@@ -48,7 +48,8 @@ You can (edit and then) run `make` to build all that needs to be built.
 * Nim (tested with 0.17.0)
 * NodeJS, requires sprintf (will be installed by `make`)
 * NodeJS_async, another NodeJS version which use async I/O, requires sprintf and async (will be installed by `make`)
-* NodeJS_parallel, uses multiple worker processes
+* NodeJS_cluster, uses multiple forked worker process via Node Cluster API
+* NodeJS_parallel, uses multiple spawnd worker process via Parallel.js
 * OCaml
 * FreePascal
 * Perl
