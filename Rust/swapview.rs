@@ -82,7 +82,7 @@ fn main() {
   // let format = "{:>5} {:>9} {}";
   // let totalFmt = "Total: {:8}";
   let mut swapinfo = get_swap();
-  swapinfo.sort_by(|&(_, a, _), &(_, b, _)| { a.cmp(&b) });
+  swapinfo.sort_unstable_by(|&(_, a, _), &(_, b, _)| { a.cmp(&b) });
 
   println!("{:>5} {:>9} {}", "PID", "SWAP", "COMMAND");
   let mut total = 0;
