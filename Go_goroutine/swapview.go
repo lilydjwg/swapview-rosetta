@@ -68,12 +68,12 @@ func GetInfos() (list []Info) {
 		}
 	}(info_ch, &list)
 
+	wg.Add(len(names))
 	for _, name := range names {
 		pid, err := strconv.Atoi(name)
 		if err != nil {
 			continue
 		}
-		wg.Add(1)
 		go GetInfo(pid, info_ch, wg)
 	}
 	wg.Wait()
