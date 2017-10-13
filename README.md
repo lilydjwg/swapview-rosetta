@@ -39,7 +39,7 @@ You can (edit and then) run `make` to build all that needs to be built.
 * Dart
 * Elixir
 * Erlang
-* Go
+* Go >=1.8
 * Guile >= 2.1
 * Haskell, requires `haskell-strict`
 * Haskell2, another better Haskell version using more dependencies
