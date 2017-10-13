@@ -9,7 +9,6 @@ import (
 	"runtime"
 	"sort"
 	"strconv"
-	"strings"
 	"sync"
 	// "time"
 )
@@ -20,11 +19,10 @@ type Info struct {
 	Comm string
 }
 
-type Infos []Info
-
-func (p Infos) Len() int           { return len(p) }
-func (p Infos) Less(i, j int) bool { return p[i].Size < p[j].Size }
-func (p Infos) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+var (
+	nullBytes  = []byte{0x0}
+	emptyBytes = []byte(" ")
+)
 
 func main() {
 	// t0 := time.Now()
@@ -35,7 +33,9 @@ func main() {
 	runtime.GOMAXPROCS(4)
 
 	slist := GetInfos()
-	sort.Sort(Infos(slist))
+	sort.Slice(slist, func(i, j int) bool {
+		return slist[i].Size < slist[j].Size
+	})
 
 	fmt.Printf("%5s %9s %s\n", "PID", "SWAP", "COMMAND")
 	var total int64
@@ -93,11 +93,10 @@ func GetInfo(pid int, info_ch chan<- *Info, wg *sync.WaitGroup) {
 		info_ch <- nil
 		return
 	}
-	var comm = string(bs)
-	if strings.HasSuffix(comm, "\x00") {
-		comm = comm[:len(comm)-1]
+	if bytes.HasSuffix(bs, nullBytes) {
+		bs = bs[:len(bs)-1]
 	}
-	info.Comm = strings.Replace(comm, "\x00", " ", -1)
+	info.Comm = string(bytes.Replace(bs, nullBytes, emptyBytes, -1))
 	bs, err = ioutil.ReadFile(fmt.Sprintf("/proc/%d/smaps", pid))
 	if err != nil {
 		info_ch <- nil
