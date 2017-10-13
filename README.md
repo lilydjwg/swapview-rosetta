@@ -57,7 +57,7 @@ You can (edit and then) run `make` to build all that needs to be built.
 * R
 * Racket
 * Ruby and Rubinius
-* Rust
+* Rust, >= 1.20
 * Scala
 * Vala, requires `glib2` (`libglib-2.0` and `libgio-2.0`)
 * Tcl, >= 8.6
