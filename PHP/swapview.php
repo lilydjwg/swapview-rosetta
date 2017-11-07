@@ -26,56 +26,48 @@ function renderSize($size)
 
 function getSwapFor($pid)
 {
-    $fallback = array($pid, 0, '');
-
-    $commFile = "/proc/$pid/cmdline";
-    if (($comm = @file_get_contents($commFile, 'r')) === false) {
+    $fallback = [$pid, 0, ''];
+    $commFile = '/proc/' . $pid . '/cmdline';
+    if(!($comm = @file_get_contents($commFile))) {
         return $fallback;
     }
     if ("\0" == substr($comm, -1)) {
         $comm = substr($comm, 0, strlen($comm) - 1);
     }
-    $comm = str_replace("\0", " ", $comm);
 
-    $s = 0;
-    $smapsFile = "/proc/$pid/smaps";
-    if (($smaps = @file_get_contents($smapsFile, 'r')) === false) {
+    $comm = str_replace("\0", " ", $comm);
+    $smapsFile = '/proc/' . $pid . '/smaps';
+    if (!($smaps = @file_get_contents($smapsFile))) {
         return $fallback;
     }
+
     $matchCount = preg_match_all('/\nSwap:\s+(\d+)/', $smaps, $matches);
-
-    if ($matchCount === false) {
+    if (!$matchCount) {
         return $fallback;
-
     } else {
-        foreach ($matches[1] as $match) {
-            $s += $match;
-        }
-
-        return array($pid, $s * 1024, $comm);
+        $sum = array_sum($matches[1]);
+        return array($pid, $sum * 1024, $comm);
     }
 }
 
 
 function getSwap()
 {
-    $ret = array();
-
-    $dir = dir('/proc');
-    while (($file = $dir->read()) !== false) {
-        $pid = intval($file);
-        if (0 < $pid) {
+    $ret = [];
+    $dirs = scandir('/proc');
+    foreach($dirs as $item)
+    {
+        $pid = intval($item);
+        if($pid)
+        {
             $swap = getSwapFor($pid);
-            if (0 < $swap[1]) {
+            if($swap[1])
+            {
                 $ret[] = $swap;
             }
         }
     }
-
-    usort($ret, function ($a, $b) {
-        return $a[1] - $b[1];
-    });
-
+    array_multisort(array_column($ret, 1), SORT_ASC, $ret);
     return $ret;
 }
 
@@ -85,8 +77,7 @@ printf("%5s %9s %s", "PID", "SWAP", "COMMAND" . PHP_EOL);
 
 $totalSize = 0;
 foreach ($results as $result) {
-    printf("%5s %9s %s" . PHP_EOL, $result[0], renderSize($result[1]),
-        $result[2]);
+    printf("%5s %9s %s" . PHP_EOL, $result[0], renderSize($result[1]), $result[2]);
     $totalSize += $result[1];
 }
 
