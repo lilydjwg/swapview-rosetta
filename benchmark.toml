@@ -45,6 +45,8 @@ cmd = ["zsh", "./swapview.sh"]
 cmd = ["./swapview_omp"]
 dir = "C++98"
 
+[item.Crystal]
+
 [item.CSharp]
 cmd = ["mono-sgen", "--desktop", "SwapView.exe"]
 
