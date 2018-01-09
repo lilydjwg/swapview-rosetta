@@ -35,6 +35,7 @@ You can (edit and then) run `make` to build all that needs to be built.
 * CommonLisp_old, sbcl, maynbe others also work
 * CoffeeScript, requires promise (will be installed by `make`)
 * CoffeeScript_parallel, a parallel version, requires promise (will be installed by `make`)
+* Crystal, tested with 0.24.1
 * D, `dmd` or `ldmd` (LLVM version)
 * Dart
 * Elixir
