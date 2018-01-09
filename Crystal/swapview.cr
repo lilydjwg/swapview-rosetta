@@ -25,15 +25,23 @@ SWAP = "Swap: "
 # a new string instance if we put literal to map!{}
 def get_swap_for(pid)
   comm = File.read("/proc/#{pid}/cmdline")
-  comm.rchop if comm[-1] == "\0"
-  comm.tr("\0", " ")
+  comm = comm.rchop if comm != "" && comm[-1] == '\0'
+  comm = comm.tr("\0", " ")
   result = File.read("/proc/#{pid}/smaps").split('\n')
   result.select! { |l| l.starts_with? SWAP }
-  res = result.map { |l| l[6..-1].to_i }
-  s = res.reduce { |acc, i| acc + i }
-  {pid, s * 1024, comm}
-rescue
-  {pid, 0, nil}
+  if result.empty?
+    {pid, 0, nil}
+  else
+    res = result.map { |l| l[6..-3].to_i }
+    s = res.reduce { |acc, i| acc + i }
+    {pid, s * 1024, comm}
+  end
+rescue ex: Errno
+  if [Errno::EACCES, Errno::ENOENT].includes? ex.errno
+    {pid, 0, nil}
+  else
+    raise ex
+  end
 end
 
 def get_swap
