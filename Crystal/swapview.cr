@@ -39,7 +39,6 @@ end
 def get_swap
   result = Dir.entries("/proc")
   result.select! {|dir| dir.to_i? }
-  result.select! {|dir| dir.to_i.zero? }
   res = result.map {|dir| get_swap_for(dir) }
   res.select! {|s| s[1] > 0 }
   res.sort_by! {|x| x[1] }
