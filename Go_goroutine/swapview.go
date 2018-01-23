@@ -72,6 +72,7 @@ func GetInfos() (list []Info) {
 	for _, name := range names {
 		pid, err := strconv.Atoi(name)
 		if err != nil {
+			wg.Done()
 			continue
 		}
 		go GetInfo(pid, info_ch, wg)
