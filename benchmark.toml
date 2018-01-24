@@ -153,6 +153,10 @@ dir = "Python"
 [item.Python3_bytes]
 cmd = ["python3", "swapview.py"]
 
+[item.Python3_mp]
+cmd = ["python3", "swapview.py"]
+dir = "Python_mp"
+
 [item.PyPy]
 cmd = ["pypy", "swapview.py"]
 dir = "Python"
