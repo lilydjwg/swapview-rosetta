@@ -28,8 +28,7 @@ bool is_pid(const char* fname) {
     return true;
 }
 
-const pidstr_t* gen_pids() {
-    static pidstr_t pid;
+bool gen_pids(pidstr_t* ppid) {
     static DIR* proc_dir = NULL;
     static bool init = true;
     // init generator
@@ -45,12 +44,12 @@ const pidstr_t* gen_pids() {
         ent = readdir(proc_dir);
         if (!ent) {
             require(errno == 0);
-            return NULL;
+            return false;
         }
     } while (!is_pid(ent->d_name));
-    strncpy(pid, ent->d_name, PID_LEN - 1);
-    pid[PID_LEN - 1] = '\0';
-    return &pid;
+    strncpy(*ppid, ent->d_name, PID_LEN - 1);
+    (*ppid)[PID_LEN - 1] = '\0';
+    return true;
 }
 
 typedef struct swap_info swap_info_t;
@@ -63,7 +62,7 @@ struct swap_info {
 void read_comm(FILE* f, char comm[COMM_LEN]) {
     size_t read = 0;
     int c;
-    while (c = fgetc(f), c != EOF && c != '\n' && read < COMM_LEN - 1) {
+    while (c = fgetc(f), c != EOF && read < COMM_LEN - 1) {
         comm[read++] = c;
     }
     comm[read] = '\0';
@@ -86,7 +85,7 @@ int read_swap_size(FILE* f) {
     while (match(f, "Swap:")) {
         int i;
         require(fscanf(f, "%d", &i) == 1);
-        swap_size += i;
+        swap_size += i * 1024;
     }
     return swap_size;
 }
@@ -106,37 +105,43 @@ swap_info_t get_swap_info(const pidstr_t pid) {
     strcpy(cwd, "smaps");
     if ((f = fopen(path, "r"))) {
         retval.swap_size = read_swap_size(f);
+        fclose(f);
     }
     return retval;
 }
 
-typedef struct sibuffer* sibuffer_t;
+typedef struct sibuffer sibuffer_t;
 struct sibuffer {
-    swap_info_t* data;
     size_t cap;
     size_t len;
+    swap_info_t data[];
 };
 
 #define INIT_SIZE 4
 #define EXPAND_FACTOR 2
 
-sibuffer_t new_sibuffer() {
-    sibuffer_t buf = (sibuffer_t) malloc(sizeof(struct sibuffer));
+sibuffer_t* new_sibuffer() {
+    sibuffer_t* buf = (sibuffer_t*) malloc(sizeof(sibuffer_t) + sizeof(swap_info_t) * INIT_SIZE);
     require(buf != NULL);
-    buf->data = (swap_info_t*) malloc(sizeof(swap_info_t) * INIT_SIZE);
     buf->cap = INIT_SIZE;
     buf->len = 0;
     return buf;
 }
 
-void append(sibuffer_t buf, swap_info_t si) {
-    if (buf->len == buf->cap) {
-        swap_info_t* newdata = (swap_info_t*) realloc(buf->data, sizeof(swap_info_t) * buf->cap * EXPAND_FACTOR);
-        require(newdata != NULL);
-        buf->data = newdata;
-        buf->cap *= EXPAND_FACTOR;
+void append(sibuffer_t** pbuf, swap_info_t si) {
+    if ((*pbuf)->len == (*pbuf)->cap) {
+        sibuffer_t* newbuf = (sibuffer_t*) realloc(*pbuf,
+                sizeof(sibuffer_t)
+                + sizeof(swap_info_t) * (*pbuf)->cap * EXPAND_FACTOR);
+        require(newbuf != NULL);
+        *pbuf = newbuf;
+        (*pbuf)->cap *= EXPAND_FACTOR;
     }
-    buf->data[buf->len++] = si;
+    (*pbuf)->data[(*pbuf)->len++] = si;
+}
+
+void del_sibuffer(sibuffer_t* buf) {
+    free(buf);
 }
 
 int si_less(const void* x, const void* y) {
@@ -144,17 +149,15 @@ int si_less(const void* x, const void* y) {
          - ((swap_info_t*)y)->swap_size;
 }
 
-void get_all_swap_infos(swap_info_t** pparr, size_t* count) {
-    sibuffer_t buf = new_sibuffer();
-    const pidstr_t* ppid;
-    while ((ppid = gen_pids())) {
-        swap_info_t si = get_swap_info(*ppid);
-        if (si.swap_size > 0) append(buf, si);
+sibuffer_t* get_all_swap_infos() {
+    sibuffer_t* buf = new_sibuffer();
+    pidstr_t pid;
+    while (gen_pids(&pid)) {
+        swap_info_t si = get_swap_info(pid);
+        if (si.swap_size > 0) append(&buf, si);
     }
     qsort(buf->data, buf->len, sizeof(swap_info_t), si_less);
-    *pparr = buf->data;
-    *count = buf->len;
-    free(buf);
+    return buf;
 }
 
 void print_file_size(int size) {
@@ -171,14 +174,12 @@ void print_file_size(int size) {
 int main() {
     printf("%5s %9s %s\n", "PID", "SWAP", "COMMAND");
     int total = 0;
-    swap_info_t* sis;
-    size_t count;
-    get_all_swap_infos(&sis, &count);
-    for (size_t i = 0; i < count; i++) {
-        printf("%5s %9d %s\n", sis[i].pid, sis[i].swap_size, sis[i].comm);
-        total += sis[i].swap_size;
+    sibuffer_t* sis = get_all_swap_infos();
+    for (size_t i = 0; i < sis->len; i++) {
+        printf("%5s %9d %s\n", sis->data[i].pid, sis->data[i].swap_size, sis->data[i].comm);
+        total += sis->data[i].swap_size;
     }
-    free(sis);
+    del_sibuffer(sis);
     printf("Total: ");
     print_file_size(total);
     putchar('\n');
