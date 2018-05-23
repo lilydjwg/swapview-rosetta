@@ -1,156 +1,186 @@
-#define _POSIX_C_SOURCE 200809L
-#include<stdio.h>
-#include<stdlib.h>
-#include<string.h>
-#include<math.h>
+#include <ctype.h>
+#include <dirent.h>
+#include <errno.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
 
-#include<errno.h>
-#include<sys/types.h>
-#include<dirent.h>
+#define require(exp) do { \
+    if (!(exp)) { \
+        fprintf(stderr, "\"%s\" failed in %s:%d (%s)\n", #exp, __FILE__,  __LINE__, strerror(errno)); \
+        exit(EXIT_FAILURE); \
+    } \
+} while (false)
 
-#define FORMAT "%5d %9s %s\n"
-#define BUFSIZE 512
-//#define TARGET "Size:" // For Test
-#define TARGET "Swap:"
-#define TARGETLEN 5
+#define PROC_PATH "/proc"
+#define COMM_LEN 17
+#define PID_LEN 6
 
-#ifdef __GLIBC__
-# include<error.h>
-# define assure(exp) if(!(exp)) error(1, errno, "\"%s\" failed in %d", #exp, __LINE__)
-#else
-# define assure(exp) if(!(exp)) {\
-  fprintf(stderr, "\"%s\" failed in %d (%s)", #exp, __LINE__, strerror(errno)); \
-  exit(1); \
-}
-#endif
+typedef char pidstr_t[PID_LEN];
 
-char *filesize(double size){
-  char units[] = "KMGT";
-  double left = fabs(size);
-  int unit = -1;
-
-  char *buf;
-  assure(buf = malloc(BUFSIZE));
-
-  while(left > 1100 && unit < 3){
-    left /= 1024;
-    unit++;
-  }
-  if(unit == -1){
-    assure(snprintf(buf, BUFSIZE, "%dB", (int)size) > 0);
-  }else{
-    if(size < 0)
-      left = -left;
-    assure(snprintf(buf, BUFSIZE, "%.1f%ciB", left, units[unit]) > 0);
-  }
-  return buf;
-}
-
-typedef struct {
-  int pid;
-  double size;
-  char *comm;
-} swap_info;
-
-swap_info *getSwapFor(int pid){
-  char filename[BUFSIZE];
-  FILE *fd = 0;
-  size_t size = BUFSIZE;
-  char *comm = malloc(size + 1); // +1 for last \0
-  ssize_t len=0;
-  double s = 0.0;
-
-  assure(snprintf(filename, BUFSIZE, "/proc/%d/cmdline", pid) > 0);
-  if(!(fd = fopen(filename, "r")))
-    goto err;
-  for(int got;
-      (got = fread(comm + len, 1, size - len, fd)) > 0;
-      len += got){
-    assure(comm = realloc(comm, (size<<=1) + 1)); // +1 for last \0
-  }
-  fclose(fd);
-
-  for(char *p = comm; p < comm + len - 1; ++p)
-    *p || (*p = ' '); // comm[len-1] is \0 or non-space
-  comm[len]='\0'; // assure string is terminated
-
-  assure(snprintf(filename, BUFSIZE, "/proc/%d/smaps", pid) > 0);
-  if(!(fd = fopen(filename, "r")))
-    goto err;
-  char *line;
-  for(line = 0, size = 0;
-      (len = getline(&line, &size, fd)) >= 0;
-      free(line), line = 0, size = 0){
-    if(strncmp(line, TARGET, TARGETLEN) == 0)
-      s += atoi(line + TARGETLEN);
-  }
-  free(line);			// need to free when getline fail, see getline(3)
-err:
-  if(fd)
-    fclose(fd);
-  swap_info *ret;
-  assure(ret = malloc(sizeof(swap_info)));
-  ret->pid = pid;
-  ret->size = s * 1024;
-  ret->comm = comm;
-  return ret;
-}
-
-
-int comp(const void *a, const void *b){
-  double r = (*((swap_info **) a))->size - (*((swap_info **) b))->size;
-  return (r > 0.0) - (r < 0.0);	// sign of double to int
-}
-
-swap_info **getSwap(){
-  int size = 16;
-  int length = 0;
-
-  DIR *dp;
-  struct dirent *dirp;
-  assure(dp = opendir("/proc"));
-
-  swap_info **ret;
-  assure(ret = malloc(sizeof(swap_info *) * size));
-  while((dirp = readdir(dp)) != NULL){
-    int pid = atoi(dirp->d_name);
-    if(pid > 0){
-      swap_info *swapfor = getSwapFor(pid);
-      if(swapfor->size > 0){
-        if(length == size)
-          assure(ret = realloc(ret, sizeof(swap_info *) * (size <<= 1)));
-        ret[length++] = swapfor;
-      }else{
-        free(swapfor->comm);
-        free(swapfor);
-      }
+bool is_pid(const char* fname) {
+    while (*fname) {
+        if (!isdigit(*fname)) return false;
+        fname++;
     }
-  }
-  closedir(dp);
-
-  qsort(ret, length, sizeof(swap_info *), comp);
-
-  if(length == size)
-    assure(ret = realloc(ret, sizeof(swap_info *) * (++size)));
-  ret[length] = 0;		// mark for end
-  return ret;
+    return true;
 }
 
-int main(int argc, char *argv[]){
-  swap_info **infos = getSwap(), **p = infos;
-  double total = 0;
-  printf("%5s %9s %s\n", "PID", "SWAP", "COMMAND");
-  for(; *p; ++p){
-    char *size = filesize((*p)->size);
-    printf(FORMAT, (*p)->pid, size, (*p)->comm);
-    total += (*p)->size;
-    free(size);
-    free((*p)->comm);
-    free(*p);
-  }
-  free(infos);
-  char *stotal = filesize(total);
-  printf("Total: %8s\n", stotal);
-  free(stotal);
-  return 0;
+const pidstr_t* gen_pids() {
+    static pidstr_t pid;
+    static DIR* proc_dir = NULL;
+    static bool init = true;
+    // init generator
+    if (init) {
+        proc_dir = opendir(PROC_PATH);
+        require(proc_dir != NULL);
+        init = false;
+    }
+    // generate next pid
+    struct dirent* ent;
+    do {
+        errno = 0;
+        ent = readdir(proc_dir);
+        if (!ent) {
+            require(errno == 0);
+            return NULL;
+        }
+    } while (!is_pid(ent->d_name));
+    strncpy(pid, ent->d_name, PID_LEN - 1);
+    pid[PID_LEN - 1] = '\0';
+    return &pid;
+}
+
+typedef struct swap_info swap_info_t;
+struct swap_info {
+    pidstr_t pid;
+    char comm[COMM_LEN];
+    int swap_size;
+};
+
+void read_comm(FILE* f, char comm[COMM_LEN]) {
+    size_t read = 0;
+    int c;
+    while (c = fgetc(f), c != EOF && c != '\n' && read < COMM_LEN - 1) {
+        comm[read++] = c;
+    }
+    comm[read] = '\0';
+}
+
+bool match(FILE* f, const char* str) {
+    size_t matched = 0;
+    size_t len = strlen(str);
+    while (matched != len) {
+        int c = fgetc(f);
+        if (c == EOF) return false;
+        if (c == str[matched]) matched++;
+        else matched = 0;
+    }
+    return true;
+}
+
+int read_swap_size(FILE* f) {
+    int swap_size = 0;
+    while (match(f, "Swap:")) {
+        int i;
+        require(fscanf(f, "%d", &i) == 1);
+        swap_size += i;
+    }
+    return swap_size;
+}
+
+swap_info_t get_swap_info(const pidstr_t pid) {
+    swap_info_t retval = { "", "", 0 };
+    memcpy(retval.pid, pid, PID_LEN);
+    char path[sizeof(PROC_PATH) + PID_LEN + 10];
+    sprintf(path, PROC_PATH "/%s/", pid);
+    char* cwd = path + strlen(path);
+    strcpy(cwd, "comm");
+    FILE* f;
+    if ((f = fopen(path, "r"))) {
+        read_comm(f, retval.comm);
+        fclose(f);
+    }
+    strcpy(cwd, "smaps");
+    if ((f = fopen(path, "r"))) {
+        retval.swap_size = read_swap_size(f);
+    }
+    return retval;
+}
+
+typedef struct sibuffer* sibuffer_t;
+struct sibuffer {
+    swap_info_t* data;
+    size_t cap;
+    size_t len;
+};
+
+#define INIT_SIZE 4
+#define EXPAND_FACTOR 2
+
+sibuffer_t new_sibuffer() {
+    sibuffer_t buf = (sibuffer_t) malloc(sizeof(struct sibuffer));
+    require(buf != NULL);
+    buf->data = (swap_info_t*) malloc(sizeof(swap_info_t) * INIT_SIZE);
+    buf->cap = INIT_SIZE;
+    buf->len = 0;
+    return buf;
+}
+
+void append(sibuffer_t buf, swap_info_t si) {
+    if (buf->len == buf->cap) {
+        swap_info_t* newdata = (swap_info_t*) realloc(buf->data, sizeof(swap_info_t) * buf->cap * EXPAND_FACTOR);
+        require(newdata != NULL);
+        buf->data = newdata;
+        buf->cap *= EXPAND_FACTOR;
+    }
+    buf->data[buf->len++] = si;
+}
+
+int si_less(const void* x, const void* y) {
+    return ((swap_info_t*)x)->swap_size
+         - ((swap_info_t*)y)->swap_size;
+}
+
+void get_all_swap_infos(swap_info_t** pparr, size_t* count) {
+    sibuffer_t buf = new_sibuffer();
+    const pidstr_t* ppid;
+    while ((ppid = gen_pids())) {
+        swap_info_t si = get_swap_info(*ppid);
+        if (si.swap_size > 0) append(buf, si);
+    }
+    qsort(buf->data, buf->len, sizeof(swap_info_t), si_less);
+    *pparr = buf->data;
+    *count = buf->len;
+    free(buf);
+}
+
+void print_file_size(int size) {
+    int unit = 0;
+    char units[] = " KMGT";
+    while (size > 1024 && unit < 5) {
+        size /= 1024;
+        unit++;
+    }
+    if (!unit) printf("%dB", size);
+    else printf("%d%cB", size, units[unit]);
+}
+
+int main() {
+    printf("%5s %9s %s\n", "PID", "SWAP", "COMMAND");
+    int total = 0;
+    swap_info_t* sis;
+    size_t count;
+    get_all_swap_infos(&sis, &count);
+    for (size_t i = 0; i < count; i++) {
+        printf("%5s %9d %s\n", sis[i].pid, sis[i].swap_size, sis[i].comm);
+        total += sis[i].swap_size;
+    }
+    free(sis);
+    printf("Total: ");
+    print_file_size(total);
+    putchar('\n');
+    return EXIT_SUCCESS;
 }
