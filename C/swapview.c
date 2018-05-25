@@ -12,7 +12,7 @@
 #define BUFSIZE 512
 //#define TARGET "Size:" // For Test
 #define TARGET "Swap:"
-#define TARGETLEN 5
+#define TARGETLEN (sizeof(TARGET)-1)
 
 #ifdef __GLIBC__
 # include<error.h>
@@ -113,8 +113,9 @@ swap_info **getSwap(){
   swap_info **ret;
   assure(ret = malloc(sizeof(swap_info *) * size));
   while((dirp = readdir(dp)) != NULL){
-    int pid = atoi(dirp->d_name);
-    if(pid > 0){
+    char *end;
+    int pid = (int) strtol(dirp->d_name, &end, 10);
+    if(*end == '\0'){
       swap_info *swapfor = getSwapFor(pid);
       if(swapfor->size > 0){
         if(length == size)
