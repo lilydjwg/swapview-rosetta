@@ -1,4 +1,4 @@
-#!/usr/bin/julia -f
+#!/usr/bin/julia
 
 function filesizeKB(size::Int)
     left = float(size)
