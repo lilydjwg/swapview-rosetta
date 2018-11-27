@@ -67,8 +67,8 @@ impl std::ops::Drop for AtDir {
 
 macro_rules! valid_int {
   ($v:ident as $i:ident for $name:expr, ($min:expr, $max:expr)) => ({
-    let v = try!($v.as_integer().ok_or(
-      format!("{} should be an integer, but got {}", stringify!($i), $v)))
+    let v = $v.as_integer().ok_or(
+      format!("{} should be an integer, but got {}", stringify!($i), $v))?
       as i32;
     if $min.is_some() && v < $min.unwrap() {
       return Err(
