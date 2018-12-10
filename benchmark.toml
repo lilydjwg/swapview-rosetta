@@ -39,6 +39,8 @@ cmd = ["zsh", "./swapview.sh"]
 
 [item."C++14_boost"]
 
+[item."C++17"]
+
 [item."C++98"]
 
 [item."C++98_omp"]

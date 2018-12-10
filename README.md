@@ -28,6 +28,7 @@ You can (edit and then) run `make` to build all that needs to be built.
 * C++98_omp, openmp paralleled version
 * C++14
 * C++14_boost, C++ version using the boost library
+* C++17
 * CSharp (mono)
 * ChezScheme
 * Chicken, format (will be installed by `make`)
