@@ -63,7 +63,7 @@ int main() {
   size_t total = 0;
   for (const auto &[pid, swp, cmd]: get_swap()) {
     std::cout << std::setw(5) << pid << ' '
-              << std::setw(9) << swp << ' '
+              << std::setw(9) << filesize(swp) << ' '
               << std::setw(0) << cmd << '\n';
     total += swp;
   }
