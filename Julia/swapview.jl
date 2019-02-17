@@ -1,5 +1,7 @@
 #!/usr/bin/julia
 
+using Printf
+
 function filesizeKB(size::Int)
     left = float(size)
     unit = 1
@@ -13,16 +15,16 @@ end
 
 function getSwapFor(pid::AbstractString)
     s::Int = 0
-    for m in eachmatch(r"Swap: *([0-9]*)", readstring("/proc/$pid/smaps"))
+    for m in eachmatch(r"Swap: *([0-9]*)", read("/proc/$pid/smaps", String))
         s += parse(Int, m.captures[1])
     end
     s
 end
 
 function getCmd(pid::AbstractString)
-    comm::String = readstring("/proc/$pid/cmdline")
+    comm::String = read("/proc/$pid/cmdline", String)
     !isempty(comm) && comm[end] == '\x00' && (comm = comm[1:end - 1])
-    return replace(comm, "\x00", " ")
+    return replace(comm, "\x00" => " ")
 end
 
 function getSwap()
@@ -31,6 +33,7 @@ function getSwap()
         all(isdigit, f) && try
             s = getSwapFor(f)
             s > 0 && push!(ret, (f, s, getCmd(f)))
+        catch
         end
     end
     sort!(ret, by=(x) -> x[2])
