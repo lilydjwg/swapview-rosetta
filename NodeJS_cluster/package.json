@@ -9,6 +9,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "sprintf": "^0.1.5"
+    "sprintf-js": ""
   }
 }

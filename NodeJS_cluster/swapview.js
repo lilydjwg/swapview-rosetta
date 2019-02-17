@@ -9,7 +9,7 @@ if (cluster.isMaster) {
   ////////////////////
 
   const coreCount = require('os').cpus().length;
-  const sprintf = require('sprintf');
+  const sprintf = require('sprintf-js').sprintf;
 
   const filesize = function(size) {
     const units = 'KMGT';

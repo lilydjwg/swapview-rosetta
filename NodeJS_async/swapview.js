@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-var sprintf = require("sprintf");
+var sprintf = require('sprintf-js').sprintf;
 var fs = require("fs");
 var async = require("async");
 
