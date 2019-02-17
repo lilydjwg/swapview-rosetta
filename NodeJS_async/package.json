@@ -9,7 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "sprintf": "",
+    "sprintf-js": "",
     "async": ""
   }
 }

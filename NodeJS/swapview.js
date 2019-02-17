@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const sprintf = require("sprintf")
+const sprintf = require('sprintf-js').sprintf
 const fs = require("fs")
 
 function filesize(size) {
