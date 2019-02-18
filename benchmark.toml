@@ -68,6 +68,9 @@ cmd = ["./swapview.lisp"]
 
 [item.CommonLisp_opt]
 
+[item.Cython]
+cmd = ["python", "-c", "import swapview"]
+
 [item.D]
 
 [item.D_llvm]
