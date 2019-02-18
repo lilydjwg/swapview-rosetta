@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# cython: language_level=3
+
 from __future__ import print_function
 from __future__ import division
 

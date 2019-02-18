@@ -30,3 +30,4 @@ maketime
 Rust_parallel/.swapview/target
 
 package-lock.json
+*.timestamp
