@@ -2,14 +2,15 @@ require "./common.cr"
 
 module SwapView
   def get_swap
+    pids = get_pids
+    outputs = parallel(
+      pids.each {|pid| get_swap_for(pid) }
+    )
+
     result = [] of Tuple(Int32, Int32, String | Nil)
-    Dir.entries("/proc").each do |entry|
-      pid = entry.to_i?
-      if pid
-        swap_info = get_swap_for(pid)
-        if swap_info[1] > 0
-          result << swap_info
-        end
+    outputs.each do |output|
+      if output && output[1] > 0
+        result << output
       end
     end
     result.sort_by! {|x| x[1] }

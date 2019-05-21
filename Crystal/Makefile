@@ -6,7 +6,7 @@ CRYSTAL_BIN ?= $(shell which crystal)
 	$(CRYSTAL_BIN) build --release --no-debug $<
 	strip $@
 
-all: swapview
+all: swapview swapview_fiber swapview_process
 
 clean:
-	-rm -f swapview
+	-rm -f swapview swapview_fiber swapview_process
