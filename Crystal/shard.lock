@@ -1,0 +1,6 @@
+version: 1.0
+shards:
+  parallel:
+    github: RX14/parallel.cr
+    commit: 7f88d4ce8b0a9cde962a9889abb6a95e6733e860
+

@@ -20,7 +20,8 @@ module SwapView
         result << swap_info
       end
     end
-    result.sort_by! {|x| x[1] }
+
+    result.sort_by! { |x| x[1] }
     result
   end
 

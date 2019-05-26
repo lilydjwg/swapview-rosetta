@@ -2,17 +2,17 @@ require "./common.cr"
 
 module SwapView
   def get_swap
+    pids = get_pids
+
     result = [] of Tuple(Int32, Int32, String | Nil)
-    Dir.entries("/proc").each do |entry|
-      pid = entry.to_i?
-      if pid
-        swap_info = get_swap_for(pid)
-        if swap_info[1] > 0
-          result << swap_info
-        end
+    pids.each do |pid|
+      swap_info = get_swap_for(pid)
+      if swap_info[1] > 0
+        result << swap_info
       end
     end
-    result.sort_by! {|x| x[1] }
+
+    result.sort_by! { |x| x[1] }
     result
   end
 

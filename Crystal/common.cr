@@ -60,7 +60,7 @@ module SwapView
       pid, swap, comm = value
       puts FORMAT % [pid, filesize(swap), comm]
     end
-    res = results.map {|x| x[1] }
+    res = results.map { |x| x[1] }
     if res.empty?
       t = 0
     else
