@@ -1,58 +1,67 @@
-                Rust_parallel:  ↑ 6 
-                    C++98_omp:  *   
-                 Go_goroutine:  ↑ 5 
-                        C++14:  ↑ 1 
-                  C++14_boost:  ↑ 1 
-                        C++98:  ↓ 3 
-                         Rust:  ↑ 4 
-                            C:  ↓ 6 
-                        C++11:  *   
-                          PHP:  ↑ 3 
-                        OCaml:  ↑ 1 
-                          Nim:  ↓ 8 
-              D_parallel_llvm:  ↓ 4 
-                   D_parallel:  ↓ 4 
-                         PyPy:  ↑ 14
-                       D_llvm:  ↓ 1 
-                       LuaJIT:  ↓ 3 
-                           Go:  ↓ 2 
-                            D:  ↓ 1 
-                     Haskell2:  ↓ 3 
-                      Python2:  ↓ 1 
-                         Vala:  ↑ 2 
-                       Erlang:  ↑ 11
+                Rust_parallel:  *   
+                    C++98_omp:  =   
+                 Go_goroutine:  =   
+              Crystal_process:  *   
+                        C++17:  *   
+                        C++98:  =   
+                        C++14:  ↓ 3 
+                  C++14_boost:  ↓ 3 
+                            C:  ↓ 1 
+                         Rust:  ↓ 3 
+                          PHP:  ↓ 1 
+                           Go:  ↑ 6 
+                        C++11:  ↓ 4 
+                       Cython:  *   
+                      Crystal:  *   
+                Crystal_fiber:  *   
+                          Nim:  ↓ 5 
+                        OCaml:  ↓ 7 
+                   D_parallel:  ↓ 5 
+              D_parallel_llvm:  ↓ 7 
+                   Python3_mp:  *   
+                       LuaJIT:  ↓ 5 
+                       D_llvm:  ↓ 7 
+                      Python2:  ↓ 3 
+                            D:  ↓ 6 
+                         Vala:  ↓ 4 
+                       NodeJS:  ↑ 10
+                         PyPy:  ↓ 13
                         Lua51:  ↓ 5 
-                        Lua52:  ↓ 4 
-                Python3_bytes:  ↑ 1 
-                        Lua53:  ↓ 4 
-                         Perl:  ↓ 2 
-                   FreePascal:  ↓ 4 
                       Python3:  =   
-                         Ruby:  =   
-                      Chicken:  ↑ 1 
-                  PyPy3_bytes:  ↓ 5 
-                        Guile:  ↑ 15
-                   ChezScheme:  =   
-                         Java:  ↑ 6 
-                       NodeJS:  ↓ 15
-                         Dart:  ↑ 5 
-                Ruby_rubinius:  ↑ 15
-               CommonLisp_opt:  ↑ 6 
+                Python3_bytes:  ↓ 5 
+                        Lua52:  ↓ 7 
+                       Erlang:  ↓ 10
+                        Lua53:  ↓ 7 
+                         Perl:  ↓ 7 
+                   FreePascal:  ↓ 7 
+               NodeJS_cluster:  *   
+                         Ruby:  ↓ 7 
+                        Guile:  ↓ 5 
+                 CoffeeScript:  ↑ 4 
+                         Java:  ↓ 5 
+                  PyPy3_bytes:  ↓ 9 
+                 NodeJS_async:  ↑ 3 
+        CoffeeScript_parallel:  ↑ 1 
                           Tcl:  ↓ 4 
-               CommonLisp_old:  ↑ 3 
-                        PyPy3:  ↓ 7 
-                 CoffeeScript:  ↓ 4 
-        CoffeeScript_parallel:  ↓ 6 
-                 NodeJS_async:  ↓ 5 
-              Racket_compiled:  =   
-                       Racket:  ↓ 4 
-              NodeJS_parallel:  ↓ 17
-                        Scala:  ↓ 2 
-                Bash_parallel:  ↑ 7 
-                      Haskell:  ↓ 2 
-                       Elixir:  ↓ 2 
-                            R:  ↑ 2 
-                         Bash:  ↓ 2 
+                       CSharp:  ↑ 13
+                        PyPy3:  ↓ 4 
+                        Julia:  ↑ 12
+               CommonLisp_opt:  ↓ 9 
+               CommonLisp_old:  ↓ 8 
+                       Racket:  ↓ 3 
+              Racket_compiled:  ↓ 5 
+                       Elixir:  =   
+                        Scala:  ↓ 4 
+                            R:  ↓ 1 
+                Bash_parallel:  ↓ 5 
                    POSIX_dash:  ↓ 1 
-                    POSIX_zsh:  =   
-                   POSIX_bash:  ↑ 1 
+                      Haskell:  ↓ 6 
+                    POSIX_zsh:  ↓ 2 
+                   POSIX_bash:  ↓ 2 
+                         Bash:  ↓ 6 
+                   ChezScheme:  ↓ 27
+                      Chicken:  ↓ 31
+                         Dart:  ↓ 26
+                     Haskell2:  ↓ 45
+                    OCaml_lwt:  *   
+                Ruby_rubinius:  ↓ 28

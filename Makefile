@@ -1,10 +1,14 @@
 .PHONY: all clean
 
-languages = Haskell Haskell2 OCaml Rust Rust_parallel \
-	    C++98 C++11 C++14 C++14_boost C++17 C CSharp D D_parallel Go Go_goroutine Vala \
-	    Nim NodeJS NodeJS_async NodeJS_cluster CoffeeScript CoffeeScript_parallel \
-	    Java Chicken Racket FreePascal Erlang CommonLisp_opt \
-	    Dart ChezScheme Scala Cython
+languages = C C++11 C++14 C++14_boost C++17 C++98 \
+	    Chicken CoffeeScript CoffeeScript_parallel \
+	    CommonLisp_opt Crystal CSharp Cython \
+	    D D_parallel Erlang FreePascal Haskell \
+	    Go Go_goroutine \
+	    Java Nim NodeJS NodeJS_async NodeJS_cluster \
+	    OCaml Racket Rust Rust_parallel \
+	    Scala Vala \
+	    # ChezScheme Haskell2 OCaml_lwt Dart
 
 all: $(languages)
 
