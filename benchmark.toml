@@ -49,6 +49,14 @@ dir = "C++98"
 
 [item.Crystal]
 
+[item.Crystal_fiber]
+cmd = ["./swapview_fiber"]
+dir = "Crystal"
+
+[item.Crystal_process]
+cmd = ["./swapview_process"]
+dir = "Crystal"
+
 [item.CSharp]
 cmd = ["mono-sgen", "--desktop", "SwapView.exe"]
 

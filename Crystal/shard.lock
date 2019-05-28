@@ -1,0 +1,10 @@
+version: 1.0
+shards:
+  msgpack:
+    github: crystal-community/msgpack-crystal
+    version: 0.14.2
+
+  parallel_worker:
+    github: aligo/parallel_worker
+    commit: 9fd802c70a6249daa94cd5d64f62251e5c233605
+

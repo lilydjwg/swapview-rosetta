@@ -1,0 +1,6 @@
+name: swapview
+version: 0.0.1
+
+dependencies:
+  parallel_worker:
+    github: aligo/parallel_worker
