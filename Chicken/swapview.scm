@@ -1,7 +1,6 @@
 (use srfi-1 extras data-structures utils posix)
 
-(include "format/format.scm")
-(import format)
+(import (chicken format))
 
 (define-record process-info pid swap-usage command-line)
 
