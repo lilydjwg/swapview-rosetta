@@ -33,7 +33,7 @@ defmodule SwapView do
   end
 
   defp format({pid, size, comm}) do
-    IO.puts "#{pid |> String.rjust(5)} #{size |> String.rjust(9)} #{comm}"
+    IO.puts "#{pid |> String.pad_leading(5)} #{size |> String.pad_leading(9)} #{comm}"
   end
 
   def main do
@@ -43,7 +43,7 @@ defmodule SwapView do
       format {pid, size |> filesize, comm}
     end)
     total = result |> Enum.map(fn {_, size, _} -> size end) |> Enum.sum |> filesize
-    IO.puts "Total: #{total |> String.rjust(8)}"
+    IO.puts "Total: #{total |> String.pad_leading(8)}"
   end
 end
 
