@@ -12,6 +12,8 @@ default: all
 shard_install:
 	$(SHARDS_BIN) install
 
+swapview_process: shard_install
+
 all: swapview swapview_fiber shard_install swapview_process
 
 clean:
