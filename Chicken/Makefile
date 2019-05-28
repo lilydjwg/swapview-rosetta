@@ -1,7 +1,7 @@
 default: swapview
 
 swapview: swapview.scm format/format.scm
-	csc -O5 swapview.scm
+	chicken-csc -O5 swapview.scm
 	strip swapview
 
 format/format.scm:
