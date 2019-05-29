@@ -1,8 +1,22 @@
-(use srfi-1 extras data-structures utils posix)
+(import (chicken sort))
+(import (chicken file))
+(import (chicken io))
+(import (chicken string))
+(import (chicken format))  ; for sprintf
+(import format)            ; for clisp style format from SRFI-28 instead of simple format from chicken.format
+(import (srfi 1))          ; for filter-map
 
-(import (chicken format))
+
+;;;; Copy from chicken4-core/utils.scm
+;;; Read file as string from given filename or port:
+(define (read-all . file)
+  (let ([file (optional file ##sys#standard-input)])
+    (if (port? file)
+	(read-string #f file)
+(with-input-from-file file (cut read-string #f) #:binary) ) ) )
 
 (define-record process-info pid swap-usage command-line)
+
 
 (define (filesize size)
   (let lp ((units '(B KiB MiB GiB TiB))
