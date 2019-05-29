@@ -1,6 +1,6 @@
 swapview is a simple program to view processes' swap usage on Linux. This is intended to be a lilydjwg's version of Hello World program.
 
-How to play
+How to run the speed comparison
 ----
 
 Install all the dependencies for your interested versions, then run `make -k`. It will build all that can be built.
@@ -155,4 +155,4 @@ Updated at 2019-05-28:
 <span style="font-weight:bold;color:red;">           Ruby_rubinius</span>: FAILED with entity not found
 </pre>
 
-ChezScheme and Ruby_rubinius are not included because no binary packages available for Arch Linux and the others are [broken](https://github.com/lilydjwg/swapview/tree/master/broken).
+ChezScheme and Ruby_rubinius are not included because no binary packages available for Arch Linux and the others are [broken](https://github.com/lilydjwg/swapview/tree/master/broken) at the time of running the benchmark.
