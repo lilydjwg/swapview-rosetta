@@ -19,7 +19,7 @@ pubspec.lock
 
 # swapview specific
 */swapview
-Chicken/format
+broken/*/swapview
 CoffeeScript*/*.js
 D/swapview-llvm
 D_parallel/swapview-llvm
