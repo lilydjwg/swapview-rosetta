@@ -4,7 +4,7 @@ Cabal-Version:  >= 1.2
 Build-Type:     Simple
 
 Executable swapview
-  Build-Depends:  strict, base, directory
+  Build-Depends:  base, directory, text
   Main-Is:        swapview.hs
   Hs-Source-Dirs: .
   GHC-Options: -O2
