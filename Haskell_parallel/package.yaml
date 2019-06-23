@@ -1,0 +1,16 @@
+name:                swapview
+version:             0.1.0.0
+
+dependencies:
+- base >= 4.7 && < 5
+- directory
+- text
+- monad-parallel
+
+executables:
+  swapview:
+    main:                swapview.hs
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-maxN4
