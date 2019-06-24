@@ -4,7 +4,7 @@ all: swapview
 
 swapview: swapview.hs
 	stack build
-	ln -sf .stack-work/install/x86_64-linux-tinfo6/lts-13.26/8.6.5/bin/swapview
+	ln -sfr $$(stack path --local-install-root)/bin/swapview
 	strip swapview
 
 clean:
