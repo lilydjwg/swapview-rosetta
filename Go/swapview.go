@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
 	"io/ioutil"
@@ -8,7 +9,6 @@ import (
 	"os"
 	"sort"
 	"strconv"
-	// "time"
 )
 
 type Info struct {
@@ -20,14 +20,14 @@ type Info struct {
 var (
 	nullBytes  = []byte{0x0}
 	emptyBytes = []byte(" ")
+	swapPrefix = []byte("Swap:")
+
+	procString    = "/proc/"
+	cmdlineString = "/cmdline"
+	smapsString   = "/smaps"
 )
 
 func main() {
-	// t0 := time.Now()
-	// defer func() {
-	//         fmt.Printf("%v\n", time.Now().Sub(t0))
-	// }()
-
 	slist := GetInfos()
 	sort.Slice(slist, func(i, j int) bool {
 		return slist[i].Size < slist[j].Size
@@ -66,7 +66,7 @@ func GetInfos() (list []Info) {
 func GetInfo(pid int) (info Info, err error) {
 	info.Pid = pid
 	var bs []byte
-	bs, err = ioutil.ReadFile(fmt.Sprintf("/proc/%d/cmdline", pid))
+	bs, err = ioutil.ReadFile(procString + strconv.FormatInt(int64(pid), 10) + cmdlineString)
 	if err != nil {
 		return
 	}
@@ -74,23 +74,31 @@ func GetInfo(pid int) (info Info, err error) {
 		bs = bs[:len(bs)-1]
 	}
 	info.Comm = string(bytes.Replace(bs, nullBytes, emptyBytes, -1))
-	bs, err = ioutil.ReadFile(fmt.Sprintf("/proc/%d/smaps", pid))
+	bs, err = ioutil.ReadFile(procString + strconv.FormatInt(int64(pid), 10) + smapsString)
 	if err != nil {
 		return
 	}
+
 	var total int64
-	for _, line := range bytes.Split(bs, []byte("\n")) {
-		if bytes.HasPrefix(line, []byte("Swap:")) {
-			start := bytes.IndexAny(line, "0123456789")
-			end := bytes.Index(line[start:], []byte(" "))
-			size, err := strconv.ParseInt(string(line[start:start+end]), 10, 0)
-			if err != nil {
+	r := bufio.NewScanner(bytes.NewReader(bs))
+	for r.Scan() {
+		b := r.Bytes()
+		if !bytes.HasPrefix(b, swapPrefix) {
+			continue
+		}
+
+		size := int64(0)
+		for _, v := range b {
+			if v < '0' || v > '9' {
 				continue
 			}
-			total += size
+			size = size*10 + int64(v-'0')
 		}
+
+		total += size
 	}
-	info.Size = total * 1024
+
+	info.Size = total << 10
 	return
 }
 
@@ -105,7 +113,6 @@ func FormatSize(s int64) string {
 	}
 	if unit == 0 {
 		return fmt.Sprintf("%dB", int64(f))
-	} else {
-		return fmt.Sprintf("%.1f%siB", f, units[unit])
 	}
+	return fmt.Sprintf("%.1f%siB", f, units[unit])
 }
