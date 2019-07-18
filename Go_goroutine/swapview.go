@@ -23,10 +23,6 @@ var (
 	nullBytes  = []byte{0x0}
 	emptyBytes = []byte(" ")
 	swapPrefix = []byte("Swap:")
-
-	procString    = "/proc/"
-	cmdlineString = "/cmdline"
-	smapsString   = "/smaps"
 )
 
 func main() {
@@ -59,11 +55,11 @@ func GetInfos() (list []Info) {
 	wg2 := new(sync.WaitGroup)
 
 	wg2.Add(1)
-	go func(info_ch chan *Info, list *[]Info) {
+	go func(ch chan *Info, list *[]Info) {
 		defer wg2.Done()
 
 		idx := 0
-		for tmp := range info_ch {
+		for tmp := range ch {
 			(*list)[idx] = *tmp
 		}
 	}(infoCh, &list)

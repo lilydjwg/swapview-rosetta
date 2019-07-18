@@ -21,10 +21,6 @@ var (
 	nullBytes  = []byte{0x0}
 	emptyBytes = []byte(" ")
 	swapPrefix = []byte("Swap:")
-
-	procString    = "/proc/"
-	cmdlineString = "/cmdline"
-	smapsString   = "/smaps"
 )
 
 func main() {
