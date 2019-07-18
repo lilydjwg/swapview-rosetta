@@ -66,7 +66,7 @@ func GetInfos() (list []Info) {
 func GetInfo(pid int) (info Info, err error) {
 	info.Pid = pid
 	var bs []byte
-	bs, err = ioutil.ReadFile(procString + strconv.FormatInt(int64(pid), 10) + cmdlineString)
+	bs, err = ioutil.ReadFile(fmt.Sprintf("/proc/%d/cmdline", pid))
 	if err != nil {
 		return
 	}
@@ -74,7 +74,7 @@ func GetInfo(pid int) (info Info, err error) {
 		bs = bs[:len(bs)-1]
 	}
 	info.Comm = string(bytes.Replace(bs, nullBytes, emptyBytes, -1))
-	bs, err = ioutil.ReadFile(procString + strconv.FormatInt(int64(pid), 10) + smapsString)
+	bs, err = ioutil.ReadFile(fmt.Sprintf("/proc/%d/smaps", pid))
 	if err != nil {
 		return
 	}
@@ -113,6 +113,7 @@ func FormatSize(s int64) string {
 	}
 	if unit == 0 {
 		return fmt.Sprintf("%dB", int64(f))
+	} else {
+		return fmt.Sprintf("%.1f%siB", f, units[unit])
 	}
-	return fmt.Sprintf("%.1f%siB", f, units[unit])
 }

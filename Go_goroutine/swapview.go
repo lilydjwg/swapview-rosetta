@@ -91,7 +91,7 @@ func GetInfo(name string, infoCh chan<- *Info, wg *sync.WaitGroup) {
 	info.Pid = pid
 
 	var bs []byte
-	bs, err = ioutil.ReadFile(procString + strconv.FormatInt(int64(pid), 10) + cmdlineString)
+	bs, err = ioutil.ReadFile(fmt.Sprintf("/proc/%d/cmdline", pid))
 	if err != nil {
 		return
 	}
@@ -100,7 +100,7 @@ func GetInfo(name string, infoCh chan<- *Info, wg *sync.WaitGroup) {
 	}
 	info.Comm = string(bytes.Replace(bs, nullBytes, emptyBytes, -1))
 
-	bs, err = ioutil.ReadFile(procString + strconv.FormatInt(int64(pid), 10) + smapsString)
+	bs, err = ioutil.ReadFile(fmt.Sprintf("/proc/%d/smaps", pid))
 	if err != nil {
 		return
 	}
@@ -127,7 +127,7 @@ func GetInfo(name string, infoCh chan<- *Info, wg *sync.WaitGroup) {
 		total += size
 	}
 
-	info.Size = total << 10
+	info.Size = total * 1024
 	infoCh <- info
 	return
 }
@@ -143,6 +143,7 @@ func FormatSize(s int64) string {
 	}
 	if unit == 0 {
 		return fmt.Sprintf("%dB", int64(f))
+	} else {
+		return fmt.Sprintf("%.1f%siB", f, units[unit])
 	}
-	return fmt.Sprintf("%.1f%siB", f, units[unit])
 }
