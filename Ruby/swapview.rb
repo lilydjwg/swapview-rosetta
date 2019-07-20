@@ -29,22 +29,22 @@ def get_swap_for(pid)
           .select { |l| l.start_with? 'Swap: ' }
           .map { |l| l[6..-1].to_i }
           .sum.to_i
-  [pid, s * 1024, comm]
+  [s * 1024, pid, comm]
 rescue StandardError
-  [pid, 0, nil]
+  [0, pid, nil]
 end
 
 def get_swap
   Dir.entries('/proc')
      .map     { |dir| get_swap_for dir unless dir.to_i.zero? }
-     .select  { |s| s && s[1].positive? }
-     .sort_by { |x| x[1] }
+     .select  { |s| s&.first&.positive? }
+     .sort_by(&:first)
 end
 
 results = get_swap
 puts format(FORMAT, 'PID', 'SWAP', 'COMMAND')
-results.each do |(pid, swap, comm)|
+results.each do |(swap, pid, comm)|
   puts format(FORMAT, pid, filesize(swap), comm)
 end
-t = results.map { |x| x[1] }.sum.to_i
+t = results.map(&:first).sum.to_i
 puts TOTALFMT % filesize(t)
