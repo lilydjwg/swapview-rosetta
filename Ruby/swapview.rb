@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-# for Ruby 2.3+
+# for Ruby 2.4+
 
 FORMAT = '%5s %9s %s'
 TOTALFMT = 'Total: %8s'
@@ -27,31 +27,27 @@ def get_swap_for(pid)
   comm = File.read("/proc/#{pid}/cmdline")
   comm.chop! if comm[-1] == "\0"
   comm.tr!("\0", ' ')
-  result = File.read("/proc/#{pid}/smaps").split("\n")
-  result.map! { |l| l[6..-1].to_i if l.start_with? SWAP }
-  result.compact!
-  s = result.reduce(:+).to_i
+  s = File.read("/proc/#{pid}/smaps")
+          .split("\n")
+          .select { |l| l.start_with? SWAP }
+          .map { |l| l[6..-1].to_i }
+          .sum.to_i
   [pid, s * 1024, comm]
 rescue StandardError
   [pid, 0, nil]
 end
 
 def get_swap
-  result = Dir.entries('/proc')
-  result.map!     { |dir| get_swap_for dir unless dir.to_i.zero? }
-  result.select!  { |s| s && s[1].positive? }
-  result.sort_by! { |x| x[1] }
-  result
+  Dir.entries('/proc')
+     .map     { |dir| get_swap_for dir unless dir.to_i.zero? }
+     .select  { |s| s && s[1].positive? }
+     .sort_by { |x| x[1] }
 end
 
-def main
-  results = get_swap
-  puts format(FORMAT, 'PID', 'SWAP', 'COMMAND')
-  results.each do |(pid, swap, comm)|
-    puts format(FORMAT, pid, filesize(swap), comm)
-  end
-  t = results.map { |x| x[1] }.reduce(:+).to_i
-  puts TOTALFMT % filesize(t)
+results = get_swap
+puts format(FORMAT, 'PID', 'SWAP', 'COMMAND')
+results.each do |(pid, swap, comm)|
+  puts format(FORMAT, pid, filesize(swap), comm)
 end
-
-main
+t = results.map { |x| x[1] }.sum.to_i
+puts TOTALFMT % filesize(t)
