@@ -6,17 +6,17 @@
 FORMAT = '%5s %9s %s'
 TOTALFMT = 'Total: %8s'
 
+UNITS = %w[B KiB MiB GiB TiB].freeze
 def filesize(size)
-  units = %w[B KiB MiB GiB TiB]
   left = size.abs
-  num, unit = units.each_with_index do |_, i|
+  num, unit = UNITS.each_with_index do |_, i|
     l = left / 1024.0**i
-    break l, i if (l <= 1100) || (i == units.length - 1)
+    break l, i if (l <= 1100) || (i == UNITS.length - 1)
   end
   if unit.zero?
     "#{size}B"
   else
-    format('%.1f%s', size.negative? ? -num : num, units[unit])
+    format('%.1f%s', size.negative? ? -num : num, UNITS[unit])
   end
 end
 
