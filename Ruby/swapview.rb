@@ -20,16 +20,13 @@ def filesize(size)
   end
 end
 
-SWAP = 'Swap: '
-# since strings (created from literal) are mutable, each iteration will create
-# a new string instance if we put literal to map!{}
 def get_swap_for(pid)
   comm = File.read("/proc/#{pid}/cmdline")
   comm.chop! if comm[-1] == "\0"
   comm.tr!("\0", ' ')
   s = File.read("/proc/#{pid}/smaps")
           .split("\n")
-          .select { |l| l.start_with? SWAP }
+          .select { |l| l.start_with? 'Swap: ' }
           .map { |l| l[6..-1].to_i }
           .sum.to_i
   [pid, s * 1024, comm]
