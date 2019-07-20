@@ -13,19 +13,14 @@ def filesize(size)
     l = left / 1024.0**i
     break l, i if (l <= 1100) || (i == UNITS.length - 1)
   end
-  if unit.zero?
-    "#{size}B"
-  else
-    format('%.1f%s', size.negative? ? -num : num, UNITS[unit])
-  end
+  return "#{size}B" if unit.zero?
+
+  format('%.1f%s', size.negative? ? -num : num, UNITS[unit])
 end
 
 def get_swap_for(pid)
-  comm = File.read("/proc/#{pid}/cmdline")
-  comm.chop! if comm[-1] == "\0"
-  comm.tr!("\0", ' ')
-  s = File.read("/proc/#{pid}/smaps")
-          .split("\n")
+  comm = File.read("/proc/#{pid}/cmdline").chomp("\0").tr("\0", ' ')
+  s = File.read("/proc/#{pid}/smaps").split("\n")
           .select { |l| l.start_with? 'Swap: ' }
           .map { |l| l[6..-1].to_i }
           .sum.to_i
