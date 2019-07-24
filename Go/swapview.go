@@ -9,6 +9,7 @@ import (
 	"os"
 	"sort"
 	"strconv"
+	"strings"
 )
 
 type Info struct {
@@ -20,7 +21,7 @@ type Info struct {
 var (
 	nullBytes  = []byte{0x0}
 	emptyBytes = []byte(" ")
-	swapPrefix = []byte("Swap:")
+	swapPrefix = "Swap:"
 )
 
 func main() {
@@ -75,26 +76,26 @@ func GetInfo(pid int) (info Info, err error) {
 		return
 	}
 
-	var total int64
+	var total, size int64
+	var b string
+
 	r := bufio.NewScanner(bytes.NewReader(bs))
 	for r.Scan() {
-		b := r.Bytes()
-		if !bytes.HasPrefix(b, swapPrefix) {
+		b = r.Text()
+		if !strings.HasPrefix(b, swapPrefix) {
 			continue
 		}
 
-		size := int64(0)
-		for _, v := range b {
-			if v < '0' || v > '9' {
-				continue
-			}
-			size = size*10 + int64(v-'0')
+		x := strings.Split(b, string(emptyBytes))
+		size, err = strconv.ParseInt(string(x[len(x)-2]), 10, 64)
+		if err != nil {
+			return info, err
 		}
 
 		total += size
 	}
 
-	info.Size = total << 10
+	info.Size = total * 1024
 	return
 }
 
