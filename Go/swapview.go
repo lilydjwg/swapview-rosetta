@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
 	"io/ioutil"
@@ -8,7 +9,7 @@ import (
 	"os"
 	"sort"
 	"strconv"
-	// "time"
+	"strings"
 )
 
 type Info struct {
@@ -20,14 +21,10 @@ type Info struct {
 var (
 	nullBytes  = []byte{0x0}
 	emptyBytes = []byte(" ")
+	swapPrefix = "Swap:"
 )
 
 func main() {
-	// t0 := time.Now()
-	// defer func() {
-	//         fmt.Printf("%v\n", time.Now().Sub(t0))
-	// }()
-
 	slist := GetInfos()
 	sort.Slice(slist, func(i, j int) bool {
 		return slist[i].Size < slist[j].Size
@@ -78,18 +75,26 @@ func GetInfo(pid int) (info Info, err error) {
 	if err != nil {
 		return
 	}
-	var total int64
-	for _, line := range bytes.Split(bs, []byte("\n")) {
-		if bytes.HasPrefix(line, []byte("Swap:")) {
-			start := bytes.IndexAny(line, "0123456789")
-			end := bytes.Index(line[start:], []byte(" "))
-			size, err := strconv.ParseInt(string(line[start:start+end]), 10, 0)
-			if err != nil {
-				continue
-			}
-			total += size
+
+	var total, size int64
+	var b string
+
+	r := bufio.NewScanner(bytes.NewReader(bs))
+	for r.Scan() {
+		b = r.Text()
+		if !strings.HasPrefix(b, swapPrefix) {
+			continue
 		}
+
+		x := strings.Split(b, string(emptyBytes))
+		size, err = strconv.ParseInt(string(x[len(x)-2]), 10, 64)
+		if err != nil {
+			return info, err
+		}
+
+		total += size
 	}
+
 	info.Size = total * 1024
 	return
 }

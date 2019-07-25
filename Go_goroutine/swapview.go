@@ -1,14 +1,15 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
-	"runtime"
 	"sort"
 	"strconv"
+	"strings"
 	"sync"
 	// "time"
 )
@@ -22,16 +23,10 @@ type Info struct {
 var (
 	nullBytes  = []byte{0x0}
 	emptyBytes = []byte(" ")
+	swapPrefix = "Swap:"
 )
 
 func main() {
-	// t0 := time.Now()
-	// defer func() {
-	//         fmt.Printf("%v\n", time.Now().Sub(t0))
-	// }()
-
-	runtime.GOMAXPROCS(4)
-
 	slist := GetInfos()
 	sort.Slice(slist, func(i, j int) bool {
 		return slist[i].Size < slist[j].Size
@@ -53,74 +48,81 @@ func GetInfos() (list []Info) {
 	if err != nil {
 		log.Fatalf("read /proc: %v", err)
 	}
+	length := len(names)
 
-	info_ch := make(chan *Info, 1024)
+	list = make([]Info, length)
+	infoCh := make(chan *Info, length)
 	wg := new(sync.WaitGroup)
 	wg2 := new(sync.WaitGroup)
 
 	wg2.Add(1)
-	go func(info_ch chan *Info, list *[]Info) {
+	go func(ch chan *Info, list *[]Info) {
 		defer wg2.Done()
-		for tmp := range info_ch {
-			if tmp != nil {
-				*list = append(*list, *tmp)
-			}
-		}
-	}(info_ch, &list)
 
-	wg.Add(len(names))
-	for _, name := range names {
-		pid, err := strconv.Atoi(name)
-		if err != nil {
-			wg.Done()
-			continue
+		idx := 0
+		for tmp := range ch {
+			(*list)[idx] = *tmp
 		}
-		go GetInfo(pid, info_ch, wg)
+	}(infoCh, &list)
+
+	wg.Add(length)
+	for _, name := range names {
+		go GetInfo(name, infoCh, wg)
 	}
+
 	wg.Wait()
-	close(info_ch)
+	close(infoCh)
 	wg2.Wait()
 	return
 }
 
-func GetInfo(pid int, info_ch chan<- *Info, wg *sync.WaitGroup) {
+func GetInfo(name string, infoCh chan<- *Info, wg *sync.WaitGroup) {
 	defer wg.Done()
+
+	pid, err := strconv.Atoi(name)
+	if err != nil {
+		return
+	}
+
 	info := new(Info)
 	info.Pid = pid
+
 	var bs []byte
-	var err error
 	bs, err = ioutil.ReadFile(fmt.Sprintf("/proc/%d/cmdline", pid))
 	if err != nil {
-		info_ch <- nil
 		return
 	}
 	if bytes.HasSuffix(bs, nullBytes) {
 		bs = bs[:len(bs)-1]
 	}
 	info.Comm = string(bytes.Replace(bs, nullBytes, emptyBytes, -1))
+
 	bs, err = ioutil.ReadFile(fmt.Sprintf("/proc/%d/smaps", pid))
 	if err != nil {
-		info_ch <- nil
 		return
 	}
-	var total int64
-	for _, line := range bytes.Split(bs, []byte("\n")) {
-		if bytes.HasPrefix(line, []byte("Swap:")) {
-			start := bytes.IndexAny(line, "0123456789")
-			end := bytes.Index(line[start:], []byte(" "))
-			size, err := strconv.ParseInt(string(line[start:start+end]), 10, 0)
-			if err != nil {
-				continue
-			}
-			total += size
+
+	var total, size int64
+	var b string
+
+	r := bufio.NewScanner(bytes.NewReader(bs))
+	for r.Scan() {
+		b = r.Text()
+		if !strings.HasPrefix(b, swapPrefix) {
+			continue
 		}
+
+		x := strings.Split(b, string(emptyBytes))
+		size, err = strconv.ParseInt(string(x[len(x)-2]), 10, 64)
+		if err != nil {
+			return
+		}
+
+		total += size
 	}
+
 	info.Size = total * 1024
-	if info.Size == 0 {
-		info_ch <- nil
-	} else {
-		info_ch <- info
-	}
+	infoCh <- info
 	return
 }
 
