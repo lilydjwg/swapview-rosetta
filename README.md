@@ -45,7 +45,6 @@ You can (edit and then) run `make` to build all that needs to be built.
 * Go >=1.8
 * Guile >= 2.1
 * Haskell, requires `haskell-strict`
-* Haskell2, another better Haskell version using more dependencies
 * Java, >= Java 8
 * Lua, requires lua-filesystem, works with 5.1, 5.2, 5.3 and LuaJIT
 * Nim (tested with 0.17.0)
