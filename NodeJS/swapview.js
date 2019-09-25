@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-
+"use strict"
 const sprintf = require('sprintf-js').sprintf
 const fs = require("fs")
 

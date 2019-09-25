@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-
+"use strict"
 const fs = require('fs');
 const cluster = require('cluster');
 
@@ -8,7 +8,7 @@ if (cluster.isMaster) {
   //  Master process
   ////////////////////
 
-  const coreCount = require('os').cpus().length;
+  const coreCount = require('os').cpus().length * 4;
   const sprintf = require('sprintf-js').sprintf;
 
   const filesize = function(size) {

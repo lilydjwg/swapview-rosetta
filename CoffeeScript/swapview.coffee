@@ -1,5 +1,5 @@
 #!/usr/bin/coffee
-
+"use strict"
 fs = require 'fs'
 Promise = require 'promise'
 

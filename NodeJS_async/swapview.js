@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-
+"use strict"
 var sprintf = require('sprintf-js').sprintf;
 var fs = require("fs");
 var async = require("async");
