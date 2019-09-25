@@ -3,7 +3,6 @@
 base=1024
 unit=(K M G T) nunit=4 # assert nunit == ${#unit[@]}
 filesize(){
-    # [[ $1 -eq $1 ]] || return    # msk-num-check; trust the input now?
     local pos powed # int64, also declare -i
     declare -i size="$1"
     if ((size < 1100)); then
@@ -11,7 +10,7 @@ filesize(){
         return
     fi
     # See also ``base ** pow`` (bash) and ``base ^ pow`` (bc).
-	# Should this be precomputed?
+    # Should this be precomputed?
     for ((pos=0, powed=1024; size / powed > 1100 && pos < nunit; pos++, powed *= 1024)); do :; done
     printf '%.1f%siB\n' "$(bc <<< "scale=1; $size / ($powed)")" "${unit[pos]}"
 }
