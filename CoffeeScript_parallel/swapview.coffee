@@ -1,13 +1,15 @@
 #!/usr/bin/coffee
+# This version decouples the smap and cmdline reading into two independent
+# sets of promises. No threads are involved.
 "use strict"
 fs = require 'fs'
-Promise = require 'promise'
+denodeify = require 'denodeify'
 
-readdir = Promise.denodeify fs.readdir
-read = Promise.denodeify fs.readFile
+readdir = denodeify fs.readdir
+read = denodeify fs.readFile
 
 addString = (sum, line) -> sum + (Number (line.match /\d+/)[0])
-addSecond = (sum, aaa) -> sum + aaa[1]
+addSecond = (sum, x) -> sum + x[1]
 
 formatSize = (acc, n) ->
   if (n > 1100) and (acc <= 3)
@@ -19,12 +21,13 @@ formatSize = (acc, n) ->
 formatSize0 = (n) -> formatSize 0, n
 
 fillLength = (n, str) ->
-  if str.length < n
-  then fillLength n, " #{str}"
-  else str
+  str.padStart n ' '
 
 readdir('/proc')
 .then (files) ->
+  ###*
+  * @type Promise<string[3]>  pid, swapsize, cmdline
+  ###
   list = files
   .filter (file) -> file.match /\d+/
   .map (file) ->
@@ -45,18 +48,18 @@ readdir('/proc')
   (Promise.all list)
   .then (res) ->
     out = res
-    .filter (aaa) -> aaa[1].length > 0
-    .map (aaa) ->
-      aaa[1] = aaa[1].reduce(addString, 0)
-      aaa
-    .filter (aaa) -> aaa[1] > 0
-    .sort (aaa, bbb) -> aaa[1] - bbb[1]
-    output out
+    .filter (swapsize) -> swapsize[1].length > 0
+    .map (procEntry) ->
+      procEntry[1] = procEntry[1].reduce(addString, 0)
+      procEntry
+    .filter (procEntry) -> procEntry[1] > 0
+    .sort (a, b) -> a[1] - b[1]
+    prettyPrint out
 .then null, (error) ->
   console.error error.stack
   process.exit 1
 
-output = (res) ->
+prettyPrint = (res) ->
   console.log [
     fillLength 5, 'PID'
     fillLength 9, 'SWAP'
@@ -64,11 +67,11 @@ output = (res) ->
   ].join(' ')
 
   str = res
-  .map (aaa) ->
+  .map (procEntry) ->
     [
-      fillLength 5, aaa[0]
-      fillLength 9, (formatSize0 aaa[1])
-      aaa[2]
+      fillLength 5, procEntry[0]
+      fillLength 9, (formatSize0 procEntry[1])
+      procEntry[2]
     ].join(' ')
   .join('\n')
   console.log str

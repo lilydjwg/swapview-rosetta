@@ -1,6 +1,6 @@
 {
   "name": "swapview",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "small script to show linux swap",
   "scripts": {
     "test": "coffee swapview.coffee"
@@ -12,6 +12,6 @@
   "author": "jiyinyiyong",
   "license": "MIT",
   "dependencies": {
-    "promise": "^6.0.1"
+    "denodeify": "^1.2.1"
   }
 }
