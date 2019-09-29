@@ -1,4 +1,4 @@
-CPPFLAGS=-O4 -Wall
+CPPFLAGS=-O4 -flto -Wall
 CPPC=g++
 
 swapview: swapview.cc

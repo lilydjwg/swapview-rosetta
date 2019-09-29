@@ -1,6 +1,6 @@
 all: swapview swapview_omp
 
-CPPFLAGS=-O4 -Wall -fno-exceptions -fno-rtti -std=c++98
+CPPFLAGS=-O4 -flto -Wall -fno-exceptions -fno-rtti -std=c++98
 CPPC=g++
 
 swapview: swapview.cpp

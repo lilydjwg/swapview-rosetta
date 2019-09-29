@@ -1,4 +1,4 @@
-CFLAGS:=-O4 -Wall -std=c11 
+CFLAGS:=-O4 -flto -Wall -std=c11 
 CC:=gcc
 EXT:=
 STRIP:=strip
