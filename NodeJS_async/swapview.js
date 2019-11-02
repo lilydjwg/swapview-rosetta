@@ -23,7 +23,7 @@ function filesize(size){
 function getSwapFor(pid, callback){
 	async.map(["cmdline", "smaps"],
 	function(name, c){
-		fs.readFile("/proc/"+pid+"/"+name, encoding="utf-8", c);
+		fs.readFile("/proc/"+pid+"/"+name, "utf-8", c);
 	},
 	function(err, results){
 		if(err){ 
