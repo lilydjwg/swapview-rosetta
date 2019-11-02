@@ -48,8 +48,8 @@ auto get_swap() -> std::vector<swap_info> {
   std::vector<swap_info> result;
   for (const auto &entry: std::filesystem::directory_iterator{"/proc"})
     if (int pid = std::strtol(entry.path().filename().c_str(), nullptr, 10))
-      if (size_t swp = get_swap_for(entry / "smaps"))
-        result.emplace_back(pid, swp, get_comm_for(entry / "cmdline"));
+      if (size_t swp = get_swap_for(entry.path() / "smaps"))
+        result.emplace_back(pid, swp, get_comm_for(entry.path() / "cmdline"));
   std::sort(result.begin(), result.end(), [](const auto &lhs, const auto &rhs) {
     return std::get<1>(lhs) < std::get<1>(rhs);
   });
