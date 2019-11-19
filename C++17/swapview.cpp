@@ -6,6 +6,19 @@
 #include <tuple>
 #include <vector>
 
+#ifdef PARALLEL
+#include <execution>
+// Writing the currying thing takes a lot of time:
+// http://cpptruths.blogspot.com/2018/12/simple-template-currying.html
+#define sortx(...) std::sort(std::execution::par_unseq, __VA_ARGS__)
+#define transformx(...) std::transform(std::execution::par_unseq, __VA_ARGS__)
+#define remove_ifx(...)  std::remove_if(std::execution::par_unseq, __VA_ARGS__)
+#else
+#define sortx(...) std::sort(__VA_ARGS__)
+#define transformx(...) std::transform(__VA_ARGS__)
+#define remove_ifx(...)  std::remove_if(__VA_ARGS__)
+#endif /* PARALLEL */
+
 using swap_info = std::tuple<int, double, std::string>;
 
 auto starts_with(const std::string &self, const std::string &prefix) -> bool {
@@ -44,6 +57,25 @@ auto get_swap_for(const std::filesystem::path &p) -> size_t {
   return 1024 * s;
 }
 
+#ifdef LAMBDA
+auto get_swap() -> std::vector<swap_info> {
+  std::vector<swap_info> result;
+  auto proc = std::filesystem::directory_iterator{"/proc"};
+  transformx(proc.begin(), proc.end(), result.begin(), [](const auto& entry) {
+    if (int pid = std::strtol(entry.path().filename().c_str(), nullptr, 10))
+      if (size_t swp = get_swap_for(entry.path() / "smaps"))
+        return {pid, swp, get_comm_for(entry.path() / "cmdline")};
+    return {0, 0.0, ""};
+  });
+  result.erase(remove_ifx(result.begin(), result.end(), [](const auto& maybe_res) {
+    return std::get<0>(maybe_res) == 0;
+  }));
+  sortx(result.begin(), result.end(), [](const auto &lhs, const auto &rhs) {
+    return std::get<1>(lhs) < std::get<1>(rhs);
+  }); 
+  return result;
+}
+#else
 auto get_swap() -> std::vector<swap_info> {
   std::vector<swap_info> result;
   for (const auto &entry: std::filesystem::directory_iterator{"/proc"})
@@ -55,6 +87,7 @@ auto get_swap() -> std::vector<swap_info> {
   });
   return result;
 }
+#endif /* LAMBDA */
 
 int main() {
   std::cout << std::setw(5) << "PID" << ' '
