@@ -129,6 +129,7 @@ int main(int argc, char * argv[]){
 #ifdef USE_OMP
     omp_set_num_threads(omp_get_num_procs()*4);
 #endif
+    std::ios::sync_with_stdio(false);
     double t=0.0;
     vector<swap_info> result = getSwap();
     format_print("PID", "SWAP", "COMMAND");
@@ -136,6 +137,6 @@ int main(int argc, char * argv[]){
         format_print(*itr);
         t += itr->size;
     }
-    cout<<"Total:"<<setw(9)<<filesize(t)<<endl;
+    cout<<"Total:"<<setw(9)<<filesize(t)<<"\n";
     return 0;
 }

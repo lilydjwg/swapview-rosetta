@@ -57,13 +57,14 @@ vector<swap_info> getSwap() {
 }
 
 int main(int argc, char * argv[]){
+    std::ios::sync_with_stdio(false);
     boost::format format("%|5| %|9| %||");
-    cout << format % "PID" % "SWAP" % "COMMAND" << endl;
+    cout << format % "PID" % "SWAP" % "COMMAND" << "\n";
     double t=0.0;
     for(auto const& item: getSwap()){
-        cout << format % get<0>(item) % filesize(get<1>(item)) % get<2>(item) << endl;
+        cout << format % get<0>(item) % filesize(get<1>(item)) % get<2>(item) << "\n";
         t+=get<1>(item);
     }
-    cout<< boost::format("Total:%|9|") % filesize(t)<<endl;
+    cout<< boost::format("Total:%|9|") % filesize(t)<<"\n";
     return 0;
 }

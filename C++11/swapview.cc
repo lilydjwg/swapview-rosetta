@@ -104,6 +104,7 @@ SwapInfo get_swap_info(std::string const & pid){
 }
 
 int main(){
+    std::ios::sync_with_stdio(false);
     std::vector<SwapInfo> all_swap_info;
     for(auto const & n : read_dir("/proc/")){
         if(n[0] == '.')

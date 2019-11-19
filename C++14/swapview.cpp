@@ -76,15 +76,16 @@ vector<swap_info> getSwap(){
 }
 
 int main(int argc, char * argv[]){
+    std::ios::sync_with_stdio(false);
     double t=0.0;
-    cout << setw(5) << "PID" << ' ' << setw(9) << "SWAP" << ' ' << "COMMAND" << endl;
+    cout << setw(5) << "PID" << ' ' << setw(9) << "SWAP" << ' ' << "COMMAND" << "\n";
     for(auto const& item: getSwap()){
         cout << setw(5) << get<0>(item) 
              << ' ' << setw(9) << filesize(get<1>(item))
              << ' ' << get<2>(item)
-             << endl;
+             << "\n";
         t+=get<1>(item);
     }
-    cout<<"Total:"<<setw(9)<<filesize(t)<<endl;
+    cout<<"Total:"<<setw(9)<<filesize(t)<<"\n";
     return 0;
 }
