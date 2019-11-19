@@ -1,15 +1,17 @@
 all: swapview swapview_omp
 
-CPPFLAGS=-O4 -flto -Wall -fno-exceptions -fno-rtti -std=c++98
-CPPC=g++
+CXXFLAGS=-O4 -flto -Wall -fno-exceptions -fno-rtti -std=c++98
+CXX=g++
 
 swapview: swapview.cpp
-	$(CPPC) $^ -o $@ $(CPPFLAGS)
+	$(CXX) $^ -o $@ $(CXXFLAGS)
 	strip $@
 
 swapview_omp: swapview.cpp
-	$(CPPC) -DUSE_OMP -fopenmp $^ -o $@ $(CPPFLAGS)
+	$(CXX) -DUSE_OMP -fopenmp $^ -o $@ $(CXXFLAGS)
 	strip $@
+
+.PHONY: all clean
 
 clean:
 	-rm -f swapview{,_omp}
