@@ -1,30 +1,34 @@
 #define _POSIX_C_SOURCE 200809L
-#include<stdio.h>
-#include<stdlib.h>
-#include<string.h>
-#include<math.h>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include<errno.h>
-#include<sys/types.h>
-#include<dirent.h>
+#include <dirent.h>
+#include <errno.h>
+#include <sys/types.h>
 
 #define FORMAT "%5d %9s %s\n"
 #define BUFSIZE 512
 //#define TARGET "Size:" // For Test
 #define TARGET "Swap:"
-#define TARGETLEN (sizeof(TARGET)-1)
+#define TARGETLEN (sizeof(TARGET) - 1)
 
 #ifdef __GLIBC__
-# include<error.h>
-# define assure(exp) if(!(exp)) error(1, errno, "\"%s\" failed in %d", #exp, __LINE__)
+#include <error.h>
+#define assure(exp)                                                            \
+  if (!(exp))                                                                  \
+  error(1, errno, "\"%s\" failed in %d", #exp, __LINE__)
 #else
-# define assure(exp) if(!(exp)) {\
-  fprintf(stderr, "\"%s\" failed in %d (%s)", #exp, __LINE__, strerror(errno)); \
-  exit(1); \
-}
+#define assure(exp)                                                            \
+  if (!(exp)) {                                                                \
+    fprintf(stderr, "\"%s\" failed in %d (%s)", #exp, __LINE__,                \
+            strerror(errno));                                                  \
+    exit(1);                                                                   \
+  }
 #endif
 
-char *filesize(double size){
+char *filesize(double size) {
   char units[] = "KMGT";
   double left = fabs(size);
   int unit = -1;
@@ -32,14 +36,14 @@ char *filesize(double size){
   char *buf;
   assure(buf = malloc(BUFSIZE));
 
-  while(left > 1100 && unit < 3){
+  while (left > 1100 && unit < 3) {
     left /= 1024;
     unit++;
   }
-  if(unit == -1){
+  if (unit == -1) {
     assure(snprintf(buf, BUFSIZE, "%dB", (int)size) > 0);
-  }else{
-    if(size < 0)
+  } else {
+    if (size < 0)
       left = -left;
     assure(snprintf(buf, BUFSIZE, "%.1f%ciB", left, units[unit]) > 0);
   }
@@ -52,41 +56,39 @@ typedef struct {
   char *comm;
 } swap_info;
 
-swap_info *getSwapFor(int pid){
+swap_info *getSwapFor(int pid) {
   char filename[BUFSIZE];
   FILE *fd = 0;
   size_t size = BUFSIZE;
   char *comm = malloc(size + 1); // +1 for last \0
-  ssize_t len=0;
+  ssize_t len = 0;
   double s = 0.0;
 
   assure(snprintf(filename, BUFSIZE, "/proc/%d/cmdline", pid) > 0);
-  if(!(fd = fopen(filename, "r")))
+  if (!(fd = fopen(filename, "r")))
     goto err;
-  for(int got;
-      (got = fread(comm + len, 1, size - len, fd)) > 0;
-      len += got){
-    assure(comm = realloc(comm, (size<<=1) + 1)); // +1 for last \0
+  for (int got; (got = fread(comm + len, 1, size - len, fd)) > 0; len += got) {
+    assure(comm = realloc(comm, (size <<= 1) + 1)); // +1 for last \0
   }
   fclose(fd);
 
-  for(char *p = comm; p < comm + len - 1; ++p)
+  for (char *p = comm; p < comm + len - 1; ++p)
     *p || (*p = ' '); // comm[len-1] is \0 or non-space
-  comm[len]='\0'; // assure string is terminated
+  comm[len] = '\0';   // assure string is terminated
 
   assure(snprintf(filename, BUFSIZE, "/proc/%d/smaps", pid) > 0);
-  if(!(fd = fopen(filename, "r")))
+  if (!(fd = fopen(filename, "r")))
     goto err;
   char *line;
-  for(line = 0, size = 0;
-      (len = getline(&line, &size, fd)) >= 0;
-      free(line), line = 0, size = 0){
-    if(strncmp(line, TARGET, TARGETLEN) == 0)
+  for (line = 0, size = 0;
+       (len = getline(&line, &size, fd)) >= 0;
+       free(line), line = 0, size = 0) {
+    if (strncmp(line, TARGET, TARGETLEN) == 0)
       s += atoi(line + TARGETLEN);
   }
-  free(line);			// need to free when getline fail, see getline(3)
+  free(line); // need to free when getline fail, see getline(3)
 err:
-  if(fd)
+  if (fd)
     fclose(fd);
   swap_info *ret;
   assure(ret = malloc(sizeof(swap_info)));
@@ -96,13 +98,13 @@ err:
   return ret;
 }
 
-
-int comp(const void *a, const void *b){
-  double r = (*((swap_info **) a))->size - (*((swap_info **) b))->size;
-  return (r > 0.0) - (r < 0.0);	// sign of double to int
+int comp(const void *va, const void *vb) {
+  double a = (**(swap_info **)va).size;
+  double b = (**(swap_info **)vb).size;
+  return (a > b) - (a < b);
 }
 
-swap_info **getSwap(){
+swap_info **getSwap() {
   int size = 16;
   int length = 0;
 
@@ -112,16 +114,16 @@ swap_info **getSwap(){
 
   swap_info **ret;
   assure(ret = malloc(sizeof(swap_info *) * size));
-  while((dirp = readdir(dp)) != NULL){
+  while ((dirp = readdir(dp)) != NULL) {
     char *end;
-    int pid = (int) strtol(dirp->d_name, &end, 10);
-    if(*end == '\0'){
+    int pid = (int)strtol(dirp->d_name, &end, 10);
+    if (*end == '\0') {
       swap_info *swapfor = getSwapFor(pid);
-      if(swapfor->size > 0){
-        if(length == size)
+      if (swapfor->size > 0) {
+        if (length == size)
           assure(ret = realloc(ret, sizeof(swap_info *) * (size <<= 1)));
         ret[length++] = swapfor;
-      }else{
+      } else {
         free(swapfor->comm);
         free(swapfor);
       }
@@ -131,17 +133,17 @@ swap_info **getSwap(){
 
   qsort(ret, length, sizeof(swap_info *), comp);
 
-  if(length == size)
+  if (length == size)
     assure(ret = realloc(ret, sizeof(swap_info *) * (++size)));
-  ret[length] = 0;		// mark for end
+  ret[length] = 0; // mark for end
   return ret;
 }
 
-int main(int argc, char *argv[]){
+int main(int argc, char *argv[]) {
   swap_info **infos = getSwap(), **p = infos;
   double total = 0;
   printf("%5s %9s %s\n", "PID", "SWAP", "COMMAND");
-  for(; *p; ++p){
+  for (; *p; ++p) {
     char *size = filesize((*p)->size);
     printf(FORMAT, (*p)->pid, size, (*p)->comm);
     total += (*p)->size;
