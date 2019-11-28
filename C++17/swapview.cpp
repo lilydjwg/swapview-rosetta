@@ -14,15 +14,15 @@ auto starts_with(const std::string &self, const std::string &prefix) -> bool {
 }
 
 auto filesize(double size) -> std::string {
-    constexpr char units[]{"KMGT"};
-    int unit = -1;
-    for (; size > 1100 && unit < 3; ++unit) size /= 1024;
-    if (unit == -1)
-      return std::to_string(static_cast<size_t>(size)) + 'B';
-    std::ostringstream oss;
-    oss << std::fixed << std::setprecision(1)
-        << size << units[unit] << "iB";
-    return oss.str();
+  constexpr char units[]{"KMGT"};
+  int unit = -1;
+  for (; size > 1100 && unit < 3; ++unit) size /= 1024;
+  if (unit == -1)
+    return std::to_string(static_cast<size_t>(size)) + 'B';
+  std::ostringstream oss;
+  oss << std::fixed << std::setprecision(1)
+      << size << units[unit] << "iB";
+  return oss.str();
 }
 
 auto get_comm_for(const std::filesystem::path &p) -> std::string {
@@ -57,6 +57,7 @@ auto get_swap() -> std::vector<swap_info> {
 }
 
 int main() {
+  std::ios::sync_with_stdio(false);
   std::cout << std::setw(5) << "PID" << ' '
             << std::setw(9) << "SWAP" << ' '
             << std::setw(0) << "COMMAND" << '\n';
@@ -67,5 +68,5 @@ int main() {
               << std::setw(0) << cmd << '\n';
     total += swp;
   }
-  std::cout << "Total:" << std::setw(9) << filesize(total) << std::endl;
+  std::cout << "Total:" << std::setw(9) << filesize(total) << std::"\n";
 }
