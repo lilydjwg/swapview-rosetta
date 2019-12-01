@@ -166,7 +166,9 @@ fn merge_default(item: OptionalBenchmarkItem, default: &Option<OptionalBenchmark
       format!("{} doesn't have required field valid_percent", name))?;
   }
 
-  let expanded_dir = dir.replace("$name", &item.name);
+  // Apply the only relevant Python template-string syntax here.
+  let name_fst = &item.name.split_at(':').0;
+  let expanded_dir = dir.replace("$name", name_fst);
   Ok(BenchmarkItem{
     name: item.name, dir: expanded_dir, cmd: cmd,
     time_limit: time_limit,
