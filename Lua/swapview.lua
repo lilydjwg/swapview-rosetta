@@ -79,7 +79,7 @@ function getSwap()
   return ret
 end
 
-local fmt = "%5s %9s %s"
+local fmt = "%7s %9s %s"
 local totalFmt = "Total: %8s"
 local results = getSwap()
 local sum = 0

@@ -1,5 +1,5 @@
 #!/bin/sh
-readonly PRINTF_FORMAT='%5s %9s %s\n'
+readonly PRINTF_FORMAT='%7s %9s %s\n'
 
 third_slash() {
     # let argv[1...] = argv[1].split(/\//g); puts argv[3].

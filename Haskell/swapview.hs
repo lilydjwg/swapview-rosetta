@@ -15,9 +15,9 @@ import Data.Either (fromRight)
 
 type Pid = Int
 
-format = "%5d %9s %s"
+format = "%7d %9s %s"
 totalFmt = "Total: %8s"
-firstLine = printf "%5s %9s %s" ("PID" :: Text) ("SWAP" :: Text) ("COMMAND" :: Text)
+firstLine = printf format ("PID" :: Text) ("SWAP" :: Text) ("COMMAND" :: Text)
 
 main = do
   d <- mapM swapusedWithPid =<< pids

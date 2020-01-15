@@ -61,7 +61,7 @@
             (directory-list "/proc")))))
 
 (define (main)
-  (let ([FORMATSTR "~5@a ~9@a ~@a~%"]
+  (let ([FORMATSTR "~7@a ~9@a ~@a~%"]
         [total 0.0])
     (format #t FORMATSTR "PID" "SWAP" "COMMAND")
     (for-each

@@ -59,11 +59,11 @@ main() {
       .where((info) => info.swap != 0));
   results.sort();
 
-  print("${"PID".padLeft(5)} ${"SWAP".padLeft(9)} COMMAND");
+  print("${"PID".padLeft(7)} ${"SWAP".padLeft(9)} COMMAND");
   for (SwapInfo result in results) {
     total += result.swap;
     print(
-        "${result.pid.padLeft(5)} ${toHumanReadable(result.swap).padLeft(9)} ${result.cmdline}");
+        "${result.pid.padLeft(7)} ${toHumanReadable(result.swap).padLeft(9)} ${result.cmdline}");
   }
   print("Total: ${toHumanReadable(total).padLeft(8)}");
 }

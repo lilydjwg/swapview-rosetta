@@ -42,10 +42,10 @@ end
 
 function main()
     results = getSwap()
-    @printf("%5s %9s %s\n", "PID", "SWAP", "COMMAND")
+    @printf("%7s %9s %s\n", "PID", "SWAP", "COMMAND")
     totalsize = 0
     @inbounds for (pid, swap, comm) in results
-        @printf("%5s %9s %s\n", pid, filesizeKB(swap), comm)
+        @printf("%7s %9s %s\n", pid, filesizeKB(swap), comm)
     end
     @printf("Total: %8s\n", isempty(results) ? "0B" :
             filesizeKB(sum((x) -> x[2], results)))

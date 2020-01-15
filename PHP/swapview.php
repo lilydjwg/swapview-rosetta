@@ -73,11 +73,11 @@ function getSwap()
 
 
 $results = getSwap();
-printf("%5s %9s %s", "PID", "SWAP", "COMMAND" . PHP_EOL);
+printf("%7s %9s %s", "PID", "SWAP", "COMMAND" . PHP_EOL);
 
 $totalSize = 0;
 foreach ($results as $result) {
-    printf("%5s %9s %s" . PHP_EOL, $result[0], renderSize($result[1]), $result[2]);
+    printf("%7s %9s %s" . PHP_EOL, $result[0], renderSize($result[1]), $result[2]);
     $totalSize += $result[1];
 }
 

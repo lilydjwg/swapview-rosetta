@@ -36,12 +36,12 @@ getSwap(){
 
         if (( swap > 0 )); then
             sum+=swap
-            printf '%5s %9s %s\n' "$pid" "$(filesize $((swap*1024)))" "$command"
+            printf '%7s %9s %s\n' "$pid" "$(filesize $((swap*1024)))" "$command"
         fi || continue
     done; printf '%s\n' $((sum * 1024)) > $sumfile) | sort -k2 -h
     printf "Total: %8s\n" "$(filesize "$(<$sumfile)")"
     rm "$sumfile"
 }
 
-printf "%5s %9s %s\n" PID SWAP COMMAND
+printf "%7s %9s %s\n" PID SWAP COMMAND
 getSwap

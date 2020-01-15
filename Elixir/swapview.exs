@@ -33,7 +33,7 @@ defmodule SwapView do
   end
 
   defp format({pid, size, comm}) do
-    IO.puts "#{pid |> String.pad_leading(5)} #{size |> String.pad_leading(9)} #{comm}"
+    IO.puts "#{pid |> String.pad_leading(7)} #{size |> String.pad_leading(9)} #{comm}"
   end
 
   def main do

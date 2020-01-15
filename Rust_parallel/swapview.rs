@@ -97,11 +97,11 @@ fn main() {
   let mut swapinfo = get_swap();
   swapinfo.par_sort_unstable_by_key(|&(_, size, _)| size);
 
-  println!("{:>5} {:>9} {}", "PID", "SWAP", "COMMAND");
+  println!("{:>7} {:>9} {}", "PID", "SWAP", "COMMAND");
   let mut total = 0;
   for &(pid, swap, ref comm) in &swapinfo {
     total += swap;
-    println!("{:>5} {:>9} {}", pid, filesize(swap), comm);
+    println!("{:>7} {:>9} {}", pid, filesize(swap), comm);
   }
   println!("Total: {:>8}", filesize(total));
 }

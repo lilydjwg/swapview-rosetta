@@ -11,7 +11,7 @@
 
 (define (fmt1 s1 s2 s3)
   (begin
-    (map display (list (~a s1  #:width 5 #:align 'right) " "
+    (map display (list (~a s1  #:width 7 #:align 'right) " "
                        (~a s2  #:width 9 #:align 'right) " " (~a s3)) )
     (newline)))
 

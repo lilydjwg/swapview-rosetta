@@ -62,7 +62,7 @@ sub convert_file_size_from_kB {
 }
 
 sub main {
-    my $printf_format = qq{%5s %9s %s\n};
+    my $printf_format = qq{%7s %9s %s\n};
     opendir( my $proc_dh, q{/proc} );
     chdir $proc_dh;
     my @pid_dirs = grep { -d && /^[[:digit:]]+$/xms } readdir $proc_dh;

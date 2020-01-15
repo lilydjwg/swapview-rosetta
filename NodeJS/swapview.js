@@ -58,10 +58,10 @@ function getSwap() {
 }
 
 const results = getSwap()
-console.log(sprintf("%5s %9s %s", "PID", "SWAP", "COMMAND"))
+console.log(sprintf("%7s %9s %s", "PID", "SWAP", "COMMAND"))
 let t = 0
 results.forEach(s => {
-  console.log(sprintf("%5s %9s %s", s[0], filesize(s[1]), s[2]))
+  console.log(sprintf("%7s %9s %s", s[0], filesize(s[1]), s[2]))
   t += s[1]
 })
 

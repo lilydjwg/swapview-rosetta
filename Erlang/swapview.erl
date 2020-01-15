@@ -30,8 +30,8 @@ filesize(Size, Unit) ->
 
 swap_print() ->
     Ret = getswap(),
-    io:format("~5s ~9s ~s~n", ["PID", "SWAP", "COMMAND"]),
-    [io:format("~5s ~9s ~s~n", [Pid, filesize(Size), Cmd]) || {Pid, Cmd, Size} <- Ret],
+    io:format("~7s ~9s ~s~n", ["PID", "SWAP", "COMMAND"]),
+    [io:format("~7s ~9s ~s~n", [Pid, filesize(Size), Cmd]) || {Pid, Cmd, Size} <- Ret],
     Total = lists:sum([Size || {_,_,Size} <- Ret]),
     io:format("Total: ~8s~n", [filesize(Total)]).
 

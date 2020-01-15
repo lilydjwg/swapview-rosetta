@@ -8,7 +8,7 @@
 #include <errno.h>
 #include <sys/types.h>
 
-#define FORMAT "%5d %9s %s\n"
+#define FORMAT "%7d %9s %s\n"
 #define BUFSIZE 512
 //#define TARGET "Size:" // For Test
 #define TARGET "Swap:"
@@ -142,7 +142,7 @@ swap_info **getSwap() {
 int main(int argc, char *argv[]) {
   swap_info **infos = getSwap(), **p = infos;
   double total = 0;
-  printf("%5s %9s %s\n", "PID", "SWAP", "COMMAND");
+  printf(FORMAT, "PID", "SWAP", "COMMAND");
   for (; *p; ++p) {
     char *size = filesize((*p)->size);
     printf(FORMAT, (*p)->pid, size, (*p)->comm);

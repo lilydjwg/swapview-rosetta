@@ -5,7 +5,7 @@ from __future__ import division
 
 import os
 
-format = "%5s %9s %s"
+format = "%7s %9s %s"
 totalFmt = "Total: %8s"
 
 def filesize(size):

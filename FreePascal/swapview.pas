@@ -175,11 +175,11 @@ Var
 	t : Real = 0;
 Begin
 	results := getSwap();
-	WriteLn(Format('%5S %9S %S', ['PID', 'SWAP', 'COMMAND']));
+	WriteLn(Format('%7S %9S %S', ['PID', 'SWAP', 'COMMAND']));
 	For i := 0 To Length(results) - 1 Do
 	Begin
 		t := t + results[i].size;
-		WriteLn(Format('%5D %9S %S', [results[i].pid, filesize(results[i].size), results[i].comm]));
+		WriteLn(Format('%7D %9S %S', [results[i].pid, filesize(results[i].size), results[i].comm]));
 	End;
 	WriteLn(Format('Total: %8S', [filesize(t)]));
 End.

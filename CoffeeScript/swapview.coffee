@@ -54,7 +54,7 @@ readdir('/proc')
 
 prettyPrint = (res) ->
   console.log [
-    fillLength 5, 'PID'
+    fillLength 7, 'PID'
     fillLength 9, 'SWAP'
     'COMMAND'
   ].join(' ')
@@ -62,7 +62,7 @@ prettyPrint = (res) ->
   str = res
   .map (procEntry) ->
     [
-      fillLength 5, procEntry[0]
+      fillLength 7, procEntry[0]
       fillLength 9, (formatSize0 procEntry[1])
       procEntry[2]
     ].join(' ')

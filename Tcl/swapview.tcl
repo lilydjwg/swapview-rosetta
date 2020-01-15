@@ -43,9 +43,9 @@ foreach pid [lmap dir [glob /proc/*] {file tail $dir}] {
 		incr total [lindex $info 1]
 	}
 }
-puts [format "%5s %9s %s" PID SWAP COMMAND]
+puts [format "%7s %9s %s" PID SWAP COMMAND]
 foreach i [lsort -integer -index 1 $all] {
-	puts [format "%5s %9s %s" [lindex $i 0] [fileSize [lindex $i 1]] [lindex $i 2]]
+	puts [format "%7s %9s %s" [lindex $i 0] [fileSize [lindex $i 1]] [lindex $i 2]]
 }
 puts [format "Total: %8s" [fileSize $total]]
 

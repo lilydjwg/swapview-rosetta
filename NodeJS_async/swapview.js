@@ -11,7 +11,7 @@ function filesize(size){
 	for(;left > 1100 && unit < 3;unit++){
 		left /= 1024;
 	}
-	if(unit==-1){
+	if(unit == -1){
 		return sprintf("%dB", size);
 	}else{
 		if(size<0) left= -left;
@@ -68,10 +68,10 @@ function getSwap(callback){
 }
 
 getSwap(function(err, results){
-	console.log(sprintf("%5s %9s %s", "PID", "SWAP", "COMMAND"));
+	console.log(sprintf("%7s %9s %s", "PID", "SWAP", "COMMAND"));
 	var t=0.0;
 	results.forEach(function (s){
-		console.log(sprintf("%5s %9s %s", s[0], filesize(s[1]), s[2]));
+		console.log(sprintf("%7s %9s %s", s[0], filesize(s[1]), s[2]));
 		t += s[1];
 	});
 	console.log(sprintf("Total: %8s", filesize(t)));

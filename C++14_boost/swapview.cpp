@@ -58,7 +58,7 @@ vector<swap_info> getSwap() {
 
 int main(int argc, char * argv[]){
     std::ios::sync_with_stdio(false);
-    boost::format format("%|5| %|9| %||");
+    boost::format format("%|7| %|9| %||");
     cout << format % "PID" % "SWAP" % "COMMAND" << "\n";
     double t=0.0;
     for(auto const& item: getSwap()){

@@ -65,7 +65,7 @@
 
 (define (main)
   (let* ((results (get-swapped-processes))
-         (FORMATSTR "~5@a ~9@a ~@a~%")
+         (FORMATSTR "~7@a ~9@a ~@a~%")
          (total-swap 0))
     (format #t FORMATSTR "PID" "SWAP" "COMMAND")
     (map

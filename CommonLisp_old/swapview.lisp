@@ -29,7 +29,7 @@
 
 (defun print-result (list)
   "Print the result in list, which item: (id swap cmdline)"
-  (let ((format-string "~5@A~7T~8@A~8T~A~%"))
+  (let ((format-string "~7@A~7T~8@A~8T~A~%"))
     (progn
       (format t format-string "PID" "SWAP" "COMMAND")
       (loop for item in list

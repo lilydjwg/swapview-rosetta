@@ -43,7 +43,7 @@ function getSwapFor(){
     if (( swap > 0 )); then
         fs=$(filesize $((swap*1024)))
         printf '%s\n' "$swap" >> "$sumfile"
-        printf "%5s %9s %s\n" "$pid" "$fs" "$command"
+        printf "%7s %9s %s\n" "$pid" "$fs" "$command"
     fi
 }
 
@@ -64,5 +64,5 @@ function getSwap(){
     rm "$sumfile"
 }
 
-printf "%5s %9s %s\n" PID SWAP COMMAND
+printf "%7s %9s %s\n" PID SWAP COMMAND
 getSwap

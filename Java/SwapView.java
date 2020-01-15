@@ -64,10 +64,10 @@ public class SwapView{
 
 	public static void main (String [] argv){
 		List<SwapView> results = getSwap();
-		System.out.printf("%5s %9s %s\n", "PID", "SWAP", "COMMAND");
+		System.out.printf("%7s %9s %s\n", "PID", "SWAP", "COMMAND");
 		double t=0.0;
 		for(SwapView s: results){
-			System.out.printf("%5d %9s %s\n", s.pid, filesize(s.size), s.comm);
+			System.out.printf("%7d %9s %s\n", s.pid, filesize(s.size), s.comm);
 			t += s.size;
 		}
 		System.out.printf("Total: %8s\n", filesize(t));

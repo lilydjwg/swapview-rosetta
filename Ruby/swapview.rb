@@ -3,7 +3,7 @@
 
 # for Ruby 2.4+
 
-FORMAT = '%5s %9s %s'
+FORMAT = '%7s %9s %s'
 TOTALFMT = 'Total: %8s'
 
 UNITS = %w[B KiB MiB GiB TiB].freeze

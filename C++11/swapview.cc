@@ -66,7 +66,7 @@ std::string output_size(long long int size){
 
 std::ostream & operator<<(std::ostream & out, SwapInfo const & si){
     auto size = output_size(si.size);
-    out << std::setw(5) << si.pid;
+    out << std::setw(7) << si.pid;
     out << " " << std::setw(9) << size;
     out << " " << si.comm;
     return out;
@@ -119,7 +119,7 @@ int main(){
     };
     std::sort(all_swap_info.begin(), all_swap_info.end(), sorter);
     long long int total = 0;
-    printf("%5s %9s %s\n", "PID", "SWAP", "COMMAND");
+    printf("%7s %9s %s\n", "PID", "SWAP", "COMMAND");
     for(auto const & x : all_swap_info){
         std::cout << x << "\n";
         total += x.size;

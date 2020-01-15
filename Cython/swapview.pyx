@@ -10,7 +10,7 @@ from libc.stdlib cimport atoi
 from libc.string cimport strncmp, memmove
 import os
 
-format = "%5s %9s %s"
+format = "%7s %9s %s"
 totalFmt = "Total: %8s"
 
 cdef int find_size(char *s):
@@ -56,7 +56,7 @@ def getSwapFor(int pid):
     cfile = fopen(b'/proc/%d/smaps' % pid, 'rb')
     if cfile == NULL:
       raise IOError
-    
+
     while True:
       read = getline(&line, &l, cfile)
       if read == -1:

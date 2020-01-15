@@ -62,7 +62,7 @@ let get_swaps () : swap_t list Lwt.t =
     >|= List.sort (fun (_,a,_) (_,b,_) -> compare a b)
 
 let%lwt main =
-    let print' = Lwt_io.printf "%5s %9s %s\n" in
+    let print' = Lwt_io.printf "%7s %9s %s\n" in
     let print_swap (pid, swap, comm) = print' pid (filesize swap) comm in
     let print_total total = Lwt_io.printf "Total: %8s\n" (filesize total) in
 

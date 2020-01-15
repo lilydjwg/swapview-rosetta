@@ -74,7 +74,7 @@ SwapInfo[] getSwap(){
 
 
 void main(){
-    string m = "%5s %9s %s";
+    string m = "%7s %9s %s";
     double total=0;
     auto result=getSwap();
     writeln(format(m , "PID", "SWAP", "COMMAND"));

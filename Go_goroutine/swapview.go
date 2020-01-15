@@ -32,10 +32,10 @@ func main() {
 		return slist[i].Size < slist[j].Size
 	})
 
-	fmt.Printf("%5s %9s %s\n", "PID", "SWAP", "COMMAND")
+	fmt.Printf("%7s %9s %s\n", "PID", "SWAP", "COMMAND")
 	var total int64
 	for _, v := range slist {
-		fmt.Printf("%5d %9s %s\n", v.Pid, FormatSize(v.Size), v.Comm)
+		fmt.Printf("%7d %9s %s\n", v.Pid, FormatSize(v.Size), v.Comm)
 		total += v.Size
 	}
 	fmt.Printf("Total: %8s\n", FormatSize(total))

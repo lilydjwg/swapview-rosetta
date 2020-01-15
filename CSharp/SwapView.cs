@@ -79,10 +79,10 @@ namespace SwapView
 		public static void Main (string[] args)
 		{
 			IList<SwapView> results = getSwap ();
-			Console.WriteLine ("{0,5} {1,9} {2}", "PID", "SWAP", "COMMAND");
+			Console.WriteLine ("{0,7} {1,9} {2}", "PID", "SWAP", "COMMAND");
 			double t=0.0;
 			foreach(SwapView s in results){
-				Console.WriteLine ("{0,5:D} {1,9} {2}", s.pid, filesize (s.size), s.comm);
+				Console.WriteLine ("{0,7:D} {1,9} {2}", s.pid, filesize (s.size), s.comm);
 				t += s.size;
 			}
 			Console.WriteLine ("Total: {0,8}", filesize (t));

@@ -1,6 +1,3 @@
-extern crate toml;
-extern crate glob;
-
 use std::io;
 use std::time;
 use std::process::Command;
@@ -8,7 +5,6 @@ use std::path::{Path,PathBuf};
 use std::process::Stdio;
 use std::cmp::Ordering::{Less, Greater};
 use std::io::{Read,Write};
-use std::error::Error;
 use glob::Pattern;
 
 #[derive(Debug)]
@@ -203,7 +199,7 @@ fn time_item(item: &BenchmarkItem) -> Result<BenchmarkResult,String> {
 
   let _cwd = match AtDir::new(&item.dir) {
     Ok(atdir) => atdir,
-    Err(err) => return Err(Error::description(&err).to_string()),
+    Err(err) => return Err(err.to_string()),
   };
   let mut result = vec![];
 
@@ -248,7 +244,7 @@ fn run_once(cmd: &[String]) -> Result<(u64,time::Instant),String> {
                      .stderr(Stdio::inherit())
                      .status() {
     Ok(status) => status,
-    Err(err) => return Err(Error::description(&err).to_string()),
+    Err(err) => return Err(err.to_string()),
   };
 
   if !status.success() {

@@ -118,7 +118,7 @@ vector<swap_info> getSwap(){
 
 template<typename T1, typename T2, typename T3>
 void format_print(const T1 & pid, const T2 & swap, const T3 & command){
-    cout<<setw(5)<<pid<<' '<<setw(9)<<swap<<' '<<command<<'\n';
+    cout<<setw(7)<<pid<<' '<<setw(9)<<swap<<' '<<command<<'\n';
 }
 
 void format_print(const swap_info& swap){

@@ -67,10 +67,10 @@ List<SwapView?> getSwap(){
 
 static int main (string[] args){
     List<SwapView?> results = getSwap();
-    stdout.printf("%5s %9s %s\n", "PID", "SWAP", "COMMAND");
+    stdout.printf("%7s %9s %s\n", "PID", "SWAP", "COMMAND");
     double t = 0.0;
     foreach(SwapView s in results){
-        stdout.printf("%5lld %9s %s\n", s.pid, filesize(s.size), s.comm);
+        stdout.printf("%7lld %9s %s\n", s.pid, filesize(s.size), s.comm);
         t += s.size;
     }
     stdout.printf("Total: %8s\n", filesize(t));

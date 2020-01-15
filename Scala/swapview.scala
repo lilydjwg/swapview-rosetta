@@ -49,10 +49,10 @@ class SwapView(val pid: Int = 0, val size: Double = 0, val comm: String = "") {
 object SwapView extends App {
 	val swapview = new SwapView
 	val results  = swapview.getSwap
-	printf("%5s %9s %s\n", "PID", "SWAP", "COMMAND")
+	printf("%7s %9s %s\n", "PID", "SWAP", "COMMAND")
 	var x = 0.0
 	for (res <- results) {
-		printf("%5d %9s %s\n", res.pid, swapview.filesize(res.size), res.comm)
+		printf("%7d %9s %s\n", res.pid, swapview.filesize(res.size), res.comm)
 		x += res.size
 	}
 	printf("Total: %8s\n", swapview.filesize(x))

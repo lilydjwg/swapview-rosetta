@@ -73,15 +73,15 @@ auto getSwap(){
 
 
 void main(){
-    string m = "%5s %9s %s";
-    double total=0;
-    auto result=getSwap();
-    writeln(format(m , "PID", "SWAP", "COMMAND"));
+    string m = "%7s %9s %s";
+    double total = 0;
+    auto result = getSwap();
+    writeln(format(m, "PID", "SWAP", "COMMAND"));
     foreach(ref item; result){
         if (item.pid is null)
             continue;
         total += item.size;
-        writeln(format(m , item.pid, filesize(item.size), item.comm));
+        writeln(format(m, item.pid, filesize(item.size), item.comm));
     }
     writeln(format("Total: %8s", filesize(total)));
 }

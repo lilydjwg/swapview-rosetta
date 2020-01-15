@@ -58,12 +58,12 @@ auto get_swap() -> std::vector<swap_info> {
 
 int main() {
   std::ios::sync_with_stdio(false);
-  std::cout << std::setw(5) << "PID" << ' '
+  std::cout << std::setw(7) << "PID" << ' '
             << std::setw(9) << "SWAP" << ' '
             << std::setw(0) << "COMMAND" << '\n';
   size_t total = 0;
   for (const auto &[pid, swp, cmd]: get_swap()) {
-    std::cout << std::setw(5) << pid << ' '
+    std::cout << std::setw(7) << pid << ' '
               << std::setw(9) << filesize(swp) << ' '
               << std::setw(0) << cmd << '\n';
     total += swp;

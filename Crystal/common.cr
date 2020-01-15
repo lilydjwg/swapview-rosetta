@@ -1,7 +1,7 @@
 module SwapView
   extend self
 
-  FORMAT = "%5s %9s %s"
+  FORMAT = "%7s %9s %s"
   TOTALFMT = "Total: %8s"
   SWAP = "Swap: "
 

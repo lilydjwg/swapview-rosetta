@@ -49,7 +49,7 @@
 
 (define (main . args)
   (let ((results (getSwap))
-        (FORMATSTR "~5@a ~9@a ~@a~%"))
+        (FORMATSTR "~7@a ~9@a ~@a~%"))
     (format #t FORMATSTR "PID" "SWAP" "COMMAND")
     (let lp((next results) (total 0))
       (cond
