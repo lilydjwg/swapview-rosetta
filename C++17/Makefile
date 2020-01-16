@@ -8,19 +8,19 @@ LAM = -DLAMBDA
 
 swapview: swapview.cpp
 	$(CXX) swapview.cpp -o swapview $(CXXFLAGS)
-	strip swapview
+	strip $@
 
 swapview-par: swapview.cpp
 	$(CXX) swapview.cpp -o swapview-par $(PAR) $(CXXFLAGS)
-	strip swapview
+	strip $@
 
 swapview-lam: swapview.cpp
 	$(CXX) swapview.cpp -o swapview-lam $(LAM) $(CXXFLAGS)
-	strip swapview
+	strip $@
 
 swapview-par-lam: swapview.cpp
 	$(CXX) swapview.cpp -o swapview-par-lam $(PAR) $(LAM) $(CXXFLAGS)
-	strip swapview
+	strip $@
 
 .PHONY: all clean
 
