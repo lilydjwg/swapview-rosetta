@@ -94,6 +94,10 @@ dir = "D_parallel"
 [item.Dart]
 cmd = ["dart", "swapview.dart"]
 
+[item.Dart_native]
+cmd = ["./swapview"]
+dir = "Dart"
+
 [item.Elixir]
 cmd = ["./swapview.exs"]
 
