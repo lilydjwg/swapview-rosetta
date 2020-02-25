@@ -3,13 +3,13 @@
 languages = C C++11 C++14 C++14_boost C++17 C++98 \
 		Chicken CoffeeScript CoffeeScript_parallel \
 		CommonLisp_opt Crystal CSharp Cython \
-		D D_parallel Erlang FreePascal \
+		D D_parallel Dart Erlang FreePascal \
 		Haskell Haskell_parallel \
 		Go Go_goroutine \
 		Java Nim NodeJS NodeJS_async NodeJS_cluster \
 		OCaml Racket Rust Rust_parallel \
 		Scala Vala \
-		# ChezScheme OCaml_lwt Dart
+		# ChezScheme OCaml_lwt
 
 all: $(languages)
 

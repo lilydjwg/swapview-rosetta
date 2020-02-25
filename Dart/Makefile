@@ -1,10 +1,10 @@
-default: .packages
-
-run: .packages
-	dart swapview.dart
-
 .packages:
 	pub get
 
+swapview: swapview.dart .packages
+	dart2native swapview.dart -o swapview
+
+all: swapview-native
+
 clean:
-	rm -rf packages/ .packages pubspec.lock
+	rm -rf .dart_tool/ packages/ .packages pubspec.lock swapview
