@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:path/path.dart';
 
-class SwapInfo implements Comparable {
+class SwapInfo implements Comparable<SwapInfo> {
   String pid;
   int swap;
   String cmdline;
@@ -17,7 +17,7 @@ bool isDigit(String s) {
 toHumanReadable(int size) {
   final units = "KMGT";
   var unit = -1;
-  var left = size;
+  var left = size * 1.0;
   while (left > 1100 && unit < 3) {
     left /= 1024;
     unit++;
