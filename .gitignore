@@ -16,6 +16,7 @@ cabal.sandbox.config
 packages/
 .packages
 pubspec.lock
+.dart_tool
 
 # swapview specific
 */swapview
