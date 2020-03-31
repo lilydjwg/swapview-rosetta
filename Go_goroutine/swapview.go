@@ -118,6 +118,10 @@ func GetInfo(name string, infoCh chan<- Info, wg *sync.WaitGroup) {
 		total += size
 	}
 
+	// No swap pid info should be ignored.
+	if total == 0 {
+		return
+	}
 	info.Size = total * 1024
 	infoCh <- info
 	return

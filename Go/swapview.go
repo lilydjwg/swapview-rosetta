@@ -95,6 +95,10 @@ func GetInfo(pid int) (info Info, err error) {
 		total += size
 	}
 
+	// No swap pid info should be ignored.
+	if total == 0 {
+		return
+	}
 	info.Size = total * 1024
 	return
 }
