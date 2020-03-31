@@ -48,35 +48,31 @@ func GetInfos() (list []Info) {
 	if err != nil {
 		log.Fatalf("read /proc: %v", err)
 	}
+
 	length := len(names)
 
-	list = make([]Info, length)
-	infoCh := make(chan *Info, length)
-	wg := new(sync.WaitGroup)
-	wg2 := new(sync.WaitGroup)
+	list = make([]Info, 0, length)
+	infoCh := make(chan Info, length)
 
-	wg2.Add(1)
-	go func(ch chan *Info, list *[]Info) {
-		defer wg2.Done()
-
-		idx := 0
-		for tmp := range ch {
-			(*list)[idx] = *tmp
-		}
-	}(infoCh, &list)
-
+	wg := &sync.WaitGroup{}
 	wg.Add(length)
-	for _, name := range names {
-		go GetInfo(name, infoCh, wg)
-	}
 
-	wg.Wait()
-	close(infoCh)
-	wg2.Wait()
+	go func() {
+		defer close(infoCh)
+		defer wg.Wait()
+
+		for _, name := range names {
+			go GetInfo(name, infoCh, wg)
+		}
+	}()
+
+	for v := range infoCh {
+		list = append(list, v)
+	}
 	return
 }
 
-func GetInfo(name string, infoCh chan<- *Info, wg *sync.WaitGroup) {
+func GetInfo(name string, infoCh chan<- Info, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	pid, err := strconv.Atoi(name)
@@ -84,8 +80,9 @@ func GetInfo(name string, infoCh chan<- *Info, wg *sync.WaitGroup) {
 		return
 	}
 
-	info := new(Info)
-	info.Pid = pid
+	info := Info{
+		Pid: pid,
+	}
 
 	var bs []byte
 	bs, err = ioutil.ReadFile(fmt.Sprintf("/proc/%d/cmdline", pid))
@@ -113,7 +110,7 @@ func GetInfo(name string, infoCh chan<- *Info, wg *sync.WaitGroup) {
 		}
 
 		x := strings.Split(b, string(emptyBytes))
-		size, err = strconv.ParseInt(string(x[len(x)-2]), 10, 64)
+		size, err = strconv.ParseInt(x[len(x)-2], 10, 64)
 		if err != nil {
 			return
 		}
@@ -129,15 +126,15 @@ func GetInfo(name string, infoCh chan<- *Info, wg *sync.WaitGroup) {
 var units = []string{"", "K", "M", "G", "T"}
 
 func FormatSize(s int64) string {
+	if s <= 1100 {
+		return fmt.Sprintf("%dB", s)
+	}
+
 	unit := 0
 	f := float64(s)
-	for unit < len(units) && f > 1100.0 {
+	for unit < 5 && f > 1100.0 {
 		f /= 1024.0
 		unit++
 	}
-	if unit == 0 {
-		return fmt.Sprintf("%dB", int64(f))
-	} else {
-		return fmt.Sprintf("%.1f%siB", f, units[unit])
-	}
+	return fmt.Sprintf("%.1f%siB", f, units[unit])
 }
