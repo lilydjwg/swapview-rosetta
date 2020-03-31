@@ -132,7 +132,7 @@ func FormatSize(s int64) string {
 
 	unit := 0
 	f := float64(s)
-	for unit < 5 && f > 1100.0 {
+	for unit < len(units) && f > 1100.0 {
 		f /= 1024.0
 		unit++
 	}
