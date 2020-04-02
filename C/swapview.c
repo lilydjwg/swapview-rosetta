@@ -9,6 +9,7 @@
 #include <sys/types.h>
 
 #define FORMAT "%7d %9s %s\n"
+#define FORMAT_H "%7s %9s %s\n"
 #define BUFSIZE 512
 //#define TARGET "Size:" // For Test
 #define TARGET "Swap:"
@@ -139,10 +140,10 @@ swap_info **getSwap() {
   return ret;
 }
 
-int main(int argc, char *argv[]) {
+int main() {
   swap_info **infos = getSwap(), **p = infos;
   double total = 0;
-  printf(FORMAT, "PID", "SWAP", "COMMAND");
+  printf(FORMAT_H, "PID", "SWAP", "COMMAND");
   for (; *p; ++p) {
     char *size = filesize((*p)->size);
     printf(FORMAT, (*p)->pid, size, (*p)->comm);
