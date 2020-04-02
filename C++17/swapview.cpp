@@ -68,5 +68,5 @@ int main() {
               << std::setw(0) << cmd << '\n';
     total += swp;
   }
-  std::cout << "Total:" << std::setw(9) << filesize(total) << std::"\n";
+  std::cout << "Total:" << std::setw(9) << filesize(total) << std::endl;
 }
