@@ -1,7 +1,7 @@
 extern crate rayon;
 
 use std::fs::{File,read_dir};
-use std::io::{Read,BufReader};
+use std::io::Read;
 use std::sync::mpsc::channel;
 use rayon::prelude::*;
 
@@ -51,14 +51,13 @@ fn get_comm_for(pid: usize) -> String {
 fn get_swap_for(pid: usize) -> isize {
   let mut s = 0;
   let smaps_path = format!("/proc/{}/smaps", pid);
-  let file = match File::open(&smaps_path) {
+  let mut file = match File::open(&smaps_path) {
     Ok(f) => f,
     Err(_) => return 0,
   };
-  let mut reader = BufReader::new(file);
 
   let mut vec = vec![];
-  reader.read_to_end(&mut vec).unwrap();
+  file.read_to_end(&mut vec).unwrap();
   for line in vec.split(|&c| c == b'\n') {
     if line.starts_with(b"Swap:") {
       let string = line[5..]
