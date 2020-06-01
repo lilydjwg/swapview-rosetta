@@ -1,7 +1,7 @@
 default: swapview
 
 CHICKEN_INSTALL_REPOSITORY:=$(shell pwd)/deps
-CHICKEN_REPOSITORY_PATH:=$(shell pwd)/deps:/usr/lib/chicken/9
+CHICKEN_REPOSITORY_PATH:=$(shell pwd)/deps:$(shell chicken-install -repository)
 export CHICKEN_INSTALL_REPOSITORY
 export CHICKEN_REPOSITORY_PATH
 
