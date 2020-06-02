@@ -6,6 +6,7 @@
 
 #include <dirent.h>
 #include <errno.h>
+#include <limits.h>
 #include <sys/types.h>
 
 #define FORMAT "%7d %9s %s\n"
@@ -80,14 +81,11 @@ swap_info *getSwapFor(int pid) {
   assure(snprintf(filename, BUFSIZE, "/proc/%d/smaps", pid) > 0);
   if (!(fd = fopen(filename, "r")))
     goto err;
-  char *line;
-  for (line = 0, size = 0;
-       (len = getline(&line, &size, fd)) >= 0;
-       free(line), line = 0, size = 0) {
+  char line[PATH_MAX];
+  while (fgets(line, PATH_MAX, fd) != NULL) {
     if (strncmp(line, TARGET, TARGETLEN) == 0)
       s += atoi(line + TARGETLEN);
   }
-  free(line); // need to free when getline fail, see getline(3)
 err:
   if (fd)
     fclose(fd);
