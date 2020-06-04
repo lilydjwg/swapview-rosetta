@@ -8,8 +8,8 @@ languages = C C++11 C++14 C++14_boost C++17 C++98 \
 		Go Go_goroutine \
 		Java Nim NodeJS NodeJS_async NodeJS_cluster \
 		OCaml Racket Rust Rust_parallel \
-		Scala Vala \
-		# ChezScheme OCaml_lwt
+		Scala Vala ChezScheme
+		# OCaml_lwt
 
 all: $(languages)
 

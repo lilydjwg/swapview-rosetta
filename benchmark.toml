@@ -61,7 +61,7 @@ dir = "Crystal"
 cmd = ["mono-sgen", "--desktop", "SwapView.exe"]
 
 [item.ChezScheme]
-cmd = ["chez-scheme", "--program", "swapview.so"]
+cmd = ["scheme", "--program", "swapview.so"]
 
 [item.Chicken]
 
