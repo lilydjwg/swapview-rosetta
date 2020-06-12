@@ -114,10 +114,11 @@ def load_config():
             name = ast.literal_eval(name)
         profile = dict(default)
         profile.update(item)
-        profile['name'] = name
         for k, v in zip(profile, profile.values()):
             if type(v) is str:
-                profile[k] = Template(v).safe_substitute(**profile)
+                profile[k] = Template(v).safe_substitute(
+                    **profile, name=name.split(':', 1)[0])
+        profile['name'] = name
         ret_items[name] = profile
     return ret_items, options
 

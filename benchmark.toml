@@ -41,21 +41,27 @@ cmd = ["zsh", "./swapview.sh"]
 
 [item."C++17"]
 
+[item."C++17:par"]
+cmd = ["./swapview-par"]
+
+[item."C++17:par-lam"]
+cmd = ["./swapview-par-lam"]
+
+[item."C++17:lam"]
+cmd = ["./swapview-lam"]
+
 [item."C++98"]
 
-[item."C++98_omp"]
+[item."C++98:omp"]
 cmd = ["./swapview_omp"]
-dir = "C++98"
 
 [item.Crystal]
 
-[item.Crystal_fiber]
+[item.Crystal:fiber]
 cmd = ["./swapview_fiber"]
-dir = "Crystal"
 
-[item.Crystal_process]
+[item.Crystal:process]
 cmd = ["./swapview_process"]
-dir = "Crystal"
 
 [item.CSharp]
 cmd = ["mono-sgen", "--desktop", "SwapView.exe"]
@@ -81,15 +87,13 @@ cmd = ["python", "-c", "import swapview"]
 
 [item.D]
 
-[item.D_llvm]
+[item.D:llvm]
 cmd = ["./swapview-llvm"]
-dir = "D"
 
 [item.D_parallel]
 
-[item.D_parallel_llvm]
+[item.D_parallel:llvm]
 cmd = ["./swapview-llvm"]
-dir = "D_parallel"
 
 [item.Dart]
 cmd = ["dart", "swapview.dart"]
@@ -122,30 +126,28 @@ cmd = ["java", "-dsa", "-Xmixed", "-XX:CompileThreshold=4096", "-XX:+TieredCompi
 [item.Julia]
 cmd = ["./swapview.jl"]
 
-[item.Lua51]
+[item.Lua:51]
 cmd = ["lua5.1", "swapview.lua"]
-dir = "Lua"
 
-[item.Lua52]
+[item.Lua:52]
 cmd = ["lua5.2", "swapview.lua"]
-dir = "Lua"
 
-[item.Lua53]
+[item.Lua:53]
 cmd = ["lua", "swapview.lua"]
-dir = "Lua"
 
-[item.LuaJIT]
+[item.Lua:JIT]
 cmd = ["luajit", "swapview.lua"]
-dir = "Lua"
 
 [item.Nim]
 
+# TODO: Rename it so we don't have this exception here.
 [item.NodeJS]
 cmd = ["./swapview.js"]
 
 [item.NodeJS_async]
 cmd = ["./swapview.js"]
 
+# TODO: check permissions on this.
 [item.NodeJS_cluster]
 cmd = ["node", "swapview.js"]
 
@@ -159,13 +161,11 @@ cmd = ["./swapview.pl"]
 [item.PHP]
 cmd = ["./swapview.php"]
 
-[item.Python2]
+[item.Python:2]
 cmd = ["python2", "swapview.py"]
-dir = "Python"
 
-[item.Python3]
+[item.Python:3]
 cmd = ["python3", "swapview.py"]
-dir = "Python"
 
 [item.Python3_bytes]
 cmd = ["python3", "swapview.py"]
@@ -192,15 +192,13 @@ cmd = ["./swapview.r"]
 [item.Racket]
 cmd = ["./swapview.rkt"]
 
-[item.Racket_compiled]
-dir = "Racket"
+[item.Racket:compiled]
 cmd = ["racket", "compiled/swapview_rkt.zo"]
 
 [item.Ruby]
 cmd = ["./swapview.rb"]
 
-[item.Ruby_rubinius]
-dir = "Ruby"
+[item.Ruby:rubinius]
 cmd = ["rbx", "swapview.rb"]
 
 [item.Rust]
