@@ -159,6 +159,9 @@ cmd = ["./swapview.pl"]
 [item.PHP]
 cmd = ["./swapview.php"]
 
+[item.PowerShell]
+cmd = ["./swapview.ps1"]
+
 [item.Python2]
 cmd = ["python2", "swapview.py"]
 dir = "Python"
