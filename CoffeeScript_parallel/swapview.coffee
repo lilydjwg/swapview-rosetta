@@ -21,7 +21,7 @@ formatSize = (acc, n) ->
 formatSize0 = (n) -> formatSize 0, n
 
 fillLength = (n, str) ->
-  str.padStart n ' '
+  str.padStart n, ' '
 
 readdir('/proc')
 .then (files) ->
