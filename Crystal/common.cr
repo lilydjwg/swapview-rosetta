@@ -46,12 +46,8 @@ module SwapView
       s = res.reduce { |acc, i| acc + i }
       {pid, s * 1024, comm}
     end
-  rescue ex: Errno
-    if [Errno::EACCES, Errno::ENOENT].includes? ex.errno
-      {pid, 0, nil}
-    else
-      raise ex
-    end
+  rescue File::AccessDeniedError | File::NotFoundError
+    {pid, 0, nil}
   end
 
   def report(results)
