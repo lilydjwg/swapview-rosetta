@@ -1,4 +1,4 @@
-swapview is a simple program to view processes' swap usage on Linux. This is intended to be a lilydjwg's version of Hello World program.
+swapview is a simple program to view processes' swap usage on Linux. This repository is the one of multiple implementations, intended to be a lilydjwg's version of Hello World program. For a daily use version, see [swapview](https://github.com/lilydjwg/swapview).
 
 How to run the speed comparison
 ----
