@@ -5,7 +5,7 @@ swapview: swapview.d
 	strip $@
 
 swapview-llvm: swapview.d
-	ldmd -O -release -inline -boundscheck=off $< -of$@
+	ldc2 -O3 --flto=full $< -of$@
 	strip $@
 
 clean:
