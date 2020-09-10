@@ -86,6 +86,9 @@ auto getSwap(){
 
 
 void main(){
+    import core.memory : GC;
+    GC.disable;
+
     string m = "%7s %9s %s";
     double total = 0;
     auto result = getSwap();
