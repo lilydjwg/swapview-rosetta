@@ -30,7 +30,8 @@ def getSwapFor(pid):
       comm = comm[:-1]
     comm = comm.replace('\x00', ' ')
     with open('/proc/%s/smaps' % pid) as f:
-      s = sum(int(m.group(1)) for m in re.finditer(r'Swap:\s+(\d+)', f.read()))
+      s = sum(int(m.group(1)) for m in
+              re.finditer(r'\nSwap:\s+(\d+)', f.read()))
     return pid, s * 1024, comm
   except (IOError, OSError):
     return pid, 0, ''
