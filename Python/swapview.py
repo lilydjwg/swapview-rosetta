@@ -4,6 +4,7 @@ from __future__ import print_function
 from __future__ import division
 
 import os
+import re
 
 format = "%7s %9s %s"
 totalFmt = "Total: %8s"
@@ -29,7 +30,7 @@ def getSwapFor(pid):
       comm = comm[:-1]
     comm = comm.replace('\x00', ' ')
     with open('/proc/%s/smaps' % pid) as f:
-      s = sum(int(l.split()[1]) for l in f if l.startswith('Swap:'))
+      s = sum(int(m.group(1)) for m in re.finditer(r'Swap:\s+(\d+)', f.read()))
     return pid, s * 1024, comm
   except (IOError, OSError):
     return pid, 0, ''
