@@ -31,16 +31,29 @@ string getcmdln(string pid){
     return cast(string) ret;
 }
 
+string read_to_end(File file) {
+    static ubyte[65536] buffer;
+    ubyte[] ret;
+    while (!file.eof()) {
+        ret ~= file.rawRead(buffer[]);
+    }
+    return cast(string)ret;
+}
+
 ulong checkswap(string pid){
+    import std.array : join, split;
+    import std.algorithm : startsWith, findSplitBefore;
+    import std.string : stripLeft;
     ulong size = 0;
     File file = File(pid~"/smaps", "r");
-    while (!file.eof()){
-        string line = chomp(file.readln());
-        if(!line.indexOf("Swap:")){
-            size += to!ulong(line.split()[1]);
+    auto data = file.read_to_end;
+    foreach(line; data.split("\n")) {
+        if(line.startsWith("Swap:")){
+            line = line[5..$].stripLeft;
+            size += to!int(cast(string)line.findSplitBefore(" ")[0]);
         }
     }
-    return size * 1024 ;
+    return size * 1024;
 }
 
 struct SwapInfo
@@ -67,12 +80,15 @@ auto getSwap(){
     foreach(string d; dirEntries("/proc", SpanMode.shallow))
         dir ~= [d];
 
-    auto map = taskPool.amap!swap_thread(dir);
+    auto map = taskPool.amap!swap_thread(dir, 1);
     return sort!"a.size < b.size"(map);
 }
 
 
 void main(){
+    import core.memory : GC;
+    GC.disable;
+
     string m = "%7s %9s %s";
     double total = 0;
     auto result = getSwap();
