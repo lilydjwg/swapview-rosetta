@@ -24,7 +24,7 @@ cdef int find_size(char *s):
   s_tmp[0] = 0
   return atoi(s)
 
-def filesize(int size):
+def filesize(size_t size):
   cdef int unit
   cdef float left
 
@@ -46,6 +46,7 @@ def getSwapFor(int pid):
   cdef char * line = NULL
   cdef size_t l = 0
   cdef FILE* cfile
+  cdef ssize_t read
 
   try:
     comm = open('/proc/%d/cmdline' % pid).read()
