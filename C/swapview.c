@@ -152,7 +152,7 @@ int main() {
   }
   free(infos);
   char *stotal = filesize(total);
-  printf("Total: %8s\n", stotal);
+  printf("Total: %10s\n", stotal);
   free(stotal);
   return 0;
 }

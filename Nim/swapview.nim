@@ -71,4 +71,4 @@ for i in infos:
     echo i
     t += i.swap
 var total = filesize(t)
-echo "Total: " & spaces(max(0, 8 - total.len)) & total
+echo "Total: " & spaces(max(0, 10 - total.len)) & total

@@ -83,7 +83,7 @@ void main(){
         total += item.size;
         writeln(format(m, item.pid, filesize(item.size), item.comm));
     }
-    writeln(format("Total: %8s", filesize(total)));
+    writeln(format("Total: %10s", filesize(total)));
 }
 
 // vim: set et ts=4 sw=4

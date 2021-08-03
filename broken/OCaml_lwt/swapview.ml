@@ -64,7 +64,7 @@ let get_swaps () : swap_t list Lwt.t =
 let%lwt main =
     let print' = Lwt_io.printf "%7s %9s %s\n" in
     let print_swap (pid, swap, comm) = print' pid (filesize swap) comm in
-    let print_total total = Lwt_io.printf "Total: %8s\n" (filesize total) in
+    let print_total total = Lwt_io.printf "Total: %10s\n" (filesize total) in
 
     let%lwt swaps = get_swaps () in
     let total = List.fold_left (fun acc (_, x, _) -> acc + x) 0 swaps in

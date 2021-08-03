@@ -74,7 +74,7 @@ if (cluster.isMaster) {
       console.log(sprintf('%7s %9s %s', s[0], filesize(s[1]), s[2]));
       t += s[1];
     });
-    console.log(sprintf('Total: %8s', filesize(t)));
+    console.log(sprintf('Total: %10s', filesize(t)));
   }
 
   // fork workers

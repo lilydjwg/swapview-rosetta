@@ -33,7 +33,7 @@ swap_print() ->
     io:format("~7s ~9s ~s~n", ["PID", "SWAP", "COMMAND"]),
     [io:format("~7s ~9s ~s~n", [Pid, filesize(Size), Cmd]) || {Pid, Cmd, Size} <- Ret],
     Total = lists:sum([Size || {_,_,Size} <- Ret]),
-    io:format("Total: ~8s~n", [filesize(Total)]).
+    io:format("Total: ~10s~n", [filesize(Total)]).
 
 getswap() ->
     {ok, F} = file:list_dir_all("/proc"),

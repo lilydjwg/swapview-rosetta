@@ -77,6 +77,6 @@ prettyPrint = (res) ->
   console.log str
 
   console.log [
-    'Total:'
-    fillLength 9, (formatSize0 (res.reduce addSecond, 0))
+    'Total: '
+    fillLength 10, (formatSize0 (res.reduce addSecond, 0))
   ].join('')

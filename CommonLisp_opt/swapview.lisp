@@ -32,12 +32,12 @@
 
 (defun print-result (lis)
   "Print the result in list, which item: (id swap cmdline)"
-  (let ((format-string "~7@A~7T~8@A~8T~A~%"))
+  (let ((format-string "~7@A~7T~9@A~9T~A~%"))
     (format t format-string "PID" "SWAP" "COMMAND")
     (loop for item in lis
           summing (second item) into total
           do (format t format-string (first item) (convert-size (second item)) (third item))
-          finally (format t "Total: ~A~%" (convert-size total)))))
+          finally (format t "Total: ~10@A~%" (convert-size total)))))
 
 (defun get-process-id (path)
   "Return process id from the path"

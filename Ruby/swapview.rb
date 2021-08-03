@@ -4,7 +4,7 @@
 # for Ruby 2.4+
 
 FORMAT = '%7s %9s %s'
-TOTALFMT = 'Total: %8s'
+TOTALFMT = 'Total: %10s'
 
 UNITS = %w[B KiB MiB GiB TiB].freeze
 def filesize(size)

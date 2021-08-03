@@ -53,7 +53,7 @@
     (format #t FORMATSTR "PID" "SWAP" "COMMAND")
     (let lp((next results) (total 0))
       (cond
-       ((null? next) (format #t "Total: ~8@a~%" (filesize total)))
+       ((null? next) (format #t "Total: ~10@a~%" (filesize total)))
        (else
         (let ((item (car next)))
           (format #t FORMATSTR

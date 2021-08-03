@@ -82,8 +82,6 @@ fn get_swap() -> Vec<(usize, isize, String)> {
 }
 
 fn main() {
-  // let format = "{:>5} {:>9} {}";
-  // let totalFmt = "Total: {:8}";
   let mut swapinfo = get_swap();
   swapinfo.sort_unstable_by(|&(_, a, _), &(_, b, _)| { a.cmp(&b) });
 
@@ -93,7 +91,7 @@ fn main() {
     total += swap;
     println!("{:>7} {:>9} {}", pid, filesize(swap), comm);
   }
-  println!("Total: {:>8}", filesize(total));
+  println!("Total: {:>10}", filesize(total));
 }
 
 // vim: se sw=2:

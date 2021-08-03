@@ -85,7 +85,7 @@ namespace SwapView
 				Console.WriteLine ("{0,7:D} {1,9} {2}", s.pid, filesize (s.size), s.comm);
 				t += s.size;
 			}
-			Console.WriteLine ("Total: {0,8}", filesize (t));
+			Console.WriteLine ("Total: {0,10}", filesize (t));
 		}
 	}
 }

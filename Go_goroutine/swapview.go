@@ -38,7 +38,7 @@ func main() {
 		fmt.Printf("%7d %9s %s\n", v.Pid, FormatSize(v.Size), v.Comm)
 		total += v.Size
 	}
-	fmt.Printf("Total: %8s\n", FormatSize(total))
+	fmt.Printf("Total: %10s\n", FormatSize(total))
 }
 
 func GetInfos() (list []Info) {

@@ -65,4 +65,4 @@ results.forEach(s => {
   t += s[1]
 })
 
-console.log(sprintf("Total: %8s", filesize(t)))
+console.log(sprintf("Total: %10s", filesize(t)))

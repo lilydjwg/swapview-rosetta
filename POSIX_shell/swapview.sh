@@ -59,7 +59,7 @@ main() {
                 printf(printf_format, $1, convert_file_size_from_kB($2), join_field(3, NF, " "))
             }
             END{
-                printf("Total: %s\n", convert_file_size_from_kB(total))
+                printf("Total: %10s\n", convert_file_size_from_kB(total))
             }'
 }
 

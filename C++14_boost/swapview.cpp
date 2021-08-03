@@ -65,6 +65,6 @@ int main(int argc, char * argv[]){
         cout << format % get<0>(item) % filesize(get<1>(item)) % get<2>(item) << "\n";
         t+=get<1>(item);
     }
-    cout<< boost::format("Total:%|9|") % filesize(t)<<"\n";
+    cout<< boost::format("Total: %|10|") % filesize(t)<<"\n";
     return 0;
 }

@@ -80,7 +80,7 @@ function getSwap()
 end
 
 local fmt = "%7s %9s %s"
-local totalFmt = "Total: %8s"
+local totalFmt = "Total: %10s"
 local results = getSwap()
 local sum = 0
 print(format(fmt, 'PID', 'SWAP', 'COMMAND'))

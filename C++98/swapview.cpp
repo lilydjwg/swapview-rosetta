@@ -137,6 +137,6 @@ int main(int argc, char * argv[]){
         format_print(*itr);
         t += itr->size;
     }
-    cout<<"Total:"<<setw(9)<<filesize(t)<<"\n";
+    cout<<"Total: "<<setw(10)<<filesize(t)<<"\n";
     return 0;
 }

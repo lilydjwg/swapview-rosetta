@@ -181,5 +181,5 @@ Begin
 		t := t + results[i].size;
 		WriteLn(Format('%7D %9S %S', [results[i].pid, filesize(results[i].size), results[i].comm]));
 	End;
-	WriteLn(Format('Total: %8S', [filesize(t)]));
+	WriteLn(Format('Total: %10S', [filesize(t)]));
 End.

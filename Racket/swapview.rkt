@@ -18,7 +18,7 @@
 (define (total n)
   (begin
     (display "Total: ")
-    (display (~a n  #:min-width 8))
+    (display (~a n  #:min-width 10))
     (newline)))
 
 (define (strinit s)

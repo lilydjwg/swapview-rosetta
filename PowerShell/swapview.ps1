@@ -36,4 +36,4 @@ Get-ChildItem /proc | Where-Object { $_.Name -match '^[0-9]+$' } | ForEach-Objec
     Write-Output ("{0,7} {1,9} {2}" -f $_.Pid, (FileSize $_.Size), $_.Cmd)
 }
 
-Write-Output ("Total: {0,8}" -f (FileSize $total))
+Write-Output ("Total: {0,10}" -f (FileSize $total))

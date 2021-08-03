@@ -65,5 +65,5 @@ main() {
     print(
         "${result.pid.padLeft(7)} ${toHumanReadable(result.swap).padLeft(9)} ${result.cmdline}");
   }
-  print("Total: ${toHumanReadable(total).padLeft(8)}");
+  print("Total: ${toHumanReadable(total).padLeft(10)}");
 }

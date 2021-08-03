@@ -77,6 +77,6 @@
                (filesize (process-info-swap-usage swapped-process-info))
                (process-info-command-line swapped-process-info)))
      results)
-    (format #t "Total: ~8@a~%" (filesize total-swap))))
+    (format #t "Total: ~10@a~%" (filesize total-swap))))
 
 (main)

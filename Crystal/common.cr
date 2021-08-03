@@ -2,7 +2,7 @@ module SwapView
   extend self
 
   FORMAT = "%7s %9s %s"
-  TOTALFMT = "Total: %8s"
+  TOTALFMT = "Total: %10s"
   SWAP = "Swap: "
 
   def filesize(size)

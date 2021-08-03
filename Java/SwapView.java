@@ -70,6 +70,6 @@ public class SwapView{
 			System.out.printf("%7d %9s %s\n", s.pid, filesize(s.size), s.comm);
 			t += s.size;
 		}
-		System.out.printf("Total: %8s\n", filesize(t));
+		System.out.printf("Total: %10s\n", filesize(t));
 	}
 }

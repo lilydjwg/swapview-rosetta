@@ -3,7 +3,7 @@
 import os
 
 format = "%7s %9s %s"
-totalFmt = "Total: %8s"
+totalFmt = "Total: %10s"
 
 def filesize(size):
   units = 'KMGT'

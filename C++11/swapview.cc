@@ -125,6 +125,6 @@ int main(){
         total += x.size;
     }
     auto size = output_size(total);
-    std::printf("Total: %8s\n", size.c_str());
+    std::printf("Total: %10s\n", size.c_str());
     return 0;
 }

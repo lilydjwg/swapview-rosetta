@@ -64,4 +64,4 @@ for(i in 1:nrow(result)){
     t = t + size
   }
 }
-write(sprintf("Total: %8s", filesize(t)), stdout())
+write(sprintf("Total: %10s", filesize(t)), stdout())

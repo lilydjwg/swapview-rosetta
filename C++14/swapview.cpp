@@ -86,6 +86,6 @@ int main(int argc, char * argv[]){
              << "\n";
         t+=get<1>(item);
     }
-    cout<<"Total:"<<setw(9)<<filesize(t)<<"\n";
+    cout<<"Total: "<<setw(10)<<filesize(t)<<"\n";
     return 0;
 }

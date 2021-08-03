@@ -18,7 +18,7 @@ type Pid = Int
 
 format = "%7d %9s %s"
 formatHead = "%7s %9s %s"
-totalFmt = "Total: %8s"
+totalFmt = "Total: %10s"
 firstLine = printf formatHead ("PID" :: Text) ("SWAP" :: Text) ("COMMAND" :: Text)
 
 main = do

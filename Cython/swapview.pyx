@@ -11,7 +11,7 @@ from libc.string cimport strncmp, memmove
 import os
 
 format = "%7s %9s %s"
-totalFmt = "Total: %8s"
+totalFmt = "Total: %10s"
 
 cdef int find_size(char *s):
   cdef char *s_tmp = s + 5

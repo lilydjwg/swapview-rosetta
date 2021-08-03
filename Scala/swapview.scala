@@ -55,5 +55,5 @@ object SwapView extends App {
 		printf("%7d %9s %s\n", res.pid, swapview.filesize(res.size), res.comm)
 		x += res.size
 	}
-	printf("Total: %8s\n", swapview.filesize(x))
+	printf("Total: %10s\n", swapview.filesize(x))
 }

@@ -81,4 +81,4 @@ foreach ($results as $result) {
     $totalSize += $result[1];
 }
 
-printf("Total: %8s" . PHP_EOL, renderSize($totalSize));
+printf("Total: %10s" . PHP_EOL, renderSize($totalSize));

@@ -60,7 +60,7 @@ function getSwap(){
         sumsize=0
     fi
     total=$(filesize $(( $(echo "$sumsize" | bc) *1024)))
-    printf "Total: %8s\n" "$total"
+    printf "Total: %10s\n" "$total"
     rm "$sumfile"
 }
 

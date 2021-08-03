@@ -73,6 +73,6 @@
               (filesize (process-info-swap-usage item))
               (process-info-command-line item))))
         (getSwap))
-    (format #t "Total: ~8@a~%" (filesize total))))
+    (format #t "Total: ~10@a~%" (filesize total))))
 
 (main)

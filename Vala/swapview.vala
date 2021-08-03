@@ -73,6 +73,6 @@ static int main (string[] args){
         stdout.printf("%7lld %9s %s\n", s.pid, filesize(s.size), s.comm);
         t += s.size;
     }
-    stdout.printf("Total: %8s\n", filesize(t));
+    stdout.printf("Total: %10s\n", filesize(t));
     return 0;
 }
