@@ -24,12 +24,11 @@ string filesize(double size){
 
 string getcmdln(string pid){
     auto ret = cast(ubyte[]) read("/proc/"~pid~"/cmdline");
+    if(ret[$-1] == '\0')
+        ret.length--;
     foreach(ref ubyte c; ret){
         if(c=='\0') c=' ';
     }
-    if(ret[$-1] == ' ')
-        ret = ret[0 .. $-1];
-    ret ~= '\0';
     return cast(string) ret;
 }
 
@@ -55,7 +54,7 @@ double checkswap(string pid){
             size += to!int(cast(string)line.findSplitBefore(" ")[0]);
         }
     }
-    return size * 1024 ;
+    return size * 1024;
 }
 
 struct SwapInfo

@@ -23,11 +23,11 @@ string filesize(double size){
 
 string getcmdln(string pid){
     auto ret = cast(ubyte[]) read(pid~"/cmdline");
+    if(ret[$-1] == '\0')
+        ret.length--;
     foreach(ref ubyte c; ret){
         if(c=='\0') c=' ';
     }
-    if(ret[$-1] == ' ')
-        ret.length--;
     return cast(string) ret;
 }
 
