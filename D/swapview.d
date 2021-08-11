@@ -1,8 +1,9 @@
 #!/usr/bin/dmd -run
 
-import std.stdio, std.file, std.path, std.string, std.conv, std.math, std.container, std.algorithm;
+import std.stdio, std.file, std.path, std.conv, std.math, std.container, std.algorithm;
 
 string filesize(double size){
+    import std.format : format;
     string units = "KMGT";
     double left = size.fabs();
     int unit = -1;
@@ -32,13 +33,26 @@ string getcmdln(string pid){
     return cast(string) ret;
 }
 
+string read_to_end(File file) {
+    static ubyte[65536] buffer;
+    ubyte[] ret;
+    while (!file.eof()) {
+        ret ~= file.rawRead(buffer[]);
+    }
+    return cast(string)ret;
+}
+
 double checkswap(string pid){
+    import std.array : join, split;
+    import std.algorithm : startsWith, findSplitBefore;
+    import std.string : stripLeft;
     double size = 0;
     File file = File("/proc/"~pid~"/smaps", "r");
-    while (!file.eof()){
-        string line = chomp(file.readln());
-        if(!line.indexOf("Swap:")){
-            size += to!int(line.split()[1]);
+    auto data = file.read_to_end;
+    foreach(line; data.split("\n")) {
+        if(line.startsWith("Swap:")){
+            line = line[5..$].stripLeft;
+            size += to!int(cast(string)line.findSplitBefore(" ")[0]);
         }
     }
     return size * 1024 ;
@@ -57,6 +71,7 @@ struct SwapInfo
 };
 
 SwapInfo[] getSwap(){
+    import std.string : isNumeric;
     SwapInfo[] ret;
     foreach(DirEntry dirs; dirEntries("/proc", SpanMode.shallow)){
         string pid = baseName(dirs.name);
@@ -73,7 +88,8 @@ SwapInfo[] getSwap(){
 }
 
 
-void main(){
+void main() {
+    import std.format : format;
     string m = "%7s %9s %s";
     double total=0;
     auto result=getSwap();
