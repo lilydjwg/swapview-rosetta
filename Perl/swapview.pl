@@ -13,7 +13,7 @@ my @results:shared = ();
 
 sub get_process_swap ($) {
     my $q = shift;
-    while(1){
+    while(1) {
         my $pid = $q->dequeue();
         last unless($pid);
         my $smaps_file = join q{/}, $pid, q{smaps};
