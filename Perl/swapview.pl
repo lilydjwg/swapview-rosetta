@@ -9,7 +9,9 @@ use threads;
 use threads::shared;
 use Thread::Queue;
 use English qw{ -no_match_vars }; # Avoids regex performance penalty in perl 5.16 and earlier.
-my @results:shared = ();
+
+my $results  = Thread::Queue->new();
+my $count :shared =0;
 
 sub get_process_swap ($) {
     my $q = shift;
@@ -47,13 +49,10 @@ sub get_process_swap ($) {
             $cmdline =~ s/\0/ /g;
         }
         {
-            lock(@results);
-            push @results, { pid  => $pid,
-                swap => $swap_size,
-                cmd  => $cmdline,
-            };
+            lock($count);
+            $count = $count+1;
         }
-
+        $results->enqueue({ pid  => $pid, swap => $swap_size, cmd  => $cmdline, });
     }
 
 }
@@ -65,7 +64,7 @@ sub get_swap_info_from ($) {
     $q->enqueue($_) foreach(@{$_[0]});
     $q->end();
     $_->join() foreach(threads->list());
-    return @results;
+    return $results->extract(0,$count);
 }
 
 sub convert_file_size_from_kB ($) {
