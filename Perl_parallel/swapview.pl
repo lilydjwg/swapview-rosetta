@@ -8,8 +8,9 @@ use 5.010;
 use threads;
 use threads::shared;
 use Thread::Queue;
+
 # Avoids regex performance penalty in perl 5.16 and earlier.
-use English qw{ -no_match_vars } ;
+use English qw{ -no_match_vars };
 
 my $results = Thread::Queue->new();
 my $count : shared = 0;
@@ -53,7 +54,9 @@ sub get_process_swap ($) {
             lock($count);
             $count = $count + 1;
         }
-        $results->enqueue( { pid => $pid, swap => $swap_size, cmd => $cmdline, } );
+        $pid = $pid =~ s/\D+//r;
+        $results->enqueue(
+            { pid => $pid, swap => $swap_size, cmd => $cmdline, } );
     }
 
 }
