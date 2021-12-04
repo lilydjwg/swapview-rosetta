@@ -156,6 +156,9 @@ cmd = ["node", "swapview.js"]
 [item.Perl]
 cmd = ["./swapview.pl"]
 
+[item.Perl_parallel]
+cmd = ["./swapview.pl"]
+
 [item.PHP]
 cmd = ["./swapview.php"]
 
