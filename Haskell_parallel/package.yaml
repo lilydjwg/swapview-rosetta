@@ -14,3 +14,4 @@ executables:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-maxN4
+    - -O2
