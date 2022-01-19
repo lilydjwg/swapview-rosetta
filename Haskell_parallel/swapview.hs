@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, Strict #-}
+{-# LANGUAGE OverloadedStrings, Strict, TypeApplications #-}
 import Control.Applicative ((<$>))
 import Control.Exception (catch, SomeException)
 import Control.Monad (mapM, liftM2)
@@ -8,10 +8,8 @@ import Data.List (sortBy)
 import Data.Function (on)
 import System.Directory (getDirectoryContents)
 import Text.Printf (printf)
-import qualified Data.Text as T
-import qualified Data.Text.IO as TIO
-import Data.Text (Text, isPrefixOf)
-import Data.Text.Read (decimal)
+import Data.ByteString.Char8 (ByteString)
+import qualified Data.ByteString.Char8 as BS
 import Data.Either (fromRight)
 
 type Pid = Int
@@ -19,14 +17,14 @@ type Pid = Int
 format = "%7d %9s %s"
 formatHead = "%7s %9s %s"
 totalFmt = "Total: %10s"
-firstLine = printf formatHead ("PID" :: Text) ("SWAP" :: Text) ("COMMAND" :: Text)
+firstLine = printf formatHead ("PID" :: String) ("SWAP" :: String) ("COMMAND" :: String)
 
 main = do
   d <- MP.mapM swapusedWithPid =<< pids
   let printResult r = do
         putStrLn firstLine
-        TIO.putStr . T.unlines $ r
-        putStrLn $ printf totalFmt $ filesize $ (* 1024) $ total d
+        BS.putStr . BS.unlines $ r
+        putStrLn $ printf totalFmt $ BS.unpack . filesize $ (* 1024) $ total d
   printResult =<< mapM formatResult (transformData d)
     where swapused' p = swapused p `catch` handler
           handler :: SomeException -> IO Int
@@ -37,23 +35,23 @@ pids :: IO [Pid]
 pids = map read . filter (all isDigit) <$> getDirectoryContents "/proc"
 
 swapused :: Pid -> IO Int
-swapused pid = sum . map getNumber . filter (isPrefixOf "Swap:") . T.lines <$> TIO.readFile ("/proc/" ++ show pid ++ "/smaps")
-  where getNumber = fst . fromRight undefined . decimal . T.dropWhile (not . isDigit)
+swapused pid = sum . map getNumber . filter (BS.isPrefixOf "Swap:") . BS.lines <$> BS.readFile ("/proc/" ++ show pid ++ "/smaps")
+  where getNumber = (read @Int) . BS.unpack . BS.takeWhile isDigit . BS.dropWhile (not . isDigit)
 
-transformData :: [(Pid, Int)] -> [(Pid, Text)]
+transformData :: [(Pid, Int)] -> [(Pid, ByteString)]
 transformData = map (mapSnd humanSize) . sortBy (compare `on` snd) . filter ((/=) 0 . snd)
   where humanSize = filesize . (* 1024)
 
-formatResult :: (Pid, Text) -> IO Text
+formatResult :: (Pid, ByteString) -> IO ByteString
 formatResult (pid, size) = do
   cmd <- getCommand pid
-  return . T.pack $ printf format pid size cmd
+  return . BS.pack $ printf format pid (BS.unpack size) (BS.unpack cmd)
 
-getCommand :: Pid -> IO Text
-getCommand pid = T.map transnul . dropLastNull <$> TIO.readFile ("/proc/" ++ show pid ++ "/cmdline")
+getCommand :: Pid -> IO ByteString
+getCommand pid = BS.map transnul . dropLastNull <$> BS.readFile ("/proc/" ++ show pid ++ "/cmdline")
   where dropLastNull s
-          | T.null s = s
-          | T.last s == '\0' = T.init s
+          | BS.null s = s
+          | BS.last s == '\0' = BS.init s
           | otherwise = s
         transnul ch = if ch == '\0' then ' ' else ch
 
@@ -68,8 +66,8 @@ liftUnit n u l =
      then liftUnit (n / 1024) (tail u) (head u)
      else (n, l)
 
-filesize :: (Integral a, Show a) => a -> Text
-filesize n = T.pack $
+filesize :: (Integral a, Show a) => a -> ByteString
+filesize n = BS.pack $
   if unit /= '\0'
      then printf "%.1f%ciB" m unit
      else show n ++ "B"

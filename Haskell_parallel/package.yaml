@@ -4,7 +4,7 @@ version:             0.1.0.0
 dependencies:
 - base >= 4.7 && < 5
 - directory
-- text
+- bytestring
 - monad-parallel
 
 executables:
@@ -14,3 +14,4 @@ executables:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-maxN4
+    - -O2
