@@ -25,8 +25,8 @@
   (let ([l (string-length s)])
     (if (zero? l) s (substring s 0 (- l 1)))))
 
-(define (string-starts-with? s prefix)
-  (equal? (substring s 0 (string-length prefix)) prefix))
+;(define (string-starts-with? s prefix)
+;  (equal? (substring s 0 (string-length prefix)) prefix))
 
 (define (getSwapFor pid)
   (with-handlers ([exn:fail:filesystem? (lambda (e) (list pid 0 ""))])
@@ -34,7 +34,7 @@
       (letrec ([cmd (strinit (string-replace
                               (file->string
                                (format "/proc/~a/cmdline" pid)) "\x0" " "))]
-               [swap? (lambda (l) (string-starts-with? l "Swap:"))]
+               [swap? (lambda (l) (string-prefix? l "Swap:"))]
                [getSize (lambda (l) (list-ref (string-split l) 1))]
                [smaps (filter swap? (file->lines (format "/proc/~a/smaps" pid)))]
                [size (apply + (map (compose string->number getSize) smaps))])
