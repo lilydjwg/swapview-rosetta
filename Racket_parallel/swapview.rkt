@@ -4,10 +4,10 @@
 (provide main)
 
 (define (filesize n)
-  (if (< n 1100) (format "~aB" n)
-      (letrec ([p (exact-floor (/ (log (/ n 1100)) (log 1024)))]
-               [s (~r (/ n (expt 1024 (add1 p))) #:precision '(= 1))]
-               [unit (string-ref "KMGT" p)])
+  (if (< n 1024) (format "~aB" n)
+      (letrec ([p (exact-floor (log n 1024))]
+               [s (~r (/ n (expt 1024 p)) #:precision '(= 1))]
+               [unit (string-ref "KMGT" (sub1 p))])
         (format "~a~aiB" s unit))))
 
 (define (fmt1 s1 s2 s3)
@@ -30,38 +30,36 @@
 ;  (equal? (substring s 0 (string-length prefix)) prefix))
 
 (define (getSwapFor pid-list)
-  (define pl1 (place ch
-                     (define pid-list (place-channel-get ch))
-                     (place-channel-put ch
-                                        (map
-                                         (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (e) (list pid ""))])
-                                                         (begin
-                                                           (let ([cmd (strinit (string-replace
-                                                                                (file->string
-                                                                                 (format "/proc/~a/cmdline" pid)) "\x0" " "))])
-                                                             (list pid cmd)))))
-                                         pid-list))))
-  (define pl2 (place ch
-                     (define pid-list (place-channel-get ch))
-                     (place-channel-put ch
-                                        (map
-                                         (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (e) (list pid 0))])
-                                                         (begin
-                                                           (letrec ([swap? (lambda (l) (string-prefix? l "Swap:"))]
-                                                                    [getSize (lambda (l) (list-ref (string-split l) 1))]
-                                                                    [smaps (filter swap? (file->lines (format "/proc/~a/smaps" pid)))]
-                                                                    [size (apply + (map (compose string->number getSize) smaps))])
-                                                             (list pid (* size 1024))))))
-                                         pid-list))))
-  (reverse
-   (let work
-     ((cmd-list (place-channel-put/get pl1 pid-list))
-      (size-list (place-channel-put/get pl2 pid-list)))
-     (cond
-       ((or (empty? cmd-list) (empty? size-list)) empty)
-       (else
-        (cons (list ((compose car car) cmd-list) ((compose car cdr car) size-list) ((compose car cdr car) cmd-list))
-              (work (cdr cmd-list) (cdr size-list))))))))
+  (let ((pl1 (place ch
+                    (define pid-list (place-channel-get ch))
+                    (place-channel-put ch
+                                       (map
+                                        (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (e) (list pid ""))])
+                                                        (begin
+                                                          (let ([cmd (strinit (string-replace
+                                                                               (file->string
+                                                                                (format "/proc/~a/cmdline" pid)) "\x0" " "))])
+                                                            (list pid cmd)))))
+                                        pid-list))))
+        (pl2 (place ch
+                    (define pid-list (place-channel-get ch))
+                    (place-channel-put ch
+                                       (map
+                                        (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (e) (list pid 0))])
+                                                        (begin
+                                                          (letrec ([swap? (lambda (l) (string-prefix? l "Swap:"))]
+                                                                   [getSize (lambda (l) (list-ref (string-split l) 1))]
+                                                                   [smaps (filter swap? (file->lines (format "/proc/~a/smaps" pid)))]
+                                                                   [size (apply + (map (compose string->number getSize) smaps))])
+                                                            (list pid (* size 1000))))))
+                                        pid-list)))))
+    (let work
+      ((cmd-list (place-channel-put/get pl1 pid-list))
+       (size-list (place-channel-put/get pl2 pid-list)))
+      (cond
+        ((or (empty? cmd-list) (empty? size-list)) empty)
+        (else
+         (cons (list (caar cmd-list) (cadar size-list) (cadar cmd-list)) (work (cdr cmd-list) (cdr size-list))))))))
 
 (define (getSwap)
   (begin
