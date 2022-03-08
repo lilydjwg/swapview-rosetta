@@ -2,7 +2,7 @@
 #lang racket
 (require racket/format)
 (provide main)
-
+;;use "racket -tm compiled/swapview_rkt.zo"
 (define (filesize n)
   (if (< n 1024) (format "~aB" n)
       (letrec ([p (exact-floor (log n 1024))]
@@ -30,36 +30,28 @@
 ;  (equal? (substring s 0 (string-length prefix)) prefix))
 
 (define (getSwapFor pid-list)
-  (let ((pl1 (place ch
-                    (define pid-list (place-channel-get ch))
-                    (place-channel-put ch
-                                       (map
-                                        (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (e) (list pid ""))])
-                                                        (begin
-                                                          (let ([cmd (strinit (string-replace
-                                                                               (file->string
-                                                                                (format "/proc/~a/cmdline" pid)) "\x0" " "))])
-                                                            (list pid cmd)))))
-                                        pid-list))))
-        (pl2 (place ch
-                    (define pid-list (place-channel-get ch))
-                    (place-channel-put ch
-                                       (map
-                                        (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (e) (list pid 0))])
-                                                        (begin
-                                                          (letrec ([swap? (lambda (l) (string-prefix? l "Swap:"))]
-                                                                   [getSize (lambda (l) (list-ref (string-split l) 1))]
-                                                                   [smaps (filter swap? (file->lines (format "/proc/~a/smaps" pid)))]
-                                                                   [size (apply + (map (compose string->number getSize) smaps))])
-                                                            (list pid (* size 1000))))))
-                                        pid-list)))))
-    (let work
-      ((cmd-list (place-channel-put/get pl1 pid-list))
-       (size-list (place-channel-put/get pl2 pid-list)))
-      (cond
-        ((or (empty? cmd-list) (empty? size-list)) empty)
-        (else
-         (cons (list (caar cmd-list) (cadar size-list) (cadar cmd-list)) (work (cdr cmd-list) (cdr size-list))))))))
+  (letrec ((pl (place ch
+                      (define pid-list (place-channel-get ch))
+                      (place-channel-put ch
+                                         (map
+                                          (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (e) "")])
+                                                          (strinit (string-replace
+                                                                    (file->string
+                                                                     (format "/proc/~a/cmdline" pid)) "\x0" " "))
+                                                          ))
+                                          pid-list))))
+           (size-list
+            (map
+             (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (e) 0)])
+                             (begin
+                               (letrec ([swap? (lambda (l) (string-prefix? l "Swap:"))]
+                                        [getSize (lambda (l) (list-ref (string-split l) 1))]
+                                        [smaps (filter swap? (file->lines (format "/proc/~a/smaps" pid)))]
+                                        [size (apply + (map (compose string->number getSize) smaps))])
+                                 (* size 1000)))))
+             pid-list))
+           (cmd-list (place-channel-put/get pl pid-list)))
+    (map (lambda (pid size cmd) (list pid size cmd)) pid-list size-list cmd-list)))
 
 (define (getSwap)
   (begin
@@ -70,10 +62,13 @@
           #:key (compose car cdr) <)))
 
 (define (main)
-  (let ((results (getSwap)))
+  (letrec ((results (getSwap))
+           (pid-list (map car results))
+           (size-list (map cadr results))
+           (cmd-list (map caddr results)))
     (begin
       (fmt1 "PID" "SWAP" "COMMAND")
-      (map (curry apply (lambda (pid size cmd) (fmt1 pid (filesize size) cmd))) results)
-      (total (filesize (apply + (map (compose car cdr) results)))))))
+      (map (lambda (pid size cmd) (fmt1 pid (filesize size) cmd)) pid-list size-list cmd-list)
+      (total (filesize (apply + size-list))))))
 
 ;(main)
