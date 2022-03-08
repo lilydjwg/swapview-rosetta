@@ -4,10 +4,10 @@
 (provide main)
 ;;use "racket -tm compiled/swapview_rkt.zo"
 (define (filesize n)
-  (if (< n 1024) (format "~aB" n)
-      (letrec ([p (exact-floor (log n 1024))]
-               [s (~r (/ n (expt 1024 p)) #:precision '(= 1))]
-               [unit (string-ref "KMGT" (sub1 p))])
+  (if (< n 1100) (format "~aB" n)
+      (letrec ([p (exact-floor (log (/ n 1100) 1024))]
+               [s (~r (/ n (expt 1024 (add1 p))) #:precision '(= 1))]
+               [unit (string-ref "KMGT" p)])
         (format "~a~aiB" s unit))))
 
 (define (fmt1 s1 s2 s3)
@@ -30,28 +30,28 @@
 ;  (equal? (substring s 0 (string-length prefix)) prefix))
 
 (define (getSwapFor pid-list)
-  (letrec ((pl (place ch
-                      (define pid-list (place-channel-get ch))
-                      (place-channel-put ch
-                                         (map
-                                          (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (e) "")])
-                                                          (strinit (string-replace
-                                                                    (file->string
-                                                                     (format "/proc/~a/cmdline" pid)) "\x0" " "))
-                                                          ))
-                                          pid-list))))
-           (size-list
-            (map
-             (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (e) 0)])
-                             (begin
-                               (letrec ([swap? (lambda (l) (string-prefix? l "Swap:"))]
-                                        [getSize (lambda (l) (list-ref (string-split l) 1))]
-                                        [smaps (filter swap? (file->lines (format "/proc/~a/smaps" pid)))]
-                                        [size (apply + (map (compose string->number getSize) smaps))])
-                                 (* size 1000)))))
-             pid-list))
-           (cmd-list (place-channel-put/get pl pid-list)))
-    (map (lambda (pid size cmd) (list pid size cmd)) pid-list size-list cmd-list)))
+  (cond ((empty? pid-list) empty)
+        (else (letrec ((pl (place ch
+                                  (define pid-list (place-channel-get ch))
+                                  (place-channel-put ch
+                                                     (map
+                                                      (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (e) "")])
+                                                                      (strinit (string-replace
+                                                                                (file->string
+                                                                                 (format "/proc/~a/cmdline" pid)) "\x0" " "))
+                                                                      ))
+                                                      pid-list))))
+                       (size-list
+                        (map
+                         (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (e) 0)])
+                                         (letrec ([swap? (lambda (l) (string-prefix? l "Swap:"))]
+                                                  [getSize (lambda (l) (list-ref (string-split l) 1))]
+                                                  [smaps (filter swap? (file->lines (format "/proc/~a/smaps" pid)))]
+                                                  [size (apply + (map (compose string->number getSize) smaps))])
+                                           (* size 1024))))
+                         pid-list))
+                       (cmd-list (place-channel-put/get pl pid-list)))
+                (map (lambda (pid size cmd) (list pid size cmd)) pid-list size-list cmd-list)))))
 
 (define (getSwap)
   (begin
