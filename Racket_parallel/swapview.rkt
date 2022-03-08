@@ -19,15 +19,12 @@
 (define (total n)
   (begin
     (display "Total: ")
-    (display (~a n  #:min-width 10))
+    (display (~a n  #:min-width 10 #:align 'right))
     (newline)))
 
 (define (strinit s)
   (let ([l (string-length s)])
     (if (zero? l) s (substring s 0 (- l 1)))))
-
-;(define (string-starts-with? s prefix)
-;  (equal? (substring s 0 (string-length prefix)) prefix))
 
 (define (getSwapFor pid-list)
   (letrec ((pl (place ch
