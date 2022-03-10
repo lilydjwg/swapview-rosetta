@@ -224,3 +224,5 @@ cmd = ["scala", "SwapView"]
 cmd = ["./swapview.tcl"]
 
 [item.Vala]
+
+[item.Zig]
