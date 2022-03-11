@@ -3,6 +3,17 @@
 (require racket/format)
 (provide main)
 ;;use "racket -tm compiled/swapview_rkt.zo"
+
+(define (fmt1 s1 s2 s3)
+  (begin
+    (map display (list s1 " "
+                       s2 " "
+                       s3))
+    (newline)))
+
+(define (fmtPid pid)
+  (~a pid  #:width 7 #:align 'right))
+
 (define (filesize n)
   (if (< n 1100) (format "~aB" n)
       (letrec ([p (exact-floor (log (/ n 1100) 1024))]
@@ -10,11 +21,8 @@
                [unit (string-ref "KMGT" p)])
         (format "~a~aiB" s unit))))
 
-(define (fmt1 s1 s2 s3)
-  (begin
-    (map display (list (~a s1  #:width 7 #:align 'right) " "
-                       (~a s2  #:width 9 #:align 'right) " " (~a s3)) )
-    (newline)))
+(define (fmtSize size)
+  (~a size #:width 9 #:align 'right))
 
 (define (total n)
   (begin
@@ -27,7 +35,8 @@
     (if (zero? l) s (substring s 0 (- l 1)))))
 
 (define (getSwapFor pid-list)
-  (letrec ((pl (place ch
+  (letrec ((format-pid (map fmtPid pid-list))
+           (pl (place ch
                       (define pid-list (place-channel-get ch))
                       (place-channel-put ch
                                          (map
@@ -50,7 +59,7 @@
                                            (loop (cdr pid-list)))]))])
               (loop pid-list)))
            (cmd-list (place-channel-put/get pl pid-list)))
-    (map (lambda (pid size cmd) (list pid size cmd)) pid-list size-list cmd-list)))
+    (map (lambda (pid size cmd) (list pid size cmd)) format-pid size-list cmd-list)))
 
 (define (getSwap)
   (begin
@@ -66,6 +75,6 @@
            (size-list (map cadr results))
            (cmd-list (map caddr results)))
     (begin
-      (fmt1 "PID" "SWAP" "COMMAND")
-      (map (lambda (pid size cmd) (fmt1 pid (filesize size) cmd)) pid-list size-list cmd-list)
+      (fmt1 (fmtPid "PID") (fmtSize "SWAP") "COMMAND")
+      (map (lambda (pid size cmd) (fmt1 pid ((compose fmtSize filesize) size) cmd)) pid-list size-list cmd-list)
       (total (filesize (apply + size-list))))))
