@@ -38,24 +38,27 @@
                                                           ))
                                           pid-list))))
            (size-list
-            (map
-             (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (e) 0)])
-                             (letrec ([swap? (lambda (l) (string-prefix? l "Swap:"))]
-                                      [getSize (lambda (l) (list-ref (string-split l) 1))]
-                                      [smaps (filter swap? (file->lines (format "/proc/~a/smaps" pid)))]
-                                      [size (apply + (map (compose string->number getSize) smaps))])
-                               (* size 1024))))
-             pid-list))
+            (letrec ([swap? (lambda (l) (string-prefix? l "Swap:"))]
+                     [getSize (lambda (l) (cadr (string-split l)))]
+                     [getSmaps (lambda (pid)
+                                 (with-handlers ([exn:fail:filesystem? (lambda (e) empty)])
+                                   (filter swap? (file->lines (format "/proc/~a/smaps" pid)))))]
+                     [loop (lambda (pid-list)
+                             (cond
+                               [(empty? pid-list) empty]
+                               [else (cons (* 1024 (apply + (map (compose string->number getSize) (getSmaps (car pid-list)))))
+                                           (loop (cdr pid-list)))]))])
+              (loop pid-list)))
            (cmd-list (place-channel-put/get pl pid-list)))
     (map (lambda (pid size cmd) (list pid size cmd)) pid-list size-list cmd-list)))
 
 (define (getSwap)
   (begin
-    (sort (filter (lambda (l) (> (list-ref l 1) 0))
+    (sort (filter (lambda (l) (> (cadr l) 0))
                   (getSwapFor
                    (filter string->number
                            (map path->string (directory-list "/proc")))))
-          #:key (compose car cdr) <)))
+          #:key cadr <)))
 
 (define (main)
   (letrec ((results (getSwap))
@@ -66,5 +69,3 @@
       (fmt1 "PID" "SWAP" "COMMAND")
       (map (lambda (pid size cmd) (fmt1 pid (filesize size) cmd)) pid-list size-list cmd-list)
       (total (filesize (apply + size-list))))))
-
-;(main)
