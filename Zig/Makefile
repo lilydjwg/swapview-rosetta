@@ -1,7 +1,7 @@
 .PHONY: all clean
 
 %: %.zig
-	zig build-exe -Drelease-safe=true --strip $<
+	zig build-exe -O ReleaseSafe --strip $<
 
 all: swapview
 
