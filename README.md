@@ -63,6 +63,7 @@ You can (edit and then) run `make` to build all that needs to be built.
 * Scala
 * Vala, requires `glib2` (`libglib-2.0` and `libgio-2.0`)
 * Tcl, >= 8.6
+* Zig, tested with 0.9.1
 
 Contributions
 ----
