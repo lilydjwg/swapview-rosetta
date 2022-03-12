@@ -4,6 +4,9 @@
 (provide main)
 ;;use "racket -tm compiled/swapview_rkt.zo"
 
+(define pid-list (filter string->number
+                         (map path->string (directory-list "/proc"))))
+
 (define (fmt1 s1 s2 s3)
   (begin
     (map display (list s1 " "
@@ -34,10 +37,8 @@
   (let ([l (string-length s)])
     (if (zero? l) s (substring s 0 (- l 1)))))
 
-(define (getSwapFor pid-list)
-  (letrec ((format-pid (map fmtPid pid-list))
-           (pl (place ch
-                      (define pid-list (place-channel-get ch))
+(define (getSwapFor)
+  (letrec ((pl (place ch
                       (place-channel-put ch
                                          (map
                                           (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (e) "")])
@@ -46,6 +47,7 @@
                                                                      (format "/proc/~a/cmdline" pid)) "\x0" " "))
                                                           ))
                                           pid-list))))
+           (format-pid (map fmtPid pid-list))
            (size-list
             (letrec ([swap? (lambda (l) (string-prefix? l "Swap:"))]
                      [getSize (lambda (l) (cadr (string-split l)))]
@@ -58,15 +60,13 @@
                                [else (cons (* 1024 (apply + (map (compose string->number getSize) (getSmaps (car pid-list)))))
                                            (loop (cdr pid-list)))]))])
               (loop pid-list)))
-           (cmd-list (place-channel-put/get pl pid-list)))
+           (cmd-list (place-channel-get pl)))
     (map (lambda (pid size cmd) (list pid size cmd)) format-pid size-list cmd-list)))
 
 (define (getSwap)
   (begin
     (sort (filter (lambda (l) (> (cadr l) 0))
-                  (getSwapFor
-                   (filter string->number
-                           (map path->string (directory-list "/proc")))))
+                  (getSwapFor))
           #:key cadr <)))
 
 (define (main)
