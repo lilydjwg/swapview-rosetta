@@ -1,6 +1,11 @@
 
-#lang racket
+#lang racket/base
 (require racket/format)
+(require racket/place)
+(require racket/list)
+(require racket/math)
+(require racket/string)
+(require racket/file)
 (provide main)
 ;;use "racket -tm compiled/swapview_rkt.zo"
 
