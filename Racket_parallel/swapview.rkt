@@ -12,6 +12,8 @@
 (define pid-list (filter string->number
                          (map path->string (directory-list "/proc"))))
 
+(define results (getSwap))
+
 (define (fmt1 s1 s2 s3)
   (begin
     (map display (list s1 " "
@@ -76,10 +78,9 @@
           #:key cadr <)))
 
 (define (main)
-  (letrec ((results (getSwap))
-           (pid-list (map car results))
-           (size-list (map cadr results))
-           (cmd-list (map caddr results)))
+  (let ((pid-list (map car results))
+        (size-list (map cadr results))
+        (cmd-list (map caddr results)))
     (begin
       (fmt1 (fmtPid "PID") (fmtSize "SWAP") "COMMAND")
       (map (lambda (pid size cmd) (fmt1 pid ((compose fmtSize filesize) size) cmd)) pid-list size-list cmd-list)
