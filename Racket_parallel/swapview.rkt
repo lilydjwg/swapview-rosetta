@@ -1,11 +1,11 @@
 
 #lang racket/base
-(require racket/format)
-(require racket/place)
-(require racket/list)
-(require racket/math)
-(require racket/string)
-(require racket/file)
+(require (only-in racket/format ~a ~r))
+(require (only-in racket/place place place-channel-get place-channel-put))
+(require (only-in racket/list empty empty?))
+(require (only-in racket/math exact-floor))
+(require (only-in racket/string string-split string-replace string-prefix?))
+(require (only-in racket/file file->lines file->string))
 (provide main)
 ;;use "racket -tm compiled/swapview_rkt.zo"
 

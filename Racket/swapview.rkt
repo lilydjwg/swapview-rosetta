@@ -1,6 +1,10 @@
 #!/usr/bin/env racket
-#lang racket
-(require racket/format)
+#lang racket/base
+(require (only-in racket/format ~a ~r))
+(require (only-in racket/string string-split string-replace string-prefix?))
+(require (only-in racket/file file->lines file->string))
+(require (only-in racket/math exact-floor))
+(require (only-in racket/function curry))
 ;; Compile with `raco make --no-deps`
 (define (filesize n)
   (if (< n 1100) (format "~aB" n)
