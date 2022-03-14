@@ -43,29 +43,30 @@
     (if (zero? l) s (substring s 0 (- l 1)))))
 
 (define (getSwapFor)
-  (letrec ((pl (place ch
-                      (place-channel-put ch
-                                         (map
-                                          (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (e) "")])
-                                                          (strinit (string-replace
-                                                                    (file->string
-                                                                     (format "/proc/~a/cmdline" pid)) "\x0" " "))
-                                                          ))
-                                          pid-list))))
-           (format-pid (map fmtPid pid-list))
-           (size-list
-            (letrec ([swap? (lambda (l) (string-prefix? l "Swap:"))]
-                     [getSize (lambda (l) (cadr (string-split l)))]
-                     [getSmaps (lambda (pid)
-                                 (with-handlers ([exn:fail:filesystem? (lambda (e) empty)])
-                                   (filter swap? (file->lines (format "/proc/~a/smaps" pid)))))]
-                     [loop (lambda (pid-list)
-                             (cond
-                               [(empty? pid-list) empty]
-                               [else (cons (* 1024 (apply + (map (compose string->number getSize) (getSmaps (car pid-list)))))
-                                           (loop (cdr pid-list)))]))])
-              (loop pid-list)))
-           (cmd-list (place-channel-get pl)))
+  (define pl
+    (place ch
+           (place-channel-put ch
+                              (map
+                               (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (e) "")])
+                                               (strinit (string-replace
+                                                         (file->string
+                                                          (format "/proc/~a/cmdline" pid)) "\x0" " "))
+                                               ))
+                               pid-list))))
+  (let ((format-pid (map fmtPid pid-list))
+        (size-list
+         (letrec ([swap? (lambda (l) (string-prefix? l "Swap:"))]
+                  [getSize (lambda (l) (cadr (string-split l)))]
+                  [getSmaps (lambda (pid)
+                              (with-handlers ([exn:fail:filesystem? (lambda (e) empty)])
+                                (filter swap? (file->lines (format "/proc/~a/smaps" pid)))))]
+                  [loop (lambda (pid-list)
+                          (cond
+                            [(empty? pid-list) empty]
+                            [else (cons (* 1024 (apply + (map (compose string->number getSize) (getSmaps (car pid-list)))))
+                                        (loop (cdr pid-list)))]))])
+           (loop pid-list)))
+        (cmd-list (place-channel-get pl)))
     (map (lambda (pid size cmd) (list pid size cmd)) format-pid size-list cmd-list)))
 
 (define (getSwap)
