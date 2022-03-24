@@ -1,16 +1,12 @@
 
 #lang racket/base
 (require (only-in racket/format ~a ~r)
-         (only-in racket/place place place-channel-get place-channel-put)
          (only-in racket/list empty empty?)
          (only-in racket/math exact-floor)
-         (only-in racket/string string-split string-replace string-prefix?)
-         (only-in racket/file file->lines file->string))
+         (only-in racket/string string-split string-prefix?)
+         (only-in racket/file file->lines))
 (provide main)
 ;;use "racket -tm compiled/swapview_rkt.zo"
-
-(define pid-list (filter string->number
-                         (map path->string (directory-list "/proc"))))
 
 (define (fmt1 s1 s2 s3)
   (begin
@@ -38,23 +34,40 @@
     (display (~a n  #:min-width 10 #:align 'right))
     (newline)))
 
-(define (strinit s)
-  (let ([l (string-length s)])
-    (if (zero? l) s (substring s 0 (- l 1)))))
+(module p racket/base
+  (require (only-in racket/string string-replace)
+           (only-in racket/file file->string make-temporary-file)
+           (only-in racket/place place))
+  (provide pid-list parallel)
+  (define pid-list (filter string->number
+                           (map path->string (directory-list "/proc"))))
+  (define (strinit s)
+    (let ([l (string-length s)])
+      (if (zero? l) s (substring s 0 (- l 1)))))
+  (define temp (make-temporary-file))
+  (define (getCmdln)
+    (map
+     (lambda (pid) (writeln
+                    (with-handlers ([exn:fail:filesystem? (lambda (e) "")])
+                      (strinit (string-replace
+                                (file->string
+                                 (format "/proc/~a/cmdline" pid)) "\x0" " "))
+                      )
+                    (current-output-port)))
+     pid-list))
+  (define (parallel)
+    (place ch
+           (with-output-to-file temp getCmdln #:exists 'update))
+    temp))
+
+(require 'p)
+
+(define temp (parallel))
+
+(define format-pid (map fmtPid pid-list))
 
 (define (getSwapFor)
-  (define pl
-    (place ch
-           (place-channel-put ch
-                              (map
-                               (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (e) "")])
-                                               (strinit (string-replace
-                                                         (file->string
-                                                          (format "/proc/~a/cmdline" pid)) "\x0" " "))
-                                               ))
-                               pid-list))))
-  (let ((format-pid (map fmtPid pid-list))
-        (size-list
+  (let ((size-list
          (letrec ([swap? (lambda (l) (string-prefix? l "Swap:"))]
                   [getSize (lambda (l) (cadr (string-split l)))]
                   [getSmaps (lambda (pid)
@@ -65,9 +78,11 @@
                             [(empty? pid-list) empty]
                             [else (cons (* 1024 (apply + (map (compose string->number getSize) (getSmaps (car pid-list)))))
                                         (loop (cdr pid-list)))]))])
-           (loop pid-list)))
-        (cmd-list (place-channel-get pl)))
-    (map (lambda (pid size cmd) (list pid size cmd)) format-pid size-list cmd-list)))
+           (loop pid-list))))
+    (with-input-from-file temp (lambda () (map
+                                           (lambda (pid size)
+                                             (list pid size (if (= size 0) 0 ((compose fmtSize filesize) size)) (read (current-input-port))))
+                                           format-pid size-list)))))
 
 (define (getSwap)
   (begin
@@ -75,12 +90,14 @@
                   (getSwapFor))
           #:key cadr <)))
 
+(define results (getSwap))
+
 (define (main)
-  (define results (getSwap))
   (let ((pid-list (map car results))
         (size-list (map cadr results))
-        (cmd-list (map caddr results)))
+        (format-size (map caddr results))
+        (cmd-list (map cadddr results)))
     (begin
       (fmt1 (fmtPid "PID") (fmtSize "SWAP") "COMMAND")
-      (map (lambda (pid size cmd) (fmt1 pid ((compose fmtSize filesize) size) cmd)) pid-list size-list cmd-list)
+      (map (lambda (pid size cmd) (fmt1 pid size cmd)) pid-list format-size cmd-list)
       (total (filesize (apply + size-list))))))
