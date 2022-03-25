@@ -1,17 +1,19 @@
 #lang racket/base
 (require
   (only-in racket/format ~a ~r)
-  (only-in racket/list split-at)
-  (only-in racket/math exact-floor)
   (only-in racket/string string-replace))
 (provide main)
 
 (module p racket/base
   (require (only-in racket/file file->lines file->string)
-           (only-in racket/list empty)
-           (only-in racket/place place place-channel-put place-channel-get place-channel place-channel-put/get)
+           (only-in racket/list empty split-at)
+           (only-in racket/math exact-floor)
+           (only-in racket/place place place-channel-put place-channel-get place-channel)
            (only-in racket/string string-split string-prefix?))
-  (provide pl2 getSmaps getSize parallel place-channel-put/get file->string)
+  (provide pid-list former pl2 getSmaps getSize parallel place-channel-get file->string exact-floor)
+  (define pid-list (filter string->number (map path->string (directory-list "/proc"))))
+  (define len (length pid-list))
+  (define-values (former latter) (split-at pid-list (exact-floor (/ len 2))))
   (define-values (pl1 pl2) (place-channel))
   (define (getSmaps pid-list) (map (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (exn) empty)])
                                                    (file->lines (format "/proc/~a/smaps" pid))))
@@ -23,7 +25,6 @@
   (define (parallel) (define pl
                        (place ch
                               (define pl1 (place-channel-get ch))
-                              (define latter (place-channel-get pl1))
                               (place-channel-put pl1 (getSize (getSmaps latter)))))
     (place-channel-put pl pl1))
   )
@@ -32,10 +33,7 @@
 
 (parallel)
 
-(define pid-list (filter string->number (map path->string (directory-list "/proc"))))
-(define len (length pid-list))
-(define-values (former latter) (split-at pid-list (exact-floor (/ len 2))))
-(define size-list (append (getSize (getSmaps former)) (place-channel-put/get pl2 latter)))
+(define size-list (append (getSize (getSmaps former)) (place-channel-get pl2)))
 (define cmdline-list (map (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (exn) "")])
                                           (file->string (format "/proc/~a/cmdline" pid))))
                           pid-list))
