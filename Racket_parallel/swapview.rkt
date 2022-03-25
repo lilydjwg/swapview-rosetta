@@ -1,29 +1,45 @@
 #lang racket/base
 (require
   (only-in racket/format ~a ~r)
+  (only-in racket/list split-at)
   (only-in racket/math exact-floor)
   (only-in racket/string string-replace))
 (provide main)
 
 (module p racket/base
-  (require (only-in racket/file file->string file->lines)
+  (require (only-in racket/file file->lines file->string)
            (only-in racket/list empty)
+           (only-in racket/place place place-channel-put place-channel-get place-channel place-channel-put/get)
            (only-in racket/string string-split string-prefix?))
-  (provide result-list size-list)
-  (define pid-list (filter string->number (map path->string (directory-list "/proc"))))
-  (define smaps-list (map (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (exn) empty)])
-                                          (file->lines (format "/proc/~a/smaps" pid))))
-                          pid-list))
-  (define size-list (map (lambda (smaps)
-                           (* 1024 (apply + (map (lambda (s) (cond [(string-prefix? s "Swap:") (string->number (cadr (string-split s)))]
-                                                                   [else 0])) smaps))))
-                         smaps-list))
-  (define cmdline-list (map (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (exn) "")])
-                                            (file->string (format "/proc/~a/cmdline" pid))))
-                            pid-list))
-  (define result-list (map (lambda (pid size cmd) (list pid size cmd)) pid-list size-list cmdline-list)))
+  (provide pl2 getSmaps getSize parallel place-channel-put/get file->string)
+  (define-values (pl1 pl2) (place-channel))
+  (define (getSmaps pid-list) (map (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (exn) empty)])
+                                                   (file->lines (format "/proc/~a/smaps" pid))))
+                                   pid-list))
+  (define (getSize smaps-list) (map (lambda (smaps)
+                                      (* 1024 (apply + (map (lambda (s) (cond [(string-prefix? s "Swap:") (string->number (cadr (string-split s)))]
+                                                                              [else 0])) smaps))))
+                                    smaps-list))
+  (define (parallel) (define pl
+                       (place ch
+                              (define pl1 (place-channel-get ch))
+                              (define latter (place-channel-get pl1))
+                              (place-channel-put pl1 (getSize (getSmaps latter)))))
+    (place-channel-put pl pl1))
+  )
 
 (require 'p)
+
+(parallel)
+
+(define pid-list (filter string->number (map path->string (directory-list "/proc"))))
+(define len (length pid-list))
+(define-values (former latter) (split-at pid-list (exact-floor (/ len 2))))
+(define size-list (append (getSize (getSmaps former)) (place-channel-put/get pl2 latter)))
+(define cmdline-list (map (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (exn) "")])
+                                          (file->string (format "/proc/~a/cmdline" pid))))
+                          pid-list))
+(define result-list (map (lambda (pid size cmd) (list pid size cmd)) pid-list size-list cmdline-list))
 
 (define (fmtPid pid) (~a pid  #:width 7 #:align 'right))
 (define (filesize n)
