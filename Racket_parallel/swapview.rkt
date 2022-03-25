@@ -1,39 +1,18 @@
 #lang racket/base
 (require
+  (for-syntax racket/base)
+  (only-in racket/file file->string)
   (only-in racket/format ~a ~r)
-  (only-in racket/string string-replace))
+  (only-in racket/place dynamic-place place-channel-get)
+  (only-in racket/string string-replace)
+  (except-in (file "place.rkt") parallel))
 (provide main)
 
-(module p racket/base
-  (require (only-in racket/file file->lines file->string)
-           (only-in racket/list empty split-at)
-           (only-in racket/math exact-floor)
-           (only-in racket/place place place-channel-put place-channel-get place-channel)
-           (only-in racket/string string-split string-prefix?))
-  (provide pid-list former pl2 getSmaps getSize parallel place-channel-get file->string exact-floor)
-  (define pid-list (filter string->number (map path->string (directory-list "/proc"))))
-  (define len (length pid-list))
-  (define-values (former latter) (split-at pid-list (exact-floor (/ len 2))))
-  (define-values (pl1 pl2) (place-channel))
-  (define (getSmaps pid-list) (map (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (exn) empty)])
-                                                   (file->lines (format "/proc/~a/smaps" pid))))
-                                   pid-list))
-  (define (getSize smaps-list) (map (lambda (smaps)
-                                      (* 1024 (apply + (map (lambda (s) (cond [(string-prefix? s "Swap:") (string->number (cadr (string-split s)))]
-                                                                              [else 0])) smaps))))
-                                    smaps-list))
-  (define (parallel) (define pl
-                       (place ch
-                              (define pl1 (place-channel-get ch))
-                              (place-channel-put pl1 (getSize (getSmaps latter)))))
-    (place-channel-put pl pl1))
-  )
-
-(require 'p)
-
-(parallel)
-
-(define size-list (append (getSize (getSmaps former)) (place-channel-get pl2)))
+(define-for-syntax path (string->path "place.rkt"))
+(define path (string->path "place.rkt"))
+(define size-list (let ((pl (dynamic-place path 'parallel))
+                        (former (getSize (getSmaps former))))
+                    (append former (place-channel-get pl))))
 (define cmdline-list (map (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (exn) "")])
                                           (file->string (format "/proc/~a/cmdline" pid))))
                           pid-list))
