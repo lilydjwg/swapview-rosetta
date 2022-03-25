@@ -204,7 +204,7 @@ cmd = ["racket", "compiled/swapview_rkt.zo"]
 
 [item.Racket_parallel]
 dir = "Racket_parallel"
-cmd = ["racket", "-tm", "compiled/swapview_rkt.zo"]
+cmd = ["racket", "-tm", "swapview.rkt"]
 
 [item.Ruby]
 cmd = ["./swapview.rb"]

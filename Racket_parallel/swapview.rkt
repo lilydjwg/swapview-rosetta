@@ -4,19 +4,11 @@
   (only-in racket/file file->string)
   (only-in racket/format ~a ~r)
   (only-in racket/place dynamic-place place-channel-get)
+  (only-in racket/runtime-path define-runtime-path)
   (only-in racket/string string-replace)
   (except-in (file "place.rkt") parallel))
 (provide main)
-
-(define-for-syntax path (string->path "place.rkt"))
-(define path (string->path "place.rkt"))
-(define size-list (let ((pl (dynamic-place path 'parallel))
-                        (former (getSize (getSmaps former))))
-                    (append former (place-channel-get pl))))
-(define cmdline-list (map (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (exn) "")])
-                                          (file->string (format "/proc/~a/cmdline" pid))))
-                          pid-list))
-(define result-list (map (lambda (pid size cmd) (list pid size cmd)) pid-list size-list cmdline-list))
+(define-runtime-path path (string->path "place.rkt"))
 
 (define (fmtPid pid) (~a pid  #:width 7 #:align 'right))
 (define (filesize n)
@@ -30,6 +22,15 @@
   (let ([s (string-replace s "\x0" " ")]
         [l (string-length s)])
     (if (zero? l) s (substring s 0 (- l 1)))))
+
+(define-values (size-list result-list)
+  (let ((pl (dynamic-place path 'parallel))
+        (former (getSize (getSmaps former)))
+        (cmdline-list (map (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (exn) "")])
+                                           (file->string (format "/proc/~a/cmdline" pid))))
+                           pid-list)))
+    (define size-list (append former (place-channel-get pl)))
+    (values size-list (map (lambda (pid size cmd) (list pid size cmd)) pid-list size-list cmdline-list))))
 
 (define format-result (map (lambda (result) (list ((compose fmtPid car) result)
                                                   ((compose fmtSize filesize cadr) result)

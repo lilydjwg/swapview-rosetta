@@ -7,7 +7,7 @@
 (provide pid-list former getSmaps getSize parallel exact-floor)
 (define pid-list (filter string->number (map path->string (directory-list "/proc"))))
 (define len (length pid-list))
-(define-values (former latter) (split-at pid-list (exact-floor (/ len 2))))
+(define-values (former latter) (split-at pid-list (exact-floor (/ (* 5 len) 12))))
 (define (getSmaps pid-list) (map (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (exn) empty)])
                                                  (file->lines (format "/proc/~a/smaps" pid))))
                                  pid-list))
