@@ -3,7 +3,7 @@
 all: compiled/swapview_rkt.zo
 
 compiled/swapview_rkt.zo: swapview.rkt
-	raco make --no-deps swapview.rkt
+	raco make swapview.rkt
 
 run: all
 	racket -tm swapview.rkt
