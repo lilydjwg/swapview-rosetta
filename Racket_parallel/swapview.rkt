@@ -1,14 +1,31 @@
 #lang racket/base
 (require
-  (for-syntax racket/base)
   (only-in racket/file file->string)
   (only-in racket/format ~a ~r)
-  (only-in racket/place dynamic-place*)
-  (only-in racket/runtime-path define-runtime-path)
-  (only-in racket/string string-replace)
-  (except-in (file "place.rkt") parallel))
+  (only-in racket/string string-replace))
 (provide main)
-(define-runtime-path path (string->path "place.rkt"))
+
+(module p racket/base
+  (require (only-in racket/file file->lines)
+           (only-in racket/list empty split-at)
+           (only-in racket/math exact-floor)
+           (only-in racket/place place*)
+           (only-in racket/string string-split string-prefix?))
+  (provide pid-list former getSmaps getSize parallel exact-floor)
+  (define pid-list (filter string->number (map path->string (directory-list "/proc"))))
+  (define len (length pid-list))
+  (define-values (former latter) (split-at pid-list (exact-floor (/ len 2))))
+  (define (getSmaps pid-list) (map (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (exn) empty)])
+                                                   (file->lines (format "/proc/~a/smaps" pid))))
+                                   pid-list))
+  (define (getSize smaps-list) (map (lambda (smaps)
+                                      (* 1024 (apply + (map (lambda (s) (cond [(string-prefix? s "Swap:") (string->number (cadr (string-split s)))]
+                                                                              [else 0])) smaps))))
+                                    smaps-list))
+  (define (parallel out)
+    (place* #:in #f #:out out #:err #f ch (display (getSize (getSmaps latter)) (current-output-port)))))
+
+(require 'p)
 
 (define (fmtPid pid) (~a pid  #:width 7 #:align 'right))
 (define (filesize n)
@@ -28,7 +45,7 @@
 
 (define-values (in out) (make-pipe))
 (define-values (size-list result-list)
-  (let-values (((pl i o e) (dynamic-place* path 'parallel #:in (current-input-port) #:out out #:err (current-error-port)))
+  (let-values (((pl i o e) (parallel out))
                ((former) (getSize (getSmaps former)))
                ((cmdline-list) (map (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (exn) "")])
                                                     (file->string (format "/proc/~a/cmdline" pid))))
