@@ -14,7 +14,7 @@
            (only-in racket/string string-split string-prefix?))
   (provide pid-list len getSmaps getSize parallel exact-floor)
   (define pid-list (filter string->number (map path->string (directory-list "/proc"))))
-  (define len (length pid-list))
+  (define len (exact-floor (/ (length pid-list) 2)))
   (define (getSmaps pid-list) (map (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (exn) empty)])
                                                    (file->lines (format "/proc/~a/smaps" pid))))
                                    pid-list))
@@ -24,7 +24,7 @@
                                     smaps-list))
   (define (parallel out)
     (place* #:in #f #:out out #:err #f ch
-            (define latter (drop pid-list (exact-floor (/ len 2))))
+            (define latter (drop pid-list len))
             (display (getSize (getSmaps latter)) (current-output-port)))))
 
 (require 'p)
@@ -48,11 +48,11 @@
 (define-values (in out) (make-pipe))
 (define-values (size-list result-list)
   (let-values (((pl i o e) (parallel out))
-               ((former) (getSize (getSmaps (take pid-list (exact-floor (/ len 2))))))
+               ((former) (time (getSize (getSmaps (take pid-list len)))))
                ((cmdline-list) (map (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (exn) "")])
                                                     (file->string (format "/proc/~a/cmdline" pid))))
                                     pid-list)))
-    (define size-list (append former (port->list in)))
+    (define size-list (append former (time (port->list in))))
     (values size-list (map (lambda (pid size cmd) (list pid size cmd)) pid-list size-list cmdline-list))))
 
 (define format-result (map (lambda (result) (list ((compose fmtPid car) result)
