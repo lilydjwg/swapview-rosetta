@@ -6,7 +6,7 @@ compiled/swapview_rkt.zo: swapview.rkt
 	raco make --no-deps swapview.rkt
 
 run: all
-	racket -tm swapview.rkt
+	racket -tm compiled/swapview_rkt.zo
 
 clean:
 	rm -rf compiled
