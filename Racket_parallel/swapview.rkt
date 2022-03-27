@@ -31,7 +31,7 @@
 (define (fmtPid pid) (~a pid  #:width 7 #:align 'right))
 (define (filesize n)
   (if (< n 1100) (format "~aB" n)
-      (letrec ([p (exact-floor (/ (log (/ n 1100)) (log 1024)))]
+      (letrec ([p (exact-floor (log (/ n 1100) 1024))]
                [s (~r (/ n (expt 1024 (add1 p))) #:precision '(= 1))]
                [unit (string-ref "KMGT" p)])
         (format "~a~aiB" s unit))))
@@ -46,14 +46,15 @@
 
 (define-values (in out) (make-pipe))
 (define-values (size-list result-list)
-  (let-values (((pl i o e) (parallel out))
-               ((former) (map (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (exn) 0)])
-                                              (getSize (getSmaps pid)))) (take pid-list len)))
-               ((cmdline-list) (map (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (exn) "")])
-                                                    (file->string (format "/proc/~a/cmdline" pid))))
-                                    pid-list)))
-    (define size-list (append former (port->list in)))
-    (values size-list (map (lambda (pid size cmd) (list pid size cmd)) pid-list size-list cmdline-list))))
+  (begin
+    (parallel out)
+    (let ((former (map (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (exn) 0)])
+                                       (getSize (getSmaps pid)))) (take pid-list len)))
+          (cmdline-list (map (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (exn) "")])
+                                             (file->string (format "/proc/~a/cmdline" pid))))
+                             pid-list)))
+      (define size-list (append former (port->list in)))
+      (values size-list (map (lambda (pid size cmd) (list pid size cmd)) pid-list size-list cmdline-list)))))
 
 (define format-result (map (lambda (result) (list ((compose fmtPid car) result)
                                                   ((compose fmtSize filesize cadr) result)
