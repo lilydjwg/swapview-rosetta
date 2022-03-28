@@ -8,7 +8,7 @@
 
 (module p racket/base
   (require (only-in racket/file file->lines)
-           (only-in racket/list empty drop)
+           (only-in racket/list drop)
            (only-in racket/math exact-floor)
            (only-in racket/place place*)
            (only-in racket/string string-split string-prefix?))
