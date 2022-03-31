@@ -2,24 +2,16 @@
 (require
   (only-in racket/file file->string)
   (only-in racket/format ~a ~r)
-  (only-in racket/list take)
-  (only-in racket/place place-channel-get)
+  (only-in racket/list take drop)
+  (only-in racket/math exact-floor)
   (only-in racket/string string-replace))
 (provide main)
 
-(module a racket/base
-  (require (only-in racket/math exact-floor))
-  (provide pid-list len exact-floor)
-  (define pid-list (filter string->number (map path->string (directory-list "/proc"))))
-  (define len (exact-floor (/ (length pid-list) 3/2))))
-
 (module p racket/base
   (require (only-in racket/file file->lines)
-           (only-in racket/list drop)
-           (only-in racket/place place place-channel-put)
-           (only-in racket/string string-split string-prefix?)
-           (submod ".." a))
-  (provide getSmaps getSize parallel)
+           (only-in racket/place place place-channel-put place-channel-get)
+           (only-in racket/string string-split string-prefix?))
+  (provide getSmaps getSize parallel place-channel-put place-channel-get)
   (define getSmaps (lambda (pid)
                      (file->lines (format "/proc/~a/smaps" pid))))
   (define getSize (lambda (smaps)
@@ -27,12 +19,12 @@
                                                             [else 0])) smaps)))))
   (define (parallel)
     (place ch
-           (define latter (drop pid-list len))
+           (define latter (place-channel-get ch))
            (place-channel-put ch (map (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (exn) 0)])
                                                       (getSize (getSmaps pid)))) latter)))
     ))
 
-(require 'p 'a)
+(require 'p)
 
 (define (fmtPid pid) (~a pid  #:width 7 #:align 'right))
 (define (filesize n)
@@ -47,9 +39,12 @@
         [l (string-length s)])
     (if (zero? l) s (substring s 0 (- l 1)))))
 
+(define pl (parallel))
+(define pid-list (filter string->number (map path->string (directory-list "/proc"))))
+(define len (exact-floor (* (length pid-list) 2/3)))
+(place-channel-put pl (drop pid-list len))
 (define-values (size-list result-list)
-  (let ((pl (parallel))
-        (former (map (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (exn) 0)])
+  (let ((former (map (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (exn) 0)])
                                      (getSize (getSmaps pid)))) (take pid-list len)))
         (cmdline-list (map (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (exn) "")])
                                            (file->string (format "/proc/~a/cmdline" pid))))
