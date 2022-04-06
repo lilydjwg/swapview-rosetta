@@ -3,6 +3,7 @@
   (only-in racket/file file->string)
   (only-in racket/format ~a ~r)
   (only-in racket/math exact-floor)
+  racket/match
   (only-in racket/string string-replace)
   (only-in racket/place place-channel-get)
   (submod racket/performance-hint begin-encourage-inline))
@@ -74,10 +75,14 @@
     (define size-list (append former (place-channel-get pl)))
     (values size-list (map (lambda (pid size cmd) (list pid size cmd)) pid-list size-list cmdline-list))))
 
-(define format-result (map (lambda (result) (list ((compose fmtPid car) result)
-                                                  ((compose fmtSize filesize cadr) result)
-                                                  ((compose strinit caddr) result)))
-                           (sort (filter (lambda (result) (not (zero? (cadr result)))) result-list) #:key cadr <)))
+(define format-result (match (sort (filter (lambda (result) (not (zero? (cadr result)))) result-list) #:key cadr <)
+                        ((list (list pid size cmd) ...)
+                         (map (lambda (pid size cmd)
+                                (list
+                                 (fmtPid pid)
+                                 (fmtSize (filesize size))
+                                 (strinit cmd)))
+                              pid size cmd))))
 
 (define (main)
   (fmt1 (fmtPid "PID") (fmtSize "SWAP") "COMMAND")
