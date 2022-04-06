@@ -9,25 +9,26 @@
 (define-values (former latter) (split-at pid-list len))
 
 (module* p #f
-  (require (only-in racket/file file->lines)
+  (require (only-in racket/file file->lines file->string)
            (only-in racket/place place place-channel-put)
            (only-in racket/string string-split string-prefix?))
-  (provide getSmaps getSize parallel)
+  (provide getSmaps getSize getCmdline parallel)
   (begin-encourage-inline
     (define getSmaps (lambda (pid)
                        (file->lines (format "/proc/~a/smaps" pid))))
     (define getSize (lambda (smaps)
                       (* 1024 (apply + (map (lambda (s) (cond [(string-prefix? s "Swap:") (string->number (cadr (string-split s)))]
-                                                              [else 0])) smaps))))))
+                                                              [else 0])) smaps)))))
+    (define getCmdline (lambda (pid)
+                         (file->string (format "/proc/~a/cmdline" pid)))))
   (define (parallel)
     (place ch
-           (place-channel-put ch (map (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (exn) 0)])
-                                                      (getSize (getSmaps pid)))) latter)))
+           (place-channel-put ch (map (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (exn) (list pid 0 ""))])
+                                                      (list pid (getSize (getSmaps pid)) (getCmdline pid)))) latter)))
     ))
 
 (module* main #f
   (require (submod ".." p)
-           (only-in racket/file file->string)
            (only-in racket/format ~a ~r)
            racket/match
            (only-in racket/string string-replace)
@@ -56,24 +57,23 @@
         (display "Total: ")
         (display (~a n  #:min-width 10 #:align 'right))
         (newline))))
-  (define-values (size-list result-list)
-    (let ((pl (parallel))
-          (former (map (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (exn) 0)])
-                                       (getSize (getSmaps pid)))) former))
-          (cmdline-list (map (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (exn) "")])
-                                             (file->string (format "/proc/~a/cmdline" pid))))
-                             pid-list)))
-      (define size-list (append former (place-channel-get pl)))
-      (values size-list (map (lambda (pid size cmd) (list pid size cmd)) pid-list size-list cmdline-list))))
 
-  (define format-result (match (sort (filter (lambda (result) (not (zero? (cadr result)))) result-list) #:key cadr <)
-                          ((list (list pid size cmd) ...)
-                           (map (lambda (pid size cmd)
-                                  (list
-                                   (fmtPid pid)
-                                   (fmtSize (filesize size))
-                                   (strinit cmd)))
-                                pid size cmd))))
+  (define result-list
+    (let ((pl (parallel))
+          (former (map (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (exn) (list pid 0 ""))])
+                                       (list pid (getSize (getSmaps pid)) (getCmdline pid)))) former)))
+      (append former (place-channel-get pl))))
+
+  (define-values (size-list format-result)
+    (match (sort (filter (lambda (result) (not (zero? (cadr result)))) result-list) #:key cadr <)
+      ((list (list pid size cmd) ...)
+       (values size
+               (map (lambda (pid size cmd)
+                      (list
+                       (fmtPid pid)
+                       (fmtSize (filesize size))
+                       (strinit cmd)))
+                    pid size cmd)))))
 
   (void
    (fmt1 (fmtPid "PID") (fmtSize "SWAP") "COMMAND")
