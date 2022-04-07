@@ -12,7 +12,7 @@
   (require (only-in racket/file file->lines file->string)
            (only-in racket/place place place-channel-put)
            (only-in racket/string string-split string-prefix?))
-  (provide getSmaps getSize getCmdline parallel)
+  (provide getAll parallel)
   (begin-encourage-inline
     (define getSmaps (lambda (pid)
                        (file->lines (format "/proc/~a/smaps" pid))))
@@ -20,16 +20,18 @@
                       (* 1024 (apply + (map (lambda (s) (cond [(string-prefix? s "Swap:") (string->number (cadr (string-split s)))]
                                                               [else 0])) smaps)))))
     (define getCmdline (lambda (pid)
-                         (file->string (format "/proc/~a/cmdline" pid)))))
+                         (file->string (format "/proc/~a/cmdline" pid))))
+    (define getAll (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (exn) (list pid 0 ""))])
+                                   (list pid (getSize (getSmaps pid)) (getCmdline pid))))))
   (define (parallel)
     (place ch
-           (place-channel-put ch (map (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (exn) (list pid 0 ""))])
-                                                      (list pid (getSize (getSmaps pid)) (getCmdline pid)))) latter)))
+           (place-channel-put ch (map getAll latter)))
     ))
 
 (module* main #f
   (require (submod ".." p)
            (only-in racket/format ~a ~r)
+           (only-in racket/list remove-duplicates)
            racket/match
            (only-in racket/string string-replace)
            (only-in racket/place place-channel-get))
@@ -60,12 +62,11 @@
 
   (define result-list
     (let ((pl (parallel))
-          (former (map (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (exn) (list pid 0 ""))])
-                                       (list pid (getSize (getSmaps pid)) (getCmdline pid)))) former)))
+          (former (map getAll former)))
       (append former (place-channel-get pl))))
 
   (define-values (size-list format-result)
-    (match (sort (filter (lambda (result) (not (zero? (cadr result)))) result-list) #:key cadr <)
+    (match (sort (remove-duplicates (filter (lambda (result) (not (zero? (cadr result)))) result-list) string=? #:key car) #:key cadr <)
       ((list (list pid size cmd) ...)
        (values size
                (map (lambda (pid size cmd)
