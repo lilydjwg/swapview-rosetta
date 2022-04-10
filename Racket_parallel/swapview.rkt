@@ -1,18 +1,16 @@
 #lang racket/base
-(require
-  (only-in racket/list split-at)
-  (only-in racket/math exact-floor)
-  (submod racket/performance-hint begin-encourage-inline))
 
-(define pid-list (filter string->number (map path->string (directory-list "/proc"))))
-(define len (exact-floor (* (length pid-list) 1/2)))
-(define-values (former latter) (split-at pid-list len))
-
-(module* p #f
-  (require (only-in racket/file file->lines file->string)
-           (only-in racket/place place place-channel-put)
+(module* shared #f
+  (require (only-in racket/list split-at)
+           (only-in racket/math exact-floor)
+           (submod racket/performance-hint begin-encourage-inline)
+           (only-in racket/file file->lines file->string)
            (only-in racket/string string-split string-prefix?))
-  (provide getAll parallel)
+  (provide former latter getAll)
+
+  (define pid-list (filter string->number (map path->string (directory-list "/proc"))))
+  (define len (exact-floor (* (length pid-list) 1/2)))
+  (define-values (former latter) (split-at pid-list len))
   (begin-encourage-inline
     (define getSmaps (lambda (pid)
                        (file->lines (format "/proc/~a/smaps" pid))))
@@ -22,19 +20,36 @@
     (define getCmdline (lambda (pid)
                          (file->string (format "/proc/~a/cmdline" pid))))
     (define getAll (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (exn) (list pid 0 ""))])
-                                   (list pid (getSize (getSmaps pid)) (getCmdline pid))))))
-  (define (parallel)
-    (place ch
-           (place-channel-put ch (map getAll latter)))
-    ))
+                                   (list pid (getSize (getSmaps pid)) (getCmdline pid)))))))
+
+(module* helper #f
+  (require (for-syntax racket/base
+                       (only-in (submod ".." shared) former latter))
+           (only-in (submod ".." shared) getAll)
+           (only-in racket/place place place-channel-put place-channel-get))
+  (provide parallel)
+
+  (begin-for-syntax
+    (define (helper)
+      #`(let ((pl
+               (place ch
+                      (place-channel-put ch (map getAll (list #,@latter)))))
+              (former (map getAll (list #,@former))))
+          (append former (place-channel-get pl)))
+      ))
+  (define-syntax (generate stx)
+    (syntax-case stx ()
+      ((_) #`#,(helper))))
+  (define (parallel) (generate)))
 
 (module* main #f
-  (require (submod ".." p)
+  (require (submod ".." helper)
            (only-in racket/format ~a ~r)
-           (only-in racket/list remove-duplicates)
            racket/match
+           (only-in racket/math exact-floor)
            (only-in racket/string string-replace)
-           (only-in racket/place place-channel-get))
+           (submod racket/performance-hint begin-encourage-inline))
+
   (begin-encourage-inline
     (define (fmtPid pid) (~a pid  #:width 7 #:align 'right))
     (define (filesize n)
@@ -60,13 +75,10 @@
         (display (~a n  #:min-width 10 #:align 'right))
         (newline))))
 
-  (define result-list
-    (let ((pl (parallel))
-          (former (map getAll former)))
-      (append former (place-channel-get pl))))
+  (define result-list (parallel))
 
   (define-values (size-list format-result)
-    (match (sort (remove-duplicates (filter (lambda (result) (not (zero? (cadr result)))) result-list) string=? #:key car) #:key cadr <)
+    (match (sort (filter (lambda (result) (not (zero? (cadr result)))) result-list) #:key cadr <)
       ((list (list pid size cmd) ...)
        (values size
                (map (lambda (pid size cmd)
