@@ -28,6 +28,7 @@ D_parallel/swapview-llvm
 C++98/swapview_omp
 Racket/compiled
 Racket_parallel/compiled
+Racket_parallel/swapview
 Nim/nimcache/
 maketime
 Rust_parallel/.swapview/target
