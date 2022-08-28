@@ -209,6 +209,9 @@ cmd = ["racket", "-t", "compiled/swapview_rkt.zo"]
 [item.Ruby]
 cmd = ["./swapview.rb"]
 
+[item.Ruby_ractor]
+cmd = ["./swapview.rb"]
+
 [item.Ruby_rubinius]
 dir = "Ruby"
 cmd = ["rbx", "swapview.rb"]
