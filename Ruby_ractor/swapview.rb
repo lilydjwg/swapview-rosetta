@@ -1,0 +1,51 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# for Ruby 3+
+
+FORMAT = '%7s %9s %s'
+TOTALFMT = 'Total: %10s'
+
+UNITS = %w[B KiB MiB GiB TiB].freeze
+def filesize(size)
+  left = size.abs
+  num, unit = UNITS.each_with_index do |_, i|
+    l = left / 1024.0**i
+    break l, i if (l <= 1100) || (i == UNITS.length - 1)
+  end
+  return "#{size}B" if unit.zero?
+
+  format('%.1f%s', size.negative? ? -num : num, UNITS[unit])
+end
+
+def get_swap_for(pid)
+  comm = File.read("/proc/#{pid}/cmdline").chomp("\0").tr("\0", ' ')
+  s = File.read("/proc/#{pid}/smaps").split("\n")
+          .select { |l| l.start_with? 'Swap: ' }
+          .map { |l| l[6..-1].to_i }
+          .sum.to_i
+  [s * 1024, pid, comm]
+rescue StandardError
+  [0, pid, nil]
+end
+
+def get_swap
+  ractors = []
+  Dir.entries('/proc')
+     .map do |pid|
+       ractors << Ractor.new(pid) do |pid|
+         get_swap_for pid unless pid.to_i.zero?
+       end
+     end
+  ractors.map(&:take)
+         .select { |s| s&.first&.positive? }
+         .sort_by(&:first)
+end
+
+results = get_swap
+puts format(FORMAT, 'PID', 'SWAP', 'COMMAND')
+results.each do |(swap, pid, comm)|
+  puts format(FORMAT, pid, filesize(swap), comm)
+end
+t = results.map(&:first).sum.to_i
+puts TOTALFMT % filesize(t)
