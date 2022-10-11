@@ -19,8 +19,8 @@
                                                               [else 0])) smaps)))))
     (define getCmdline (lambda (pid)
                          (file->string (format "/proc/~a/cmdline" pid))))
-    (define getAll (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (exn) (list pid 0 ""))])
-                                   (list pid (getSize (getSmaps pid)) (getCmdline pid)))))))
+    (define getAll (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (exn) #f)])
+                                   (let/cc ret (list pid (let ((v (getSize (getSmaps pid)))) (if (zero? v) (ret #f) v)) (getCmdline pid))))))))
 
 (module* helper #f
   (require (for-syntax racket/base
@@ -74,7 +74,7 @@
   (define result-list (getResult))
 
   (define-values (size-list format-result)
-    (match (sort (filter (lambda (result) (not (zero? (cadr result)))) result-list) #:key cadr <)
+    (match (sort (filter values result-list) #:key cadr <)
       ((list (list pid size cmd) ...)
        (values size
                (map (lambda (pid size cmd)
