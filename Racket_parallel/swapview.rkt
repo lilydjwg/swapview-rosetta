@@ -27,20 +27,16 @@
                        (only-in (submod ".." shared) former latter))
            (only-in (submod ".." shared) getAll)
            (only-in racket/place place place-channel-put place-channel-get))
-  (provide parallel)
+  (provide getResult)
 
-  (begin-for-syntax
-    (define (helper)
-      #`(let ((pl
-               (place ch
-                      (place-channel-put ch (map getAll (list #,@latter)))))
-              (former (map getAll (list #,@former))))
-          (append former (place-channel-get pl)))
-      ))
-  (define-syntax (generate stx)
+  (define-syntax (parallel stx)
     (syntax-case stx ()
-      ((_) #`#,(helper))))
-  (define (parallel) (generate)))
+      ((_) #`(let ((pl
+                    (place ch
+                           (place-channel-put ch (map getAll (list #,@latter))))))
+               (append (map getAll (list #,@former)) (place-channel-get pl))))))
+
+  (define (getResult) (parallel)))
 
 (module* main #f
   (require (submod ".." helper)
@@ -75,7 +71,7 @@
         (display (~a n  #:min-width 10 #:align 'right))
         (newline))))
 
-  (define result-list (parallel))
+  (define result-list (getResult))
 
   (define-values (size-list format-result)
     (match (sort (filter (lambda (result) (not (zero? (cadr result)))) result-list) #:key cadr <)
