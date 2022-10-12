@@ -196,7 +196,7 @@ dir = "Python3_bytes"
 cmd = ["./swapview.r"]
 
 [item.Racket]
-cmd = ["./swapview.rkt"]
+cmd = ["racket", "./swapview.rkt", "--no-compiled"]
 
 [item.Racket_compiled]
 dir = "Racket"

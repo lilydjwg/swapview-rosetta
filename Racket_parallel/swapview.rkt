@@ -66,16 +66,9 @@
 
   (begin-encourage-inline
     (define (fmt1 s1 s2 s3)
-      (begin
-        (map display (list s1 " "
-                           s2 " "
-                           s3))
-        (newline)))
+      (displayln (~a s1 " " s2 " " s3)))
     (define (total n)
-      (begin
-        (display "Total: ")
-        (display (~a n  #:min-width 10 #:align 'right))
-        (newline))))
+      (displayln (~a "Total: " n #:min-width 10 #:align 'right))))
 
   (define result-list (getResult))
 

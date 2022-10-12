@@ -1,4 +1,3 @@
-#!/usr/bin/env racket
 #lang racket/base
 (require (only-in racket/format ~a ~r)
          (only-in racket/string string-split string-replace string-prefix?)
@@ -20,10 +19,7 @@
     (newline)))
 
 (define (total n)
-  (begin
-    (display "Total: ")
-    (display (~a n  #:min-width 10 #:align 'right))
-    (newline)))
+  (displayln (~a "Total:  " n #:min-width 10 #:align 'right)))
 
 (define (strinit s)
   (let ([l (string-length s)])
