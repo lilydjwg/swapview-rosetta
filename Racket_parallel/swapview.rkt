@@ -23,9 +23,9 @@
     (define (fmtPid pid) (~a pid  #:width 7 #:align 'right))
     (define (filesize n)
       (if (< n 1100) (format "~aB" n)
-          (let* ([p (exact-floor (log (/ n 1100) 1024))]
-                 [s (~r (/ n (expt 1024 (add1 p))) #:precision '(= 1))]
-                 [unit (string-ref "KMGT" p)])
+          (let ([p (exact-floor (log (/ n 1100) 1024))])
+            (define s (~r (/ n (expt 1024 (add1 p))) #:precision '(= 1)))
+            (define unit (string-ref "KMGT" p))
             (format "~a~aiB" s unit))))
     (define (fmtSize size) (~a size  #:width 9 #:align 'right))
     (define (resolveCmdline s)
@@ -53,13 +53,13 @@
       ((_) #`(let ((pl
                     (place ch
                            (place-channel-put ch (map getAll (list #,@latter))))))
-               (append (map getAll (list #,@former)) (place-channel-get pl))))))
+               (append (map getAll #,(syntax-shift-phase-level #'former -1)) (place-channel-get pl))))))
 
   (define (getResult) (parallel)))
 
 (module* main #f
-  (require (submod ".." helper)
-           (submod ".." shared)
+  (require (only-in (submod ".." helper) getResult)
+           (only-in (submod ".." shared) fmtPid fmtSize filesize)
            racket/match
            (only-in racket/format ~a)
            (submod racket/performance-hint begin-encourage-inline))
