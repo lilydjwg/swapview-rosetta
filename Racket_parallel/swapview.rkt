@@ -1,14 +1,15 @@
 #lang racket/base
 
 (module* shared #f
-  (require (only-in racket/list split-at)
+  (require (only-in racket/list split-at filter-map)
            (only-in racket/math exact-floor)
            (submod racket/performance-hint begin-encourage-inline)
            (only-in racket/file file->lines file->string)
-           (only-in racket/string string-split string-prefix?))
-  (provide former latter getAll)
+           (only-in racket/string string-split string-prefix? string-replace)
+           (only-in racket/format ~a ~r))
+  (provide former latter getAll fmtPid fmtSize filesize)
 
-  (define pid-list (filter string->number (map path->string (directory-list "/proc"))))
+  (define pid-list (filter-map string->number (map path->string (directory-list "/proc"))))
   (define len (exact-floor (* (length pid-list) 1/2)))
   (define-values (former latter) (split-at pid-list len))
   (begin-encourage-inline
@@ -19,8 +20,26 @@
                                                               [else 0])) smaps)))))
     (define getCmdline (lambda (pid)
                          (file->string (format "/proc/~a/cmdline" pid))))
-    (define getAll (lambda (pid) (with-handlers ([exn:fail:filesystem? (lambda (exn) #f)])
-                                   (let/cc ret (list pid (let ((v (getSize (getSmaps pid)))) (if (zero? v) (ret #f) v)) (getCmdline pid))))))))
+    (define (fmtPid pid) (~a pid  #:width 7 #:align 'right))
+    (define (filesize n)
+      (if (< n 1100) (format "~aB" n)
+          (let* ([p (exact-floor (log (/ n 1100) 1024))]
+                 [s (~r (/ n (expt 1024 (add1 p))) #:precision '(= 1))]
+                 [unit (string-ref "KMGT" p)])
+            (format "~a~aiB" s unit))))
+    (define (fmtSize size) (~a size  #:width 9 #:align 'right))
+    (define (resolveCmdline s)
+      (let ([s (string-replace s "\x0" " ")]
+            [l (string-length s)])
+        (if (zero? l) s (substring s 0 (- l 1)))))
+    (define getAll (lambda (pid)
+                     (with-handlers ([exn:fail:filesystem? (lambda (exn) #f)])
+                       (let/cc ret
+                         (list
+                          (fmtPid pid)
+                          (let ((v (getSize (getSmaps pid))))
+                            (if (zero? v) (ret #f) (cons v (fmtSize (filesize v)))))
+                          (resolveCmdline (getCmdline pid)))))))))
 
 (module* helper #f
   (require (for-syntax racket/base
@@ -40,25 +59,12 @@
 
 (module* main #f
   (require (submod ".." helper)
-           (only-in racket/format ~a ~r)
+           (submod ".." shared)
            racket/match
-           (only-in racket/math exact-floor)
-           (only-in racket/string string-replace)
+           (only-in racket/format ~a)
            (submod racket/performance-hint begin-encourage-inline))
 
   (begin-encourage-inline
-    (define (fmtPid pid) (~a pid  #:width 7 #:align 'right))
-    (define (filesize n)
-      (if (< n 1100) (format "~aB" n)
-          (letrec ([p (exact-floor (log (/ n 1100) 1024))]
-                   [s (~r (/ n (expt 1024 (add1 p))) #:precision '(= 1))]
-                   [unit (string-ref "KMGT" p)])
-            (format "~a~aiB" s unit))))
-    (define (fmtSize size) (~a size  #:width 9 #:align 'right))
-    (define (strinit s)
-      (let ([s (string-replace s "\x0" " ")]
-            [l (string-length s)])
-        (if (zero? l) s (substring s 0 (- l 1)))))
     (define (fmt1 s1 s2 s3)
       (begin
         (map display (list s1 " "
@@ -74,15 +80,12 @@
   (define result-list (getResult))
 
   (define-values (size-list format-result)
-    (match (sort (filter values result-list) #:key cadr <)
-      ((list (list pid size cmd) ...)
+    (match (sort (filter values result-list) #:key caadr <)
+      ((list (list pid (cons size format-size) cmd) ...)
        (values size
-               (map (lambda (pid size cmd)
-                      (list
-                       (fmtPid pid)
-                       (fmtSize (filesize size))
-                       (strinit cmd)))
-                    pid size cmd)))))
+               (map (lambda (pid format-size cmd)
+                      (list pid format-size cmd))
+                    pid format-size cmd)))))
 
   (void
    (fmt1 (fmtPid "PID") (fmtSize "SWAP") "COMMAND")
