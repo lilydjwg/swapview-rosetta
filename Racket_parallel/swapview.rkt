@@ -52,8 +52,8 @@
     (syntax-case stx ()
       ((_) #`(let ((pl
                     (place ch
-                           (place-channel-put ch (map getAll (list #,@latter))))))
-               (append (map getAll #,(syntax-shift-phase-level #'former -1)) (place-channel-get pl))))))
+                           (place-channel-put ch (map getAll '#,latter)))))
+               (append (map getAll '#,former) (place-channel-get pl))))))
 
   (define (getResult) (parallel)))
 
