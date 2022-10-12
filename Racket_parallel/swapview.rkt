@@ -1,7 +1,7 @@
 #lang racket/base
 
 (module* shared #f
-  (require (only-in racket/list split-at filter-map)
+  (require (only-in racket/list split-at)
            (only-in racket/math exact-floor)
            (submod racket/performance-hint begin-encourage-inline)
            (only-in racket/file file->lines file->string)
@@ -9,7 +9,7 @@
            (only-in racket/format ~a ~r))
   (provide former latter getAll fmtPid fmtSize filesize)
 
-  (define pid-list (filter-map string->number (map path->string (directory-list "/proc"))))
+  (define pid-list (filter string->number (map path->string (directory-list "/proc"))))
   (define len (exact-floor (* (length pid-list) 1/2)))
   (define-values (former latter) (split-at pid-list len))
   (begin-encourage-inline
@@ -36,9 +36,9 @@
                      (with-handlers ([exn:fail:filesystem? (lambda (exn) #f)])
                        (let/cc ret
                          (list
-                          (fmtPid pid)
                           (let ((v (getSize (getSmaps pid))))
                             (if (zero? v) (ret #f) (cons v (fmtSize (filesize v)))))
+                          (fmtPid pid)
                           (resolveCmdline (getCmdline pid)))))))))
 
 (module* helper #f
@@ -80,8 +80,8 @@
   (define result-list (getResult))
 
   (define-values (size-list format-result)
-    (match (sort (filter values result-list) #:key caadr <)
-      ((list (list pid (cons size format-size) cmd) ...)
+    (match (sort (filter values result-list) #:key caar <)
+      ((list (list (cons size format-size) pid cmd) ...)
        (values size
                (map (lambda (pid format-size cmd)
                       (list pid format-size cmd))
