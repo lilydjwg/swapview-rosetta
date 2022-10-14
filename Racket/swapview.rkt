@@ -13,21 +13,20 @@
         (format "~a~aiB" s unit))))
 
 (define (fmt1 s1 s2 s3)
-  (begin
-    (map display (list (~a s1  #:width 7 #:align 'right) " "
-                       (~a s2  #:width 9 #:align 'right) " " (~a s3)) )
-    (newline)))
+  (displayln (~a (~a s1 #:width 7 #:align 'right) " "
+                 (~a s2 #:width 9 #:align 'right) " "
+                 s3)))
 
 (define (total n)
-  (displayln (~a "Total:  " n #:min-width 10 #:align 'right)))
+  (displayln (~a "Total:   " n #:min-width 10 #:align 'right)))
 
 (define (strinit s)
   (let ([l (string-length s)])
     (if (zero? l) s (substring s 0 (- l 1)))))
 
 (define (getSwapFor pid)
-  (with-handlers ([exn:fail:filesystem? (lambda (e) (list pid 0 ""))])
-    (begin
+  (with-handlers ([exn:fail:filesystem? (lambda (e) #f)])
+    (let/cc ret
       (letrec ([cmd (strinit (string-replace
                               (file->string
                                (format "/proc/~a/cmdline" pid)) "\x0" " "))]
@@ -35,15 +34,14 @@
                [getSize (lambda (l) (list-ref (string-split l) 1))]
                [smaps (filter swap? (file->lines (format "/proc/~a/smaps" pid)))]
                [size (apply + (map (compose string->number getSize) smaps))])
-        (list pid (* size 1024) cmd)))))
+        (list pid (* (if (zero? size) (ret #f) size) 1024) cmd)))))
 
 (define (getSwap)
-  (begin
-    (sort (filter (lambda (l) (> (list-ref l 1) 0))
-                  (map getSwapFor
-                       (filter string->number
-                               (map path->string (directory-list "/proc")))))
-          #:key (compose car cdr) <)))
+  (sort (filter values
+                (map getSwapFor
+                     (filter string->number
+                             (map path->string (directory-list "/proc")))))
+        #:key cadr <))
 
 (define (main)
   (let ((results (getSwap)))

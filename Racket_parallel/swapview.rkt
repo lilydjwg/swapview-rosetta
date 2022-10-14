@@ -13,13 +13,14 @@
   (define len (exact-floor (* (length pid-list) 1/2)))
   (define-values (former latter) (split-at pid-list len))
   (begin-encourage-inline
-    (define getSmaps (lambda (pid)
-                       (file->lines (format "/proc/~a/smaps" pid))))
-    (define getSize (lambda (smaps)
-                      (* 1024 (apply + (map (lambda (s) (cond [(string-prefix? s "Swap:") (string->number (cadr (string-split s)))]
-                                                              [else 0])) smaps)))))
-    (define getCmdline (lambda (pid)
-                         (file->string (format "/proc/~a/cmdline" pid))))
+    (define getSmaps (lambda (pid) (format "/proc/~a/smaps" pid)))
+    (define swap? (lambda (line) (string-prefix? line "Swap:")))
+    (define getSize (lambda (input)
+                      (let loop ((line (read-line input)) (result 0))
+                        (cond ((eof-object? line) (* 1024 result))
+                              ((swap? line) (loop (read-line input) (+ result (string->number (cadr (string-split line))))))
+                              (else (loop (read-line input) result))))))
+    (define getCmdline (lambda (pid) (file->string (format "/proc/~a/cmdline" pid))))
     (define (fmtPid pid) (~a pid  #:width 7 #:align 'right))
     (define (filesize n)
       (if (< n 1100) (format "~aB" n)
@@ -36,7 +37,7 @@
                      (with-handlers ([exn:fail:filesystem? (lambda (exn) #f)])
                        (let/cc ret
                          (list
-                          (let ((v (getSize (getSmaps pid))))
+                          (let ((v (call-with-input-file (getSmaps pid) getSize)))
                             (if (zero? v) (ret #f) (cons v (fmtSize (filesize v)))))
                           (fmtPid pid)
                           (resolveCmdline (getCmdline pid)))))))))
