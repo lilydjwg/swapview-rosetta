@@ -18,9 +18,8 @@
                  s3)))
 
 (define (total n)
-  (begin
-    (display "Total: ")
-    (displayln (~a n  #:min-width 10 #:align 'right)))))
+  (display "Total: ")
+  (displayln (~a n  #:min-width 10 #:align 'right)))
 
 (define (strinit s)
   (let ([l (string-length s)])

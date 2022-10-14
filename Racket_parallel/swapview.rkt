@@ -17,12 +17,13 @@
     (define swap? (lambda (line) (string-prefix? line "Swap:")))
     (define getSize (lambda (input)
                       (let loop ((line (read-line input)) (result 0))
-                        (cond ((eof-object? line) (* 1024 result))
+                        (cond ((eof-object? line) result)
                               ((swap? line) (loop (read-line input) (+ result (string->number (cadr (string-split line))))))
                               (else (loop (read-line input) result))))))
     (define getCmdline (lambda (pid) (file->string (format "/proc/~a/cmdline" pid))))
     (define (fmtPid pid) (~a pid  #:width 7 #:align 'right))
-    (define (filesize n)
+    (define (filesize size)
+      (define n (* 1024 size))
       (if (< n 1100) (format "~aB" n)
           (let ([p (exact-floor (log (/ n 1100) 1024))])
             (define s (~r (/ n (expt 1024 (add1 p))) #:precision '(= 1)))
@@ -50,11 +51,10 @@
   (provide getResult)
 
   (define-syntax (parallel stx)
-    (syntax-case stx ()
-      ((_) #`(let ((pl
-                    (place ch
-                           (place-channel-put ch (map getAll '#,latter)))))
-               (append (map getAll '#,former) (place-channel-get pl))))))
+    #`(let ((pl
+             (place ch
+                    (place-channel-put ch (map getAll '#,latter)))))
+        (append (map getAll '#,former) (place-channel-get pl))))
 
   (define (getResult) (parallel)))
 
@@ -69,9 +69,8 @@
     (define (fmt1 s1 s2 s3)
       (displayln (~a s1 " " s2 " " s3)))
     (define (total n)
-      (begin
-        (display "Total: ")
-        (displayln (~a n  #:min-width 10 #:align 'right)))))
+      (display "Total: ")
+      (displayln (~a n #:min-width 10 #:align 'right))))
 
   (define result-list (getResult))
 
