@@ -69,7 +69,9 @@
     (define (fmt1 s1 s2 s3)
       (displayln (~a s1 " " s2 " " s3)))
     (define (total n)
-      (displayln (~a "Total:  " n #:min-width 10 #:align 'right))))
+      (begin
+        (display "Total: ")
+        (displayln (~a n  #:min-width 10 #:align 'right)))))
 
   (define result-list (getResult))
 
