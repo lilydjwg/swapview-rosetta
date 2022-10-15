@@ -1,17 +1,13 @@
 #lang racket/base
 
 (module* shared #f
-  (require (only-in racket/list split-at)
-           (only-in racket/math exact-floor)
+  (require (only-in racket/math exact-floor)
            (submod racket/performance-hint begin-encourage-inline)
            (only-in racket/file file->lines file->string)
            (only-in racket/string string-split string-prefix? string-replace)
            (only-in racket/format ~a ~r))
-  (provide former latter getAll fmtPid fmtSize filesize)
+  (provide getAll fmtPid fmtSize filesize)
 
-  (define pid-list (filter string->number (map path->string (directory-list "/proc"))))
-  (define len (exact-floor (* (length pid-list) 1/2)))
-  (define-values (former latter) (split-at pid-list len))
   (begin-encourage-inline
     (define getSmaps (lambda (pid) (format "/proc/~a/smaps" pid)))
     (define swap? (lambda (line) (string-prefix? line "Swap:")))
@@ -45,10 +41,16 @@
 
 (module* helper #f
   (require (for-syntax racket/base
-                       (only-in (submod ".." shared) former latter))
+                       (only-in racket/list split-at)
+                       (only-in racket/math exact-floor))
            (only-in (submod ".." shared) getAll)
            (only-in racket/place place place-channel-put place-channel-get))
   (provide getResult)
+
+  (begin-for-syntax
+    (define pid-list (filter string->number (map path->string (directory-list "/proc"))))
+    (define len (exact-floor (* (length pid-list) 1/2)))
+    (define-values (former latter) (split-at pid-list len)))
 
   (define-syntax (parallel stx)
     #`(let ((pl
