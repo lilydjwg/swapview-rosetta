@@ -41,22 +41,23 @@
 
 (module* helper #f
   (require (for-syntax racket/base
-                       (only-in racket/list split-at)
+                       (only-in racket/list split-at filter-map)
                        (only-in racket/math exact-floor))
            (only-in (submod ".." shared) getAll)
-           (only-in racket/place place place-channel-put place-channel-get))
+           (only-in racket/list filter-map)
+           (only-in racket/place place place-channel-put))
   (provide getResult)
 
   (begin-for-syntax
-    (define pid-list (filter string->number (map path->string (directory-list "/proc"))))
+    (define pid-list (filter-map (compose1 string->number path->string) (directory-list "/proc")))
     (define len (exact-floor (* (length pid-list) 1/2)))
     (define-values (former latter) (split-at pid-list len)))
 
   (define-syntax (parallel stx)
-    #`(let ((pl
-             (place ch
-                    (place-channel-put ch (map getAll '#,latter)))))
-        (append (map getAll '#,former) (place-channel-get pl))))
+    #`(let ((pl (place ch (place-channel-put ch (filter-map getAll '#,latter)))))
+        (let ((f (filter-map getAll '#,former))
+              (l (sync pl)))
+          (append f l))))
 
   (define (getResult) (parallel)))
 
@@ -77,7 +78,7 @@
   (define result-list (getResult))
 
   (define-values (size-list format-result)
-    (match (sort (filter values result-list) #:key caar <)
+    (match (sort result-list #:key caar <)
       ((list (list (cons size format-size) pid cmd) ...)
        (values size
                (map (lambda (pid format-size cmd)

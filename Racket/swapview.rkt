@@ -1,5 +1,6 @@
 #lang racket/base
 (require (only-in racket/format ~a ~r)
+         (only-in racket/list filter-map)
          (only-in racket/string string-split string-replace string-prefix?)
          (only-in racket/file file->lines file->string)
          (only-in racket/math exact-floor)
@@ -38,11 +39,10 @@
         (list pid (* (if (zero? size) (ret #f) size) 1024) cmd)))))
 
 (define (getSwap)
-  (sort (filter values
-                (map getSwapFor
-                     (filter string->number
-                             (map path->string (directory-list "/proc")))))
-        #:key cadr <))
+  (sort
+   (filter-map getSwapFor
+               (filter-map (compose1 string->number path->string) (directory-list "/proc")))
+   #:key cadr <))
 
 (define (main)
   (let ((results (getSwap)))
