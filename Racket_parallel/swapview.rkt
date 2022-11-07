@@ -32,12 +32,8 @@
         (if (zero? l) s (substring s 0 (- l 1)))))
     (define getAll (lambda (pid)
                      (with-handlers ([exn:fail:filesystem? (lambda (exn) #f)])
-                       (let/cc ret
-                         (list
-                          (let ((v (call-with-input-file (getSmaps pid) getSize)))
-                            (if (zero? v) (ret #f) (cons v (fmtSize (filesize v)))))
-                          (fmtPid pid)
-                          (resolveCmdline (getCmdline pid)))))))))
+                       (let ((v (call-with-input-file (getSmaps pid) getSize)))
+                         (if (zero? v) #f (list v (fmtPid pid) (fmtSize (filesize v)) (resolveCmdline (getCmdline pid))))))))))
 
 (module* helper #f
   (require (for-syntax racket/base
@@ -64,7 +60,6 @@
 (module* main #f
   (require (only-in (submod ".." helper) getResult)
            (only-in (submod ".." shared) fmtPid fmtSize filesize)
-           racket/match
            (only-in racket/format ~a)
            (submod racket/performance-hint begin-encourage-inline))
 
@@ -77,15 +72,14 @@
 
   (define result-list (getResult))
 
-  (define-values (size-list format-result)
-    (match (sort result-list #:key caar <)
-      ((list (list (cons size format-size) pid cmd) ...)
-       (values size
-               (map (lambda (pid format-size cmd)
-                      (list pid format-size cmd))
-                    pid format-size cmd)))))
-
   (void
    (fmt1 (fmtPid "PID") (fmtSize "SWAP") "COMMAND")
-   (map (lambda (result) (apply fmt1 result)) format-result)
-   (total (filesize (apply + size-list)))))
+   (total
+    (filesize
+     (let loop ((s 0) (r (sort result-list #:key car <)))
+       (cond ((null? r) s)
+             (else
+              (let ((u (cdar r))
+                    (n (caar r)))
+                (fmt1 (car u) (cadr u) (caddr u))
+                (loop (+ s n) (cdr r))))))))))

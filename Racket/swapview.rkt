@@ -3,8 +3,7 @@
          (only-in racket/list filter-map)
          (only-in racket/string string-split string-replace string-prefix?)
          (only-in racket/file file->lines file->string)
-         (only-in racket/math exact-floor)
-         (only-in racket/function curry))
+         (only-in racket/math exact-floor))
 ;; Compile with `raco make --no-deps`
 (define (filesize n)
   (if (< n 1100) (format "~aB" n)
@@ -46,9 +45,14 @@
 
 (define (main)
   (let ((results (getSwap)))
-    (begin
-      (fmt1 "PID" "SWAP" "COMMAND")
-      (map (curry apply (lambda (pid size cmd) (fmt1 pid (filesize size) cmd))) results)
-      (total (filesize (apply + (map (compose car cdr) results)))))))
+    (fmt1 "PID" "SWAP" "COMMAND")
+    (total
+     (filesize
+      (let loop ((r results) (s 0))
+        (cond ((null? r) s)
+              (else
+               (let ((u (car r)))
+                 (fmt1 (car u) (filesize (cadr u)) (caddr u))
+                 (loop (cdr r) (+ s (cadr u)))))))))))
 
 (main)
