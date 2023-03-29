@@ -22,25 +22,21 @@
   (displayln (~a n  #:min-width 10 #:align 'right)))
 
 (define (strinit s)
-  (let ([l (string-length s)])
-    (if (zero? l) s (substring s 0 (- l 1)))))
+  (let ((l (string-length s)))
+    (if (zero? l) "" (string-replace (substring s 0 (sub1 l)) "\x0" " "))))
 
 (define (getSwapFor pid)
   (with-handlers ([exn:fail:filesystem? (lambda (e) #f)])
     (let/cc ret
-      (letrec ([cmd (strinit (string-replace
-                              (file->string
-                               (format "/proc/~a/cmdline" pid)) "\x0" " "))]
-               [swap? (lambda (l) (string-prefix? l "Swap:"))]
+      (letrec ([swap? (lambda (l) (string-prefix? l "Swap:"))]
                [getSize (lambda (l) (list-ref (string-split l) 1))]
                [smaps (filter swap? (file->lines (format "/proc/~a/smaps" pid)))]
                [size (apply + (map (compose string->number getSize) smaps))])
-        (list pid (* (if (zero? size) (ret #f) size) 1024) cmd)))))
+        (list pid (* (if (zero? size) (ret #f) size) 1024) (strinit (file->string (format "/proc/~a/cmdline" pid))))))))
 
 (define (getSwap)
   (sort
-   (filter-map getSwapFor
-               (filter-map (compose1 string->number path->string) (directory-list "/proc")))
+   (filter-map (lambda (p) (define v (string->number (path->string p))) (and v (getSwapFor v))) (directory-list "/proc"))
    #:key cadr <))
 
 (define (main)

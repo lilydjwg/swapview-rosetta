@@ -26,7 +26,8 @@
     (displayln (~a n  #:min-width 10 #:align 'right)))
   
   (define (strinit s)
-    (string-replace s "\x0" ""))
+    (let ((l (string-length s)))
+      (if (zero? l) "" (string-replace (substring s 0 (sub1 l)) "\x0" " "))))
 
   (define (getSwapFor pid)
     (with-handlers ([exn:fail:filesystem? (lambda (e) #f)])
