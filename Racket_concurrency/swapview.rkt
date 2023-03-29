@@ -42,27 +42,20 @@
 (define (main)
   (fmt1 "PID" "SWAP" "COMMAND")
   
-  (define in-channel (make-async-channel))
-  (define out-channel (make-async-channel))
+  (define channel (make-async-channel))
   
-  (define thd1 (thread (lambda () (let loop ()
-                                    (define pid (sync in-channel))
-                                    (cond (pid (async-channel-put out-channel (getSwapFor pid))
-                                               (loop))
-                                          (else (async-channel-put out-channel #f)))))))
+  (define thd (thread (lambda () (let loop ((pid-list (sort (filter-map (compose string->number path->string) (directory-list "/proc")) <)))
+                                    (cond ((null? pid-list) (async-channel-put channel #f))
+                                          (else (async-channel-put channel (getSwapFor (car pid-list)))
+                                                (loop (cdr pid-list))))))))
   
-  (define thd2 (thread (lambda () (let loop ((t 0))
-                                    (define v (sync out-channel))
-                                    (cond (v
-                                           (fmt1 (car v) (filesize (cadr v)) (strinit (caddr v)))
-                                           (loop (+ t (cadr v))))
-                                          (else (total (filesize t))))))))
+  (let loop ((t 0))
+    (define v (sync channel))
+    (cond (v
+           (fmt1 (car v) (filesize (cadr v)) (strinit (caddr v)))
+           (loop (+ t (cadr v))))
+          (else (total (filesize t)))))
   
-  (define pidlist (sort (filter-map (compose string->number path->string) (directory-list "/proc")) <))
-  
-  (map (lambda (p) (async-channel-put in-channel p)) pidlist)
-  (async-channel-put in-channel #f)
-  
-  (void (sync (thread-dead-evt thd2))))
+  )
 
 (main)
