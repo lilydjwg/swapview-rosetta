@@ -33,7 +33,7 @@
     (with-handlers ([exn:fail:filesystem? (lambda (e) #f)])
       (let/cc ret
         (let* ([swap? (lambda (l) (string-prefix? l "Swap:"))]
-               [getSize (lambda (l) (list-ref (string-split l) 1))]
+               [getSize (lambda (l) (string->number (list-ref (string-split l) 1)))]
                [smaps (call-with-input-file (format "/proc/~a/smaps" pid) (lambda (in) (for/fold ((r 0)) ((line (in-lines in)))
                                                                                          (if (swap? line) (+ (getSize line) r) r))))])
           (list pid (* (if (zero? smaps) (ret #f) smaps) 1024) (file->string (format "/proc/~a/cmdline" pid))))))))
