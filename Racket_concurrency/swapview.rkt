@@ -34,10 +34,9 @@
       (let/cc ret
         (let* ([swap? (lambda (l) (string-prefix? l "Swap:"))]
                [getSize (lambda (l) (list-ref (string-split l) 1))]
-               [smaps (call-with-input-file (format "/proc/~a/smaps" pid) (lambda (in) (for/fold ((r null)) ((line (in-lines in)))
-                                                                                         (if (swap? line) (cons line r) r))))] 
-               [size (apply + (map (compose string->number getSize) smaps))])
-          (list pid (* (if (zero? size) (ret #f) size) 1024) (file->string (format "/proc/~a/cmdline" pid))))))))
+               [smaps (call-with-input-file (format "/proc/~a/smaps" pid) (lambda (in) (for/fold ((r 0)) ((line (in-lines in)))
+                                                                                         (if (swap? line) (+ (getSize line) r) r))))])
+          (list pid (* (if (zero? smaps) (ret #f) smaps) 1024) (file->string (format "/proc/~a/cmdline" pid))))))))
   
 (define (main)
   (fmt1 "PID" "SWAP" "COMMAND")
