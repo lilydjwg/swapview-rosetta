@@ -39,15 +39,16 @@
           (list pid (* (if (zero? smaps) (ret #f) smaps) 1024) (file->string (format "/proc/~a/cmdline" pid))))))))
   
 (define (main)
-  (fmt1 "PID" "SWAP" "COMMAND")
-  
+    
   (define channel (make-async-channel))
   
   (define thd (thread (lambda () (let loop ((pid-list (sort (filter-map (compose string->number path->string) (directory-list "/proc")) <)))
                                     (cond ((null? pid-list) (async-channel-put channel #f))
-                                          (else (async-channel-put channel (getSwapFor (car pid-list)))
+                                          (else (define v (getSwapFor (car pid-list)))
+                                                (cond (v (async-channel-put channel v)))
                                                 (loop (cdr pid-list))))))))
-  
+  (fmt1 "PID" "SWAP" "COMMAND")
+
   (let loop ((t 0))
     (define v (sync channel))
     (cond (v
