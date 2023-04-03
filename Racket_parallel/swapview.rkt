@@ -6,7 +6,7 @@
            (only-in racket/file file->lines file->string)
            (only-in racket/string string-split string-prefix? string-replace)
            (only-in racket/format ~a ~r))
-  (provide getAll fmtPid fmtSize filesize)
+  (provide getAll fmtPid fmtSize filesize total fmt1)
 
   (begin-encourage-inline
     (define getSmaps (lambda (pid) (format "/proc/~a/smaps" pid)))
@@ -30,10 +30,14 @@
       (let ([s (string-replace s "\x0" " ")]
             [l (string-length s)])
         (if (zero? l) s (substring s 0 (- l 1)))))
+    (define (fmt1 s1 s2 s3)
+      (string-append s1 " " s2 " " s3))
+    (define (total n)
+      (string-append "Total: " (~a n #:min-width 10 #:align 'right)))
     (define getAll (lambda (pid)
                      (with-handlers ([exn:fail:filesystem? (lambda (exn) #f)])
                        (let ((v (call-with-input-file (getSmaps pid) getSize)))
-                         (if (zero? v) #f (list v (fmtPid pid) (fmtSize (filesize v)) (resolveCmdline (getCmdline pid))))))))))
+                         (if (zero? v) #f (cons v (fmt1 (fmtPid pid) (fmtSize (filesize v)) (resolveCmdline (getCmdline pid)))))))))))
 
 (module* helper #f
   (require (for-syntax racket/base
@@ -59,27 +63,13 @@
 
 (module* main #f
   (require (only-in (submod ".." helper) getResult)
-           (only-in (submod ".." shared) fmtPid fmtSize filesize)
-           (only-in racket/format ~a)
-           (submod racket/performance-hint begin-encourage-inline))
-
-  (begin-encourage-inline
-    (define (fmt1 s1 s2 s3)
-      (displayln (~a s1 " " s2 " " s3)))
-    (define (total n)
-      (display "Total: ")
-      (displayln (~a n #:min-width 10 #:align 'right))))
+           (only-in (submod ".." shared) fmtPid fmtSize filesize total fmt1))
 
   (define result-list (getResult))
 
-  (void
-   (fmt1 (fmtPid "PID") (fmtSize "SWAP") "COMMAND")
-   (total
-    (filesize
-     (let loop ((s 0) (r (sort result-list #:key car <)))
-       (cond ((null? r) s)
-             (else
-              (let ((u (cdar r))
-                    (n (caar r)))
-                (fmt1 (car u) (cadr u) (caddr u))
-                (loop (+ s n) (cdr r))))))))))
+  (let loop ((t 0) (r (sort result-list #:key car <)) (s (fmt1 (fmtPid "PID") (fmtSize "SWAP") "COMMAND")))
+    (cond ((null? r) (displayln (string-append s "\n" (total (filesize t)))))
+          (else
+           (let ((u (cdar r))
+                 (n (caar r)))
+             (loop (+ t n) (cdr r) (string-append s "\n" u)))))))
