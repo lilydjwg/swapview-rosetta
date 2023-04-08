@@ -2,7 +2,7 @@
 
 all: swapview_rkt_merged.zo
 
-swapview_rkt_merged.zo: swapview.rkt
+swapview_rkt_merged.zo: swapview.rkt ../Racket_parallel/swapview.rkt
 	raco demod swapview.rkt
 
 run: all
