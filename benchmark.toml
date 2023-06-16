@@ -138,6 +138,12 @@ dir = "Lua"
 cmd = ["luajit", "swapview.lua"]
 dir = "Lua"
 
+[item.newlisp]
+cmd = ["./swapview.lsp"]
+
+[item.newlisp_mp]
+cmd = ["./swapview.lsp"]
+
 [item.Nim]
 
 [item.NodeJS]
