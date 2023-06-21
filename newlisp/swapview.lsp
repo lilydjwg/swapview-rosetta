@@ -40,9 +40,16 @@
         (fcontent ""))
     (with-open fname "r" f
                ((while (read f buf 4096)
-                       (extend fcontent (replace "\000" buf " ")))))
-    (let (out (trim fcontent))
-      (if (> (length out) 0) out nil))))
+                       (extend fcontent buf))))
+    (let (size (length fcontent))
+      (if (> size 0)
+        (if (= (slice fcontent -1) "\000")
+          (setq fcontent (slice fcontent 0 (- size 1))))))
+
+    (let (size (length fcontent))
+      (if (> size 0)
+        (replace "\000" fcontent " ")
+        nil))))
 
 (define (get-swap-for pid)
   (let ((comm (read-proc-file pid "cmdline"))
@@ -62,8 +69,8 @@
       (let (s (get-swap-for x))
         (if (> (s 1) 0)
           (begin
-            (extend ret (list s)))))
-      (sort ret (fn (s1 s2) (< (s1 1) (s2 1)))))))
+            (extend ret (list s))))))
+    (sort ret (fn (s1 s2) (<= (s1 1) (s2 1))))))
 
 (define (main)
   (let ((results (get-swap))
