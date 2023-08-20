@@ -1,6 +1,6 @@
 #lang racket/base
 
-(module* shared #f
+(module shared racket/base
   (require (only-in racket/flonum fllog fl/ fl+ flexpt flfloor ->fl)
            (submod racket/performance-hint begin-encourage-inline)
            (only-in racket/file file->string)
@@ -79,29 +79,39 @@
            (displayln (cdr v))
            (+ t (car v)))))))))
 
-(module* helper #f
+(module* helper racket/base
   (require (submod ".." shared)
+           (only-in racket/async-channel make-async-channel async-channel-put)
            (only-in racket/place place place-channel-put))
   (provide main)
 
   (define (main)
     (define (make-place _)
-      (place ch
-        (place-channel-put ch (path-sequence->result-vector (in-producer sync #f ch)))))
+      (let ((pl (place ch
+                  (place-channel-put ch (path-sequence->result-vector (in-producer sync #f ch))))))
+        (cons pl pl)))
+    (define (make-thread)
+      (define ch (make-async-channel))
+      (cons ch
+            (thread
+             (lambda ()
+               (async-channel-put ch (path-sequence->result-vector (in-producer thread-receive #f)))))))
+    (define (send ch v)
+      ((if (thread? ch) thread-send place-channel-put) ch v))
     (define (append-result-vector v1 . vl)
       (for/fold ((r v1)) ((o (in-list vl)))
         (for/fold ((r r)) ((val (in-vector o)))
           (insert r val))))
-
+    
     (define num 2)
     
-    (let ((pl-lst (build-list num make-place)))
-      (for ((v (in-list (directory-list "/proc"))) (pl (in-cycle (in-list pl-lst))))
-        (place-channel-put pl v))
-      (map (lambda (pl) (place-channel-put pl #f)) pl-lst)
-      (output (apply append-result-vector (map sync pl-lst))))))
+    (let ((chp-lst (cons (make-thread) (build-list num make-place)))) ;; (list (cons <in-channel> <out-channel>) ...)
+      (for ((v (in-list (directory-list "/proc"))) (chp (in-cycle (in-list chp-lst))))
+        (send (cdr chp) v))
+      (map (lambda (chp) (send (cdr chp) #f)) chp-lst)
+      (output (apply append-result-vector (map (lambda (chp) (sync (car chp))) chp-lst))))))
 
-(module* main #f
+(module* main racket/base
   (require (submod ".." helper))
 
   (main))
