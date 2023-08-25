@@ -62,8 +62,6 @@
       (define (get-smaps pid) (format "/proc/~a/smaps" pid))
       
       (define (get-size input)
-        (define (matched-integer lst) (digits->integer (cadr lst)))
-        
         (for/fold ((r 0)) ((l (in-bytes-lines input)))
           (define matched (regexp-match #px#"^Swap:\\s+([0-9]+)" l))
           (cond (matched (+ r (digits->integer (cadr matched)))) (else r))))
