@@ -212,10 +212,6 @@ cmd = ["racket", "swapview_rkt_merged.zo"]
 dir = "Racket_parallel"
 cmd = ["racket", "compiled/swapview_rkt.zo"]
 
-[item.Racket_concurrency]
-dir = "Racket_concurrency"
-cmd = ["racket", "swapview_rkt_merged.zo"]
-
 [item.Ruby]
 cmd = ["./swapview.rb"]
 
