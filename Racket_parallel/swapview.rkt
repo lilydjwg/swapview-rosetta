@@ -1,128 +1,139 @@
 #lang racket/base
 
 (module shared racket/base
-  (require (only-in racket/flonum fllog fl/ fl+ flexpt flfloor ->fl)
+  (#%declare #:unsafe)
+  (require (only-in racket/flonum fllog fl/ fl+ flexpt flfloor ->fl fl->exact-integer)
            (submod racket/performance-hint begin-encourage-inline)
            (only-in racket/file file->string)
-           (only-in racket/string string-split string-prefix? string-replace)
            (only-in racket/format ~a ~r))
-  (provide insert in-pqueue path-sequence->swap-size-pqueue output)
+  (provide resolve-pid make-table table-update! print-table)
 
   (begin-encourage-inline
-    ;;A priority queue represented as a vector
-    (define (pqueue) (vector))
-    (define (in-pqueue vec) (in-vector vec))
-    (define (insert vec v (key car))
-      (define (search vec v (key car))
-        (let loop ((start 0) (end (vector-length vec)))
-          (cond ((= start end) start)
-                (else (define h (floor (/ (+ start end) 2)))
-                      (cond ((< (key v) (key (vector-ref vec h))) (loop start h))
-                            (else (if (= 1 (- end start)) end (loop h end))))))))
-
-      (let ((new (make-vector (add1 (vector-length vec))))
-            (i (search vec v key)))
-        (vector-copy! new 0 vec 0 i)
-        (vector-set! new i v)
-        (vector-copy! new (add1 i) vec i)
-        new))
-
-    ;;bytes and integers
-    (define (digits? bstr)
-      (let/cc break
-        (for ((b (in-bytes bstr)))
-          (cond ((or (< b 48) (> b 57)) (break #f))))
-        #t))
-    (define (digits->integer bstr)
-      (for/fold ((c 0)) ((b (in-bytes bstr)))
+    ;; bytes and integers
+    (define (digit? byte)
+      (and (>= byte 48) (<= byte 57)))
+    (define (get-integer bstr)
+      (for/fold ((c 0))
+                ((b (in-bytes bstr))
+                 #:when (digit? b))
         (+ (* c 10) (- b 48))))
+    (define (bytes-prefix? b p)
+      (and (>= (bytes-length b) (bytes-length p))
+           (for/and ((b1 (in-bytes b))
+                     (b2 (in-bytes p)))
+             (= b1 b2))))
+
+    ;; strings
+    (define (string-substitute! str o a)
+      (for ((i (in-range 0 (string-length str)))
+            #:when (char=? (string-ref str i) o))
+        (string-set! str i a))
+      str)
 
     ;; basic formatters
-    (define (format-pid pid) (~a pid  #:width 7 #:align 'right))
+    (define (format-pid pid) (~a pid #:width 7 #:align 'right))
     (define (filesize size)
       (define n (* 1024 size))
       (if (< n 1100) (format "~aB" n)
-          (let* ([fn (->fl n)]
-                 [p (flfloor (fl/ (fllog (fl/ fn 1100.0)) (fllog 1024.0)))]
-                 [s (~r (fl/ fn (flexpt 1024.0 (fl+ 1.0 p))) #:precision '(= 1))]
-                 [unit (string-ref "KMGT" (inexact->exact p))])
+          (letrec ([const-base (fllog 1024.0)]
+                   [fn (->fl n)]
+                   [p (flfloor (fl/ (fllog (fl/ fn 1100.0)) const-base))]
+                   [s (~r (fl/ fn (flexpt 1024.0 (fl+ 1.0 p))) #:precision '(= 1))]
+                   [unit (string-ref "KMGT" (fl->exact-integer p))])
             (format "~a~aiB" s unit))))
-    (define (format-size size) (~a size  #:width 9 #:align 'right))
+    (define (format-size size) (~a size #:width 9 #:align 'right))
     (define (resolve-cmdline s)
-      (let ([l (string-length s)])
-        (if (zero? l) s (string-replace (substring s 0 (- l 1)) "\x0" " "))))
+      (let ([l (string-length s)]
+            [o #\u0]
+            [c #\ ])
+        (if (zero? l)
+            s
+            (string-substitute! (substring s 0 (- l 1)) o c))))
     (define (fmt1 s1 s2 s3)
-      (string-append s1 " " s2 " " s3))
+      (string-append-immutable s1 " " s2 " " s3))
     (define (total n)
       (string-append "Total: " (~a n #:min-width 10 #:align 'right)))
 
-    ;; swap-size-pqueue: (pqueueof (cons/c exact-positive-integer? string?) ...)
-    ;; the constructor
-    (define (path-sequence->swap-size-pqueue seq)
-      (define (get-smaps pid) (format "/proc/~a/smaps" pid))
-      
-      (define (get-size input)
-        (for/fold ((r 0)) ((l (in-bytes-lines input)))
-          (define matched (regexp-match #px#"^Swap:\\s+([0-9]+)" l))
-          (cond (matched (+ r (digits->integer (cadr matched)))) (else r))))
-      
-      (define (get-cmdline pid) (file->string (format "/proc/~a/cmdline" pid)))
-      
-      (define (resolve-pid pid)
-        (with-handlers ([exn:fail:filesystem? (lambda (exn) #f)])
-          (let ((v (call-with-input-file (get-smaps pid) get-size)))
-            (if (zero? v) #f (cons v (fmt1 (format-pid pid) (format-size (filesize v)) (resolve-cmdline (get-cmdline pid))))))))
-      
-      (for/fold ((r (pqueue))) ((p seq))
-        (let ((v (and (digits? (path->bytes p)) (resolve-pid p))))
-          (cond (v (insert r v)) (else r)))))
-    ;; the logger
-    (define (output pqueue)
+    (define (get-smaps pid) (format "/proc/~a/smaps" pid))
+
+    ;; readers
+    (define (get-size input)
+      (for/fold ((r 0))
+                ((l (in-bytes-lines input 'any))
+                 #:when (bytes-prefix? l #"Swap: "))
+        (+ r (get-integer l))))
+    (define (get-cmdline pid) (file->string (format "/proc/~a/cmdline" pid)))
+
+    (define (resolve-pid pid)
+      (with-handlers ([exn:fail:filesystem? (lambda (exn) #f)])
+        (let ((v (call-with-input-file (get-smaps pid) get-size)))
+          (if (zero? v)
+              #f
+              (cons v (fmt1 (format-pid pid) (format-size (filesize v)) (resolve-cmdline (get-cmdline pid))))))))
+
+    ;; (hash/c exact-positive-integer? (listof string?))
+    (define (make-table)
+      (make-hasheq))
+    (define (table-update! tbl k v)
+      (define o (hash-ref tbl k #f))
+      (cond (o (hash-set*! tbl k (cons v o)))
+            (else (hash-set*! tbl k (list v)))))
+    (define (print-table tbl)
+      (define k-box (box 0))
       (displayln (fmt1 (format-pid "PID") (format-size "SWAP") "COMMAND"))
-      (displayln
-       (total
-        (filesize
-         (for/fold ((t 0)) ((v (in-pqueue pqueue)))
-           (displayln (cdr v))
-           (+ t (car v)))))))))
+      (hash-for-each
+       tbl
+       (lambda (k v)
+         (for-each displayln v)
+         (set-box*! k-box (+ (unbox* k-box) (* (length v) k))))
+       #t)
+      (displayln (total (filesize (unbox* k-box)))))))
 
 (module* helper racket/base
+  (#%declare #:unsafe)
   (require (submod ".." shared)
-           (only-in racket/async-channel make-async-channel async-channel-put)
-           (only-in racket/place place place-channel-put))
+           (only-in racket/place place/context place-channel-put place-channel))
   (provide main)
 
   (define (main)
-    (define (make-place _)
-      (let ((pl (place ch
-                  (place-channel-put ch (path-sequence->swap-size-pqueue (in-producer sync #f ch))))))
-        (cons pl pl)))
-    (define (make-thread)
-      (define ch (make-async-channel))
-      (cons ch
-            (thread
-             (lambda ()
-               (async-channel-put ch (path-sequence->swap-size-pqueue (in-producer thread-receive #f)))))))
+    (define (make-place com-ch)
+      (let ((pl (place/context ch
+                  (for ((pid (in-producer sync #f ch)))
+                    (define v (resolve-pid pid))
+                    (cond (v (place-channel-put com-ch v))))
+                  (place-channel-put com-ch #f))))
+        pl))
 
-    ;; channel-pair: (cons <in-channel> <out-channel>)
+    (define-values (out-channel in-channel) (place-channel))
+
     (define (send chp v)
-      (define out (cdr chp))
-      ((if (thread? out) thread-send place-channel-put) out v))
-    (define (recv chp)
-      (sync (car chp)))
+      (place-channel-put chp v))
+    (define (make-recv n)
+      (let ((cnt-box (box n)))
+        (lambda (chp)
+          (let loop ()
+            (sync
+             (handle-evt
+              chp
+              (lambda (v)
+                (cond (v)
+                      ((= (unbox* cnt-box) 1) #f)
+                      (else (set-box*! cnt-box (- (unbox* cnt-box) 1))
+                            (loop))))))))))
 
-    (define (append-pqueue v1 . vl)
-      (for/fold ((r v1)) ((o (in-list vl)))
-        (for/fold ((r r)) ((val (in-pqueue o)))
-          (insert r val))))
-    
     (define place-number 2)
-    
-    (let ((chp-lst (cons (make-thread) (build-list place-number make-place))))
-      (for ((v (in-list (directory-list "/proc"))) (chp (in-cycle (in-list chp-lst))))
-        (send chp v))
-      (map (lambda (chp) (send chp #f)) chp-lst)
-      (output (apply append-pqueue (map (lambda (chp) (recv chp)) chp-lst))))))
+
+    (let ((chp-lst (build-list place-number (lambda (_) (make-place out-channel)))))
+      (parameterize ((current-directory "/proc"))
+        (for ((v (in-directory #f (lambda (_) #f))) (chp (in-cycle (in-list chp-lst))))
+          (send chp v)))
+      (for-each (lambda (chp) (send chp #f)) chp-lst))
+
+    (define tbl (make-table))
+
+    (for ((v (in-producer (make-recv place-number) #f in-channel)))
+      (table-update! tbl (car v) (cdr v)))
+    (print-table tbl)))
 
 (module* main racket/base
   (require (submod ".." helper))
