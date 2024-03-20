@@ -1,13 +1,13 @@
 .PHONY: all clean
 
 %: %.zig
-	zig build-exe -O ReleaseSafe --strip $<
+	zig build-exe -O ReleaseSafe -fstrip $<
 
 all: swapview
 
 clean:
 	-rm -f swapview
-	-rm -rf zig-cache
+	-rm -f swapview.o
 
 test:
 	zig test swapview.zig
