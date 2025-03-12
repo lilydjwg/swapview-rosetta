@@ -131,12 +131,22 @@ cmd = ["lua5.2", "swapview.lua"]
 dir = "Lua"
 
 [item.Lua53]
-cmd = ["lua", "swapview.lua"]
+cmd = ["lua5.3", "swapview.lua"]
+dir = "Lua"
+
+[item.Lua54]
+cmd = ["lua5.4", "swapview.lua"]
 dir = "Lua"
 
 [item.LuaJIT]
 cmd = ["luajit", "swapview.lua"]
 dir = "Lua"
+
+[item.newlisp]
+cmd = ["./swapview.lsp"]
+
+[item.newlisp_mp]
+cmd = ["./swapview.lsp"]
 
 [item.Nim]
 
