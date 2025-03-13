@@ -210,7 +210,7 @@ cmd = ["racket", "--no-compiled", "./swapview.rkt"]
 
 [item.Racket_compiled]
 dir = "Racket"
-cmd = ["racket", "swapview_rkt_merged.zo"]
+cmd = ["racket", "swapview.rkt"]
 
 [item.Racket_parallel]
 dir = "Racket_parallel"
@@ -235,6 +235,10 @@ cmd = ["scala", "SwapView"]
 
 [item.Tcl]
 cmd = ["./swapview.tcl"]
+
+[item.Typed_Racket]
+dir = "Typed_Racket"
+cmd = ["racket", "compiled/swapview_rkt.zo"]
 
 [item.Vala]
 

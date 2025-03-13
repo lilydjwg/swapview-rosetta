@@ -1,12 +1,12 @@
 .PHONY: all clean
 
-all: swapview_rkt_merged.zo
+all: compiled/swapview_rkt.zo
 
-swapview_rkt_merged.zo: swapview.rkt ../Racket_parallel/swapview.rkt
-	raco demod swapview.rkt
+compiled/swapview_rkt.zo: swapview.rkt ../Racket_parallel/swapview.rkt
+	raco make --no-deps swapview.rkt
 
 run: all
-	racket swapview_rkt_merged.zo
+	racket swapview.rkt
 
 clean:
-	-rm -rf compiled swapview_rkt_merged.zo
+	-rm -rf compiled
