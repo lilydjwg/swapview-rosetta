@@ -33,24 +33,18 @@ fn chop_null(s: String) -> String {
 fn get_comm_for(pid: usize) -> String {
   let cmdline_path = format!("/proc/{}/cmdline", pid);
   let mut buf = String::new();
-  let mut file = match File::open(&cmdline_path) {
-    Ok(f) => f,
-    Err(_) => return String::new(),
-  };
-  match file.read_to_string(&mut buf) {
-    Ok(_) => (),
-    Err(_) => return String::new(),
-  };
+  let Ok(mut file) = File::open(&cmdline_path)
+    else { return String::new() };
+  let Ok(_) = file.read_to_string(&mut buf)
+    else { return String::new() };
   chop_null(buf)
 }
 
 fn get_swap_for(pid: usize) -> isize {
   let mut s = 0;
   let smaps_path = format!("/proc/{}/smaps", pid);
-  let mut file = match File::open(&smaps_path) {
-    Ok(f) => f,
-    Err(_) => return 0,
-  };
+  let Ok(mut file) = File::open(&smaps_path)
+    else { return 0 };
 
   let mut vec = vec![];
   file.read_to_end(&mut vec).unwrap();
@@ -71,13 +65,11 @@ fn get_swap_for(pid: usize) -> isize {
 fn get_swap() -> Vec<(usize, isize, String)> {
   read_dir("/proc").unwrap().filter_map(|d| {
     let path = d.unwrap().path();
-    path.file_name().unwrap().to_str().unwrap()
-    .parse().ok().and_then(|pid|
-      match get_swap_for(pid) {
-       0 => None,
-       swap => Some((pid, swap, get_comm_for(pid))),
-      }
-    )
+    let pid = path.file_name().unwrap().to_str().unwrap().parse().ok()?;
+    match get_swap_for(pid) {
+      0 => None,
+      swap => Some((pid, swap, get_comm_for(pid))),
+    }
   }).collect()
 }
 
