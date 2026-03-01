@@ -2,6 +2,7 @@ use std::fs::{read_dir, DirEntry};
 use std::io::Result;
 
 use compio::{fs::File, io::AsyncReadAtExt};
+use futures::StreamExt;
 
 const UNITS: [char; 4] = ['K', 'M', 'G', 'T'];
 
@@ -68,18 +69,18 @@ async fn get_swap_for(pid: usize) -> isize {
 }
 
 async fn get_swap() -> Vec<(usize, isize, String)> {
-  let futures: Vec<_> = read_dir("/proc").unwrap()
+  read_dir("/proc").unwrap()
     .map(|d: Result<DirEntry>| async {
       let path = d.unwrap().path();
       let Ok(pid) = path.file_name().unwrap().to_str().unwrap().parse()
         else { return None };
-      match get_swap_for(pid).await {
-        0 => None,
-        swap => Some((pid, swap, get_comm_for(pid).await)),
-      }
-    }).collect();
-  futures::future::join_all(futures).await
-    .into_iter().flatten().collect()
+        match get_swap_for(pid).await {
+          0 => None,
+          swap => Some((pid, swap, get_comm_for(pid).await)),
+        }
+    })
+    .collect::<futures::stream::FuturesUnordered<_>>()
+    .filter_map(async |x| x).collect().await
 }
 
 #[compio::main]
