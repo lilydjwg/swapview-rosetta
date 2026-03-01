@@ -1,0 +1,11 @@
+[package]
+name = "swapview"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+compio = { version = "*", features = ["fs", "io", "macros"] }
+futures = "*"
+
+[profile.release]
+lto = true
